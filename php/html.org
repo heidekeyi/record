@@ -1,0 +1,705 @@
+* 一些术语
++ CSS：层叠样式表
++ HTML：超文本标记语言
++ HTTP：超文本传输协议
++ 前景色：一般指的是文本颜色
+* 一些标签含义
++ h1~h6：标题
++ p：段落
++ a：链接
++ img：图片
+* 网站一般结构
+#+BEGIN_SRC html
+  <header>头部</header>
+  <nav>导航</nav>
+  <main style="display: flex">
+      <article style="width: 12vw">主体内容</article>
+      <aside>侧边旁白</aside>
+  </main>
+  <footer>底部</footer>
+#+END_SRC
+
+* 将链接地址获取的内容重定向到iframe中
+#+BEGIN_SRC html
+  <a href="https://baidu.com" target="frame">to-target</a>
+  <div style="height: 300px">
+      <iframe src="label.html" frameborder="1" name="frame"></iframe>
+  </div>
+#+END_SRC
+
+* 基本标签的使用
+** 表单
+#+BEGIN_SRC html
+  <form action="index.php" method="post">
+    <p>
+      <label for="username">用户名：</label>
+      <input type="text"
+	     id="username"
+	     placeholder="请输入用户名"
+	     maxlength="32">
+    </p>
+    <p>
+      <label for="password">用户名：</label>
+      <input type="password"
+	     id="password"
+	     placeholder="请输入密码"
+	     maxlength="128">
+    </p>
+    <p>
+      <label for="email">邮箱：</label>
+      <input type="email"
+	     id="email"
+	     placeholder="example@163.com">
+    </p>
+    <p>
+      <label for="age">年龄：</label>
+      <input type="number"
+	     maxlength="3"
+	     max="90"
+	     min="18"
+	     id="age">
+    </p>
+    <p>
+      <label for="male">性别：</label>
+      <input type="radio" name="gender" id="male">
+      <label for="male">男</label>
+      <input type="radio" name="gender" id="female">
+      <label for="female">看书</label>
+    </p>
+    <p>
+      <label for="ball">爱好：</label>
+      <input type="checkbox" name="favor[]" id="ball">
+      <label for="ball">打球</label>
+      <input type="checkbox" name="favor[]" id="book">
+      <label for="book">看书</label>
+    </p>
+    <p>
+      <label for="car">爱车：</label>
+      <select name="car" id="car">
+	<option value="0" disabled="disabled" selected="selected">请选择</option>
+	<optgroup label="Swedish Cars">
+	  <option value="volvo">Volvo</option>
+	  <option value="saab">Saab</option>
+	</optgroup>
+	<optgroup label="German Cars">
+	  <option value="mercedes">Mercedes</option>
+	  <option value="audi">Audi</option>
+	</optgroup>
+      </select>
+    </p>
+    <p>
+      <input type="submit" value="提交">
+      <input type="reset" value="重置">
+      <input type="hidden" name="token" value="token-string"/>
+    </p>
+  </form>
+#+END_SRC
+** 表格
+#+BEGIN_SRC html
+  <table border="1"
+	 width="600"
+	 cellpadding="6"
+	 cellspacing="0">
+      <thead style="background-color: #4FEF10">
+      <tr>
+	  <th>ID</th>
+	  <th>title</th>
+	  <th>number</th>
+	  <th>price</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+	  <td>1</td>
+	  <td>car</td>
+	  <td>1</td>
+	  <td>1000$</td>
+      </tr>
+      <tr>
+	  <td>2</td>
+	  <td>apple</td>
+	  <td>20</td>
+	  <td>10$</td>
+      </tr>
+      <tr>
+	  <td>3</td>
+	  <td>book</td>
+	  <td>12</td>
+	  <td>15$</td>
+      </tr>
+      <tr>
+	  <td colspan="2">calc</td>
+	  <td>33</td>
+	  <td>1025$</td>
+      </tr>
+      </tbody>
+  </table>
+#+END_SRC
+
+* CSS简介
+** 外部CSS样式的引入方式
+#+BEGIN_SRC html
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  <!--    清除默认样式-->
+      <link rel="stylesheet" href="reset.css">
+  <!--    通用样式-->
+      <link rel="stylesheet" href="base.css">
+  <!--    项目公共样式-->
+      <link rel="stylesheet" href="common.css">
+  <!--    当前页面的特殊样式-->
+      <link rel="stylesheet" href="page.css">
+  </head>
+#+END_SRC
+** 选择器
+*** 一般选择器
++ #id：ID
++ .class：类
++ #id, .class：群组
++ *：任意元素
++ #id + *：相邻的下一个元素
++ #id ~ *：之后的兄弟元素
+*** 伪类选择器
+**** 仅关注位置
++ ul :first-child：第一个儿子
++ ul :last-child：最后一个儿子
++ ul :nth-child(1)：第一个儿子（从1开始）
++ ul :nth-last-child(1)：倒数第一个儿子（就是最后一个，从1开始）
+**** 同时关注位置和类型
++ ul li:first-of-type：第一个是li的儿子
++ ul li:last-of-type：最后一个是li的儿子
++ ul li:nth-of-type(1)：第一个是li的儿子（从1开始）
++ ul li:nth-last-of-type(1)：倒数第一个是li的儿子（从1开始）
+
+** box-sizing的两种典型计算方式
+*** border-box
+三者总和：content + padding + border
+*** content-box
+单一：content
+
+** margin（外边距）一些奇特现象
+*** 同级塌陷
+相邻元素上下外边距才会出现，效果是外边距中取最大值（例子中是30），左右是叠加效果
+#+BEGIN_SRC html
+  <div style="background-color: #ffc002;
+	      height: 100px;
+	      width: 100px;
+	      margin-bottom: 30px">
+  </div>
+  <div style="background-color: #4FEF10;
+	      height: 100px;
+	      width: 100px;
+	      margin-top: 10px">
+  </div>
+#+END_SRC
+*** 嵌套传递
+- 子元素设置的margin-top效果传递到父元素
+- 从效果上看是在父元素中设置而不是在子元素中设置的margin-top
+#+BEGIN_SRC html
+  <div style="width: 200px;
+	      height: 200px;
+	      background-color: #ffc002">
+      <div style="width: 50px;
+		  height: 50px;
+		  margin-top: 60px;
+		  background-color: #00b3ff">
+      </div>
+  </div>
+#+END_SRC
+- 解决方式：在父元素中设置padding-top可以解决（推荐使用border-box的方式）
+#+BEGIN_SRC html
+  <div style="width: 200px;
+	      height: 200px;
+	      box-sizing: border-box;
+	      padding-top: 60px;
+	      background-color: #ffc002">
+      <div style="width: 50px;
+		  height: 50px;
+		  background-color: #00b3ff">
+      </div>
+  </div>
+#+END_SRC
+*** 自动挤压
+- 设置margin-left: auto 后左外边距会尽可能的取最大值（自动计算）
+- margin: 0 auto 导致左右外边距相等（同时挤压），会出现居中效果
+** 背景图片
+*** 单独设置属性
+#+BEGIN_SRC css
+  background-color: #ffc002;
+  background-image: url("/1.jpg");
+  background-repeat: no-repeat;	/*x/y 方向均不重复*/
+  background-position: center;	/*左右上下居中*/
+  background-attachment: fixed; 	/*不随滚动条滚动*/
+#+END_SRC
+*** 同时设置属性
+#+BEGIN_SRC css
+  background: #00b3ff url("/1.jpg") no-repeat center scroll;
+#+END_SRC
+** 浮动
++ 脱离文档流（某种程度上这么认为）
++ 浮动元素对前面的元素没有影响
++ 浮动之后的元素会向上移动被浮动元素所覆盖
++ 浮动不会覆盖文字
++ clear 清楚浮动对自身的影响，就是没浮动时的效果
++ 子元素浮动导致父元素塌陷，解决办法：在父元素中设置 overflow: hidden
+#+BEGIN_SRC html
+  <div style="width: 200px;
+	      background-color: #4FEF10;
+	      overflow: hidden;
+	      border: 8px dashed #FF0099;">
+      <div style="width: inherit;
+		  float: left;
+		  background-color: #00b3ff;
+		  height: 200px;">
+      </div>
+  </div>
+#+END_SRC
+** 定位
++ 开启定位后，z-index会提升（相对于默认），相同z-index后面的会覆盖前面的
++ 固定定位和绝对定位会脱离文档流（某种程度上这么认为）
++ 相对定位：位置偏移，不会影响其他元素
+#+BEGIN_SRC html
+  <div>
+      <div style="background-color: #00b3ff;
+	      width: 100px;
+	      height: 100px;
+	      position: relative;
+	      left: 100px;
+	      float: left;">1
+      </div>
+      <div style="background-color: #FF0099;
+	      width: 100px;
+	      height: 100px;
+	      left: 100px;
+	      top: 100px;
+	      position: relative;
+	      float: left;">2
+      </div>
+      <div style="background-color: #ffc002;
+	      width: 100px;
+	      height: 100px;
+	      left: -100px;
+	      top: 200px;
+	      position: relative;
+	      float: left;">3
+      </div>
+      <div style="background-color: #4FEF10;
+	      width: 100px;
+	      height: 100px;
+	      left: -300px;
+	      top: 100px;
+	      position: relative;
+	      float: left;">4
+      </div>
+      <div style="background-color: brown;
+	      width: 100px;
+	      height: 100px;
+	      top: 100px;
+	      left: -300px;
+	      position: relative;
+	      float: left;">5
+      </div>
+  </div>
+#+END_SRC
++ 绝对定位：相对于最近开启的定位的父级元素（到body为止）来定位
+#+BEGIN_SRC html
+  <div style="position: relative;">
+      <div style="background-color: #00b3ff;
+	      width: 100px;
+	      height: 100px;
+	      left: 100px;
+	      top: 0;
+	      position: absolute;">1
+      </div>
+      <div style="background-color: #FF0099;
+	      width: 100px;
+	      height: 100px;
+	      left: 200px;
+	      top: 100px;
+	      position: absolute;">2
+      </div>
+      <div style="background-color: #ffc002;
+	      width: 100px;
+	      height: 100px;
+	      left: 100px;
+	      top: 200px;
+	      position: absolute;">3
+      </div>
+      <div style="background-color: #4FEF10;
+	      width: 100px;
+	      height: 100px;
+	      top: 100px;
+	      left: 0;
+	      position: absolute;">4
+      </div>
+      <div style="background-color: brown;
+	      width: 100px;
+	      height: 100px;
+	      top: 100px;
+	      left: 100px;
+	      position: absolute;">5
+      </div>
+  </div>
+#+END_SRC
++ 固定定位：相对于窗口定位
+#+BEGIN_SRC html
+  <div>
+      <div style="background-color: #333;
+		  position: fixed;
+		  top: 0;
+		  left: 0;
+		  bottom: 0;
+		  right: 0;
+		  opacity: 0.5;"></div>
+      <div style="position: fixed;
+		  top: 50%;
+		  left: 50%;
+		  height:200px;
+		  width: 200px;
+		  margin-top: -100px;
+		  margin-left: -100px;
+		  background-color: #ffc002;">登录窗口</div>
+  </div>
+#+END_SRC
+** 典型的三栏布局
+#+BEGIN_SRC html
+  <header style="line-height: 60px;
+		 background-color: #ffc002;
+		 text-align: center;">头部</header>
+  <main style="min-height: 600px;
+	       height: 72vh;
+	       width: 960px;
+	       margin: 0 auto;
+	       overflow: hidden;">
+      <menu style="height: 100%;
+		   width: 220px;
+		   float: left;
+		   margin: 0;
+		   padding: 0;
+		   background-color: navajowhite;"></menu>
+      <article style="height: 100%;
+		      float: left;
+		      width: 540px;
+		      background-color: #d9f3ff;"></article>
+      <aside style="height: 100%;
+		    float: left;
+		    width: 200px;
+		    background-color: #4FEF10;"></aside>
+  </main>
+  <footer style="line-height: 46px;
+		 background-color: #00b3ff;
+		 text-align: center;">底部</footer>
+#+END_SRC
+** 宽度分离
+子元素设置padding 不会撑大盒子
+#+BEGIN_SRC html
+  <div style="height: 100%;
+	      float: left;
+	      width: 100%">
+    <div style="width: 100%;
+		height: 100%;
+		padding: 0 100px;
+		background-color: #ffc002"></div>
+  </div>
+#+END_SRC
+** 双飞翼布局
+- 主体部分双飞翼布局（中间三栏）
+- 两边固定
+- 中间栏自适应（随窗口大小调整）
+- 使用宽度分离
+- 设置浮动、设置相应的margin
+#+BEGIN_SRC html
+  <div style="width: 80vw;
+	      height: 320px;
+	      min-width: 720px;
+	      margin: 0 auto;
+	      overflow: hidden;">
+  <!--    宽度分离，padding 不会撑大盒子-->
+      <div style="height: 100%;
+		  float: left;
+		  width: 100%">
+	  <div style="width: 100%;
+		  height: 100%;
+		  padding: 0 100px;
+		  background-color: #ffc002"></div>
+      </div>
+      <div style="float: left;
+		  height: 100%;
+		  width: 100px;
+		  margin-left: -100%;
+		  background-color: #FF0099"></div>
+      <div style="float: left;
+		  height: 100%;
+		  width: 100px;
+		  margin-left: -100px;
+		  background-color: #4FEF10"></div>
+  </div>
+#+END_SRC
+** 圣杯布局
+使用border-box的方式替换宽度分离，其他的和双飞翼基本相同
+#+BEGIN_SRC html
+  <div style="width: 80vw;
+	      min-width: 320px;
+	      height: 320px;
+	      overflow: hidden;
+	      margin: 0 auto">
+      <div style="background-color: #ffc002;
+		  box-sizing: border-box;
+		  width: 100%;
+		  height: 100%;
+		  padding: 0 100px;
+		  float: left;"></div>
+      <div style="background-color: #4FEF10;
+		  width: 100px;
+		  height: 100%;
+		  margin-left: -100%;
+		  float: left;"></div>
+      <div style="background-color: #FF0099;
+		  width: 100px;
+		  height: 100%;
+		  margin-left: -100px;
+		  float: left;"></div>
+  </div>
+#+END_SRC
+** 使用CSS自定义表格
+- CSS
+#+BEGIN_SRC css
+  table, td, th{
+      border: 1px solid #ffc002;
+  }
+  table{
+      border-collapse: collapse;
+      width: 320px;
+      margin: 0 auto;
+  }
+  th,td{
+      text-align: center;
+      padding: 6px;
+  }
+#+END_SRC
+- 结构
+#+BEGIN_SRC html
+  <table>
+      <caption><h2>标题</h2></caption>
+      <thead>
+      <tr>
+	  <th>id</th>
+	  <th>number</th>
+	  <th>price</th>
+      </tr>
+      </thead>
+      <tfoot>
+      <tr>
+	  <td>备注</td>
+	  <td colspan="2">表格例子</td>
+      </tr>
+      </tfoot>
+      <tbody>
+      <tr>
+	  <td>1</td>
+	  <td>100</td>
+	  <td rowspan="2">1290$</td>
+      </tr>
+      <tr>
+	  <td>2</td>
+	  <td>128</td>
+      </tr>
+      </tbody>
+  </table>
+#+END_SRC
+** flex布局
+*** 基本使用
+#+BEGIN_SRC css
+  .contain{
+      height: 600px;
+      background-color: #ffc002;
+      width: 600px;
+  }
+  p{
+      width: 200px;
+      /*height: 100px;*/
+      background-color: #FF0099;
+      border: 1px solid #4FEF10;
+      margin: 0;
+      padding: 0;
+  }
+  .contain{
+      /*使用容器*/
+      display: flex;
+      /*设置排列方向*/
+      flex-direction: row;
+      /*换行*/
+      flex-wrap: wrap;
+      /*方向和换行的简写（上面两行的简写）*/
+      /*flex-flow: column nowrap;*/
+      /*水平对齐方式(两边是中间举例的一般)*/
+      /*justify-content: space-around;*/
+      /*间隙平均分配*/
+      /*justify-content: space-evenly;*/
+      /*交叉轴方向的排列方式*/
+      /*align-items: center;*/
+      /*作为一个整体*/
+      /*align-content: center;*/
+      align-content: space-evenly;
+
+      /*测试发现一行时才生效*/
+      /*align-items: stretch;*/
+  }
+  p{
+      /*主轴方向：1填充占满空间，0是不变化*/
+      /*flex-grow: 1;*/
+      /*缩小：1默认空间不足缩小，0不缩小*/
+      /*flex-shrink: 1;*/
+  }
+#+END_SRC
+#+BEGIN_SRC html
+  <div class="contain">
+      <p>1</p>
+      <p>2</p>
+      <p>3</p>
+      <p>4</p>
+      <p>5</p>
+      <p>6</p>
+  </div>
+#+END_SRC
+** 清除默认样式使用border-box
+#+BEGIN_SRC css
+  /* http://meyerweb.com/eric/tools/css/reset/
+     v2.0 | 20110126
+     License: none (public domain)
+  ,*/
+
+  html, body, div, span, applet, object, iframe,
+  h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+  a, abbr, acronym, address, big, cite, code,
+  del, dfn, em, img, ins, kbd, q, s, samp,
+  small, strike, strong, sub, sup, tt, var,
+  b, u, i, center,
+  dl, dt, dd, ol, ul, li,
+  fieldset, form, label, legend,
+  table, caption, tbody, tfoot, thead, tr, th, td,
+  article, aside, canvas, details, embed,
+  figure, figcaption, footer, header, hgroup,
+  menu, nav, output, ruby, section, summary,
+  time, mark, audio, video {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      font-size: 100%;
+      font: inherit;
+      vertical-align: baseline;
+      box-sizing: border-box;
+  }
+  /* HTML5 display-role reset for older browsers */
+  article, aside, details, figcaption, figure,
+  footer, header, hgroup, menu, nav, section {
+      display: block;
+  }
+  body {
+      line-height: 1;
+  }
+  ol, ul {
+      list-style: none;
+  }
+  blockquote, q {
+      quotes: none;
+  }
+  blockquote:before, blockquote:after,
+  q:before, q:after {
+      content: '';
+      content: none;
+  }
+  table {
+      border-collapse: collapse;
+      border-spacing: 0;
+  }
+
+  input, textarea, select, optgroup, option{
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      outline: 0;
+  }
+
+  html{
+      line-height: initial;
+  }
+#+END_SRC
+** @media查询
+- em：相对于父级字体(1em=font-size)
+- rem：相对于页面字体，即html标签上生效的字体（没有设置使用默认）
+#+BEGIN_SRC css
+  body{
+      min-height: 100vh;
+  }
+  @media (max-width: 768px) {
+      body{
+	  background-color: #4FEF10;
+      }
+      html{
+	  font-size: 14px;
+      }
+  }
+  @media (max-width: 992px) and (min-width: 768px) {
+      body{
+	  background-color: #FF0099;
+      }
+      html{
+	  font-size: 16px;
+      }
+  }
+  @media (min-width: 992px) {
+      body{
+	  background-color: #ffc002;
+      }
+      html{
+	  font-size: 18px;
+      }
+  }
+  .box{
+      width: 20rem;
+      height: 20rem;
+      background-color: lightcoral;
+  }
+#+END_SRC
+#+BEGIN_SRC html
+  <div class="box"></div>
+#+END_SRC
+** 页面顶部和底部固定不随滚动条滚动的例子
+可以页面宽度会自适应（宽度根据页面大小调整）
+#+BEGIN_SRC html
+  <body class="contain w">
+  <header class="header fixed w"></header>
+  <main class="main"></main>
+  <footer class="footer fixed w"></footer>
+  </body>
+#+END_SRC
+#+BEGIN_SRC css
+  .w{
+      min-width: 320px;
+      max-width: 768px;
+  }
+  .contain{
+      margin: 0 auto;
+      min-height: 100vh;
+      background-color: #00b3ff;
+      padding: 42px 0 46px;
+  }
+  .fixed{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+  }
+  .header{
+      height: 42px;
+      background-color: #444;
+      top: 0;
+  }
+  .footer{
+      height: 46px;
+      bottom: 0;
+      background-color: #EAA90B;
+  }
+#+END_SRC

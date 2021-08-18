@@ -1,0 +1,76 @@
+* unlink file from directory (not recursion)
+#+BEGIN_SRC php
+  <?php
+
+
+  function error($message, $isExist = true)
+  {
+      echo $message . PHP_EOL;
+      if ($isExist) {
+	  exit(0);
+      }
+  }
+
+
+  function removeFile($dir, $name, $showFileName = true)
+  {
+      $filename = $dir . '/' . $name;
+      if (file_exists($filename)) {
+	  unlink($filename);
+	  if ($showFileName) {
+	      echo $filename . PHP_EOL;
+	  }
+      } else {
+	  error($filename . ' not exist', false);
+      }
+  }
+
+  function ruleRegex($dir, $name, $arrayRegex)
+  {
+      foreach ($arrayRegex as $regex) {
+	  if (preg_match($regex, $name)) {
+	      removeFile($dir, $name);
+	  }
+      }
+  }
+
+  function ruleRepeat($dir, $name)
+  {
+      static $arrayName = [];
+      $header = preg_replace('/[.](ape|flac)$/', '', $name);
+      if (key_exists($header, $arrayName)) {
+	  removeFile($dir, $header . '.ape');
+      } else {
+	  $arrayName[$header] = $name;
+      }
+  }
+
+
+  function traverseDirectory($dir, $max = 1024)
+  {
+      if (!file_exists($dir)) {
+	  error($dir . ' not exist');
+      }
+      $resource = opendir($dir);
+      if (!$resource) {
+	  error($dir . ' open failure');
+      }
+      $i = 0;
+      while (($filename = readdir($resource)) && ++$i < $max) {
+	  if ($filename === '.' || $filename === '..') {
+	      continue;
+	  }
+	  ruleRegex($dir, $filename, [
+	      '/[rR]emix/',
+	      '/[Vv]ersion/',
+	      '/[Cc]lassic/',
+	      '/[Mm]ix/'
+	  ]);
+	  ruleRepeat($dir, $filename);
+      }
+      closedir($resource);
+  }
+
+  $dirName = 'C:/Users/12131/Music/acg';
+  traverseDirectory($dirName);
+#+END_SRC

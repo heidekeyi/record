@@ -1,0 +1,66 @@
+#+BEGIN_SRC php
+  <?php
+
+  function writeFile($total)
+  {
+      $str_items = implode("\n", initItems($total));
+      $str_file = <<<"RRR"
+  <?xml version="1.0" encoding="utf-8"?>
+  <CheatTable CheatEngineTableVersion="29">
+    <CheatEntries>
+    {$str_items}
+    </CheatEntries>
+    <UserdefinedSymbols/>
+  </CheatTable>
+
+  RRR;
+
+      file_put_contents('./game.xml', $str_file);
+  }
+
+
+  function initItems($total)
+  {
+      $array_exp_addr = [
+	  hexdec('0x3086D60'),
+      ];
+      $array_attr = [
+	  'level'=>[-4, 2],
+	  'max-level'=>[-2, 2],
+	  'exp' => [0, 4],
+	  're-hp' => [4, 2],
+	  'max-hp' => [6, 2],
+	  'hit' => [8, 2],
+	  'physic' => [10, 2],
+	  'speed' => [12, 2],
+      ];
+      $res = [];
+      foreach ($array_attr as $k => $arr_val) {
+	  list($value_diff, $size) = $arr_val;
+	  for ($i = 0; $i < $total; ++$i) {
+	      $res[] = fillItem(count($res) + 1,
+		  ($i + 1) . '--' . $k,
+		  $value_diff + $array_exp_addr[$i],
+		  $size);
+	  }
+      }
+      return $res;
+  }
+
+  function fillItem($id, $desc, $addr, $bytes)
+  {
+      $bytes = $bytes === 1 ? 'Byte' : $bytes . ' Bytes';
+      $addr = strtoupper(dechex($addr));
+      return <<<"AAA"
+  <CheatEntry>
+	<ID>{$id}</ID>
+	<Description>"{$desc}"</Description>
+	<VariableType>{$bytes}</VariableType>
+	<Address>"desmume-0.9.9-JIT-x86-2013-02-18.exe"+{$addr}</Address>
+      </CheatEntry>
+  AAA;
+
+  }
+
+  writeFile(1);
+#+END_SRC

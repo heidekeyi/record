@@ -1,0 +1,61 @@
+#+BEGIN_SRC php
+  <?php
+
+  function writeFile($total)
+  {
+      $str_items = implode("\n", initItems($total));
+      $str_file = <<<"RRR"
+  <?xml version="1.0" encoding="utf-8"?>
+  <CheatTable CheatEngineTableVersion="29">
+    <CheatEntries>
+    {$str_items}
+    </CheatEntries>
+    <UserdefinedSymbols/>
+  </CheatTable>
+
+  RRR;
+
+      file_put_contents('./game.xml', $str_file);
+  }
+
+
+  function initItems($total)
+  {
+      $str_re_hp_addr = 'VirtuaNES.exe+158414';
+      $value_re_hp_addr = hexdec('0x' . explode('+', $str_re_hp_addr)[1]);
+      $array_attr = [
+  //        're-hp' => [0, 2, 0],
+  //        'exp' => [-12, 2, 1],
+	  'status' => [48, 1, 0],
+	  'level' => [-16, 1, 0],
+      ];
+      $res = [];
+      foreach ($array_attr as $k => $arr_val) {
+	  list($value_diff, $size, $diff) = $arr_val;
+	  for ($i = 0; $i < $total; ++$i) {
+	      $res[] = fillItem(count($res) + 1,
+		  ($i + 1) . '--' . $k,
+		  $value_diff + $value_re_hp_addr + ($size+$diff) * $i,
+		  $size);
+	  }
+      }
+      return $res;
+  }
+
+  function fillItem($id, $desc, $addr, $bytes)
+  {
+      $bytes = $bytes === 1 ? 'Byte' : $bytes . ' Bytes';
+      $addr = strtoupper(dechex($addr));
+      return <<<"AAA"
+  <CheatEntry>
+	<ID>{$id}</ID>
+	<Description>"{$desc}"</Description>
+	<VariableType>{$bytes}</VariableType>
+	<Address>"VirtuaNES.exe"+{$addr}</Address>
+      </CheatEntry>
+  AAA;
+
+  }
+
+  writeFile(2);
+#+END_SRC

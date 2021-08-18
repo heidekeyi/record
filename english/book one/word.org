@@ -1,0 +1,268 @@
+* 词性简写
+  |-------+--------|
+  | 单词  | 含义   |
+  |-------+--------|
+  | n.    | 名词   |
+  | pron. | 代词   |
+  | adj.  | 形容词 |
+  | adv.  | 副词   |
+  | prep. | 介词   |
+  | v.    | 动词   |
+  | int.  | 感叹词 |
+  | conj. | 连词   |
+  | num.  | 数词   |
+  | det.  | 限定词 |
+  |-------+--------|
+
+* 0
+** 1
+   |---------+-------+----------------|
+   | excuse  | v.    | 原谅           |
+   | me      | pron. | 我             |
+   | yes     | adv.  | 是的           |
+   | is      | v.    | be动词         |
+   | this    | pron. | 这             |
+   | your    | adj.  | 你的，你们的   |
+   | handbag | n.    | 手提包（女）   |
+   | pardon  | int.  | 原谅，再说一遍 |
+   | it      | pron. | 它             |
+   |---------+-------+----------------|
+
+** 2
+   |--------+----+------------|
+   | pen    | n. | 钢笔       |
+   | pencil | n. | 铅笔       |
+   | book   | n. | 书         |
+   | watch  | n. | 表         |
+   | coat   | n. | 外衣，上衣 |
+   | dress  | n. | 连衣裙     |
+   | skirt  | n. | 短裙       |
+   | shirt  | n. | 衬衫       |
+   | car    | n. | 小汽车     |
+   | house  | n. | 房子       |
+   |--------+----+------------|
+
+** 3
+   |-----------+------+------------|
+   | umbrella  | n.   | 伞         |
+   | please    | int. | 请         |
+   | here      | adv. | 这里       |
+   | my        | adj. | 我的       |
+   | ticket    | n.   | 票         |
+   | number    | n.   | 号码       |
+   | five      | num. | 五         |
+   | sorry     | adj. | 对不起的   |
+   | sir       | n.   | 先生       |
+   | cloakroom | n.   | 衣帽存放处 |
+   |-----------+------+------------|
+
+** 4
+   |-----------+----+----------|
+   | cloakroom | n. | 衣帽间   |
+   | suit      | n. | 一套衣服 |
+   | school    | n. | 学校     |
+   | teacher   | n. | 老师     |
+   | son       | n. | 儿子     |
+   | daughter  | n. | 女儿     |
+   |-----------+----+----------|
+
+** 5
+   |----------+-----------+--------|
+   | Mr.      |           | 先生   |
+   | good     | adj.      | 好     |
+   | morning  | n.        | 早晨   |
+   | Miss     |           | 小姐   |
+   | new      | adj.      | 新的   |
+   | student  | n.        | 学生   |
+   | French   | adj. & n. | 法国人 |
+   | German   | adj. & n. | 德国人 |
+   | nice     | adj.      | 美好的 |
+   | meet     | v.        | 遇见   |
+   | Japanese | adj. & n. | 日本人 |
+   | Korean   | adj. & n. | 韩国人 |
+   | Chinese  | adj. & n. | 中国人 |
+   | too      | adv.      | 也     |
+   |----------+-----------+--------|
+
+** 6
+   |----------+------+------------------|
+   | make     | n.   | 牌子，产品的牌号 |
+   | Swedish  | adj. | 瑞典的           |
+   | English  | adj. | 英国的           |
+   | American | adj. | 美国的           |
+   | Italian  | adj. | 意大利的         |
+   | Volvo    | n.   | 沃尔沃           |
+   | Peugeot  | n.   | 标致             |
+   | Mercedes | n.   | 梅赛德斯，奔驰   |
+   | Toyota   | n.   | 丰田             |
+   | Daewoo   | n.   | 大宇             |
+   | Mini     | n.   | 迷你             |
+   | Ford     | n.   | 福特             |
+   | Fiat     | n.   | 菲亚特           |
+   |----------+------+------------------|
+
+** 7
+   |-------------+--------------+----------|
+   | I           | pron.        | 我       |
+   | am          | v.           | be动词   |
+   | are         | v.           | be动词   |
+   | name        | n.           | 名字     |
+   | what        | adj. & pron. | 什么     |
+   | nationality | n.           | 国籍     |
+   | job         | n.           | 工作     |
+   | keyboard    | n.           | 电脑键盘 |
+   | operator    | n.           | 操作人员 |
+   | engineer    | n.           | 工程师   |
+   |-------------+--------------+----------|
+
+** 8
+   |-------------+----+------------|
+   | policeman   | n. | 警察       |
+   | policewomen | n. | 女警察     |
+   | postman     | n. | 邮递员     |
+   | nurse       | n. | 护士       |
+   | mechanic    | n. | 机械师     |
+   | hairdresser | n. | 理发师     |
+   | housewife   | n. | 家庭主妇   |
+   | milkman     | n. | 送牛奶的人 |
+   |-------------+----+------------|
+
+** 9
+   |---------+---------------------+------------------|
+   | hello   | int.                | 喂               |
+   | hi      | int.                | 嗨               |
+   | how     | adv.                | 怎样             |
+   | today   | adv.                | 今天             |
+   |         | tonight             | 今晚             |
+   | well    | adj.                | 身体好           |
+   | fine    | adj.                | 美好的，状况良好 |
+   | thanks  | int.                | 谢谢             |
+   |         | thank you very much | 非常感谢         |
+   |         | thanks a lot        | 多谢             |
+   | goodbye | int.                | 再见             |
+   |         | see you             | 下次见，回头见   |
+   | see     | v.                  | 见               |
+   |---------+---------------------+------------------|
+
+* 1
+** 10
+   |-------+-----------------------+--------------------------|
+   | fat   | adj.                  | 胖的                     |
+   | thin  | adj.                  | 瘦的                     |
+   | woman | n.                    | 女人                     |
+   |       | lady                  | 女士（文明场合使用）     |
+   | tall  | adj.                  | 高的（人的个子、建筑等） |
+   | short | adj.                  | 矮的                     |
+   | dirty | adj.                  | 脏的                     |
+   | clean | adj.                  | 干净的                   |
+   | hot   | adj.                  | 热的                     |
+   |       | It is hot today       | 今天天气很热             |
+   |       | The girl is very hot  | 那女孩很性感             |
+   |       | Lady GaGa is hot now  | ...现在很火              |
+   | cold  | adj.                  | 冷的                     |
+   |       | It is very cold today | 今天天气很冷             |
+   |       | I have a cold welcome | 我受到了冷遇             |
+   | old   | adj.                  | 老的                     |
+   |       | He is an old man      | 他是一个位老人           |
+   |       | It is an old story    | 这是一个老故事           |
+   |       | That is my old book   | 那是我的旧书             |
+   | young | adj.                  | 年轻的                   |
+   |       | Hi is a young man     | 他是一个年轻人           |
+   | busy  | adj.                  | 忙的                     |
+   |       | It is a busy day      | 真是忙碌的一天           |
+   |       | He is very busy       | 他特别的忙               |
+   | lazy  | adj.                  | 懒的                     |
+   |-------+-----------------------+--------------------------|
+** 11
+   |---------+--------------------+----------------|
+   | whose   | pron.              | 谁的           |
+   |         | Whose pen is that? | 那是谁的钢笔？ |
+   | blue    | adj.               | 蓝色的         |
+   | white   | adj.               | 白色的         |
+   |         | snow white         | 白雪公主       |
+   |         | the White House    | 白宫           |
+   | perhaps | adv.               | 大概           |
+   |         | perhaps so         | 也许会         |
+   |         | perhaps not        | 也许不会       |
+   | catch   | v.                 | 抓住           |
+   |         | catch the fish     | 捕鱼           |
+   |         | catch the thief    | 抓小偷         |
+   |---------+--------------------+----------------|
+** 12
+   |---------+--------------------+----------------|
+   | father  | n.                 | 父亲           |
+   |         | dad                | 口语           |
+   |         | daddy              | 儿语           |
+   | mother  | n.                 | 母亲           |
+   |         | mum                | 口语（英）     |
+   |         | mom                | 口语（美）     |
+   |         | mummy              | 儿语           |
+   | sister  | n.                 | 姐妹           |
+   | brother | n.                 | 兄弟           |
+   |         | stepfather         | 继父           |
+   |         | stepmother         | 继母           |
+   |         | stepsister         | 异父或异母     |
+   |         | stepbrother        | 异父或异母     |
+   |         | stedaughter        | 养女           |
+   |         | stepson            | 养子           |
+   | tie     | n.                 | 领带           |
+   | blouse  | n.                 | 女衬衫         |
+   | his     | adj.               | 他的           |
+   |         | This is my father. | 这是我的父亲。 |
+   | her     | adj.               | 她的           |
+   |---------+--------------------+----------------|
+** 13
+   |----------+----------------+-----------------------------|
+   | colour   | n.             | 颜色（英）                  |
+   |          | color          | 颜色（美）                  |
+   | grean    | adj.           | 绿色                        |
+   |          | a green hand   | 新手                        |
+   |          | grean tea      | 绿茶                        |
+   | come     | v.             | 来                          |
+   |          | come here      | 过来                        |
+   | upstairs | adv.           | 楼上                        |
+   |          | come upstairs  | 去楼上                      |
+   |          | downstaires    | 楼下                        |
+   |          | go downstaires | 下楼去                      |
+   | smart    | adj.           | 时髦的，巧妙的              |
+   |          | beautiful      | 排量的                      |
+   | lovely   | adj.           | 可爱的，秀丽的              |
+   |          | nice           | 漂亮的                      |
+   | hat      | n.             | 帽子                        |
+   | same     | adj.           | 相同的                      |
+   |          | the same color | 同样的颜色（必须加冠词the） |
+   |          | the same city  | 同一个城市（必须加冠词the） |
+   |----------+----------------+-----------------------------|
+** 14
+   |--------+-------------------+----------------|
+   | case   | n.                | 箱子           |
+   |        | suitcase          | 手提箱         |
+   | carpet | n.                | 地毯           |
+   | dog    | n.                | 狗             |
+   |        | a lucky dog       | 幸运儿         |
+   |        | I am a lucky dog. | 我真是太幸运了 |
+   |--------+-------------------+----------------|
+** 15
+   |-----------+-----------+------------|
+   | customs   | n.        | 海关       |
+   | officer   | n.        | 官员       |
+   | girl      | n.        | 女孩，姑娘 |
+   | Danish    | adj. & n. | 丹麦人     |
+   | Norwegian | adj. & n. | 挪威人     |
+   | friend    | n.        | 朋友       |
+   | passport  | n.        | 护照       |
+   | brown     | adj.      | 棕色的     |
+   | tourist   | n.        | 旅游者     |
+   |-----------+-----------+------------|
+** 16 
+   |---------+-------------+----------|
+   | Russian | adj. & n.   | 俄罗斯人 |
+   | Dutch   | adj. & n.   | 荷兰人   |
+   | these   | pron.(this) | 这些     |
+   | red     | adj.        | 红色的   |
+   | grey    | adj.        | 灰色的   |
+   | yellow  | adj.        | 黄色的   |
+   | black   | adj.        | 黑色的   |
+   | orange  | adj.        | 橘黄色的 |
+   |---------+-------------+----------|
+    

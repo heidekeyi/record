@@ -1,0 +1,260 @@
+#+BEGIN_SRC js
+  const map_data = [
+      {
+	  name: '米切尔',
+	  value: '03D0E5C2'
+      },
+      {
+	  name: '米雷',
+	  value: '03D1014A'
+      },
+      {
+	  name: '回忆',
+	  value: '03D0E5C2'
+      },
+      {
+	  name: '艾利乌德',
+	  value: '03D0FEC2'
+      },
+      {
+	  name: '赛思',
+	  value: '03D0E23A'
+      },
+      {
+	  name: '弗朗茨',
+	  value: '03D0FE7A'
+      },
+      {
+	  name: '罗伊德',
+	  value: '3'
+      },
+      {
+	  name: '玛多克',
+	  value: '3'
+      },
+      {
+	  name: '格伦',
+	  value: '03D0E282'
+      },
+      {
+	  name: '露易丝',
+	  value: '3'
+      },
+      {
+	  name: '艾克',
+	  value: '3'
+      },
+      {
+	  name: '赛菲尔',
+	  value: '3'
+      },
+      // {
+      //     name: '林',
+      //     value: '03D0FE7A'
+      // },
+      // {
+      //     name: '夫罗莉娜',
+      //     value: '03D0FE32'
+      // },
+      {
+	  name: '1',
+	  value: '3'
+      },
+      // {
+      //     name: '2',
+      //     value: '3'
+      // },
+      // {
+      //     name: '3',
+      //     value: '3'
+      // },
+      // {
+      //     name: '4',
+      //     value: ''
+      // },
+  ];
+  (function () {
+      const create = (function () {
+	  let id = 0;
+	  return function (addr, desc) {
+	      return `    <CheatEntry>
+	<ID>${++id}</ID>
+	<Description>${desc}</Description>
+	<VariableType>Byte</VariableType>
+	<Address>0${addr}</Address>
+      </CheatEntry>`
+	  }
+      })();
+      const offset_set = {
+	  'hp-remain': [
+	      {
+		  name: '当前血量',
+		  value: 11
+	      },
+	  ],
+	  wap : [
+	      {
+		  name : '第一武器数量',
+		  value : 23
+	      }
+	  ],
+	  exp: [
+	      {
+		  name: '经验',
+		  value: 1
+	      }
+	  ],
+	  level: [
+	      {
+		  name: '等级',
+		  value: 0
+	      }
+	  ],
+	  property: (function () {
+	      return [
+		  '力量',
+		  '技术',
+		  '速度',
+		  '守备',
+		  '魔防',
+		  '幸运',
+		  '魔力'
+	      ].map((name, ix) => {
+		  return {
+		      name,
+		      value: ix + 12
+		  }
+	      })
+	  })(),
+	  'max-hp': [
+	      {
+		  name: '最大血量',
+		  value: 10
+	      }
+	  ],
+	  move: [
+	      {
+		  name: '移动',
+		  value: 21
+	      }
+	  ],
+      };
+      const item_data = map_data.map((it,index) => {
+	  const role_name = it.name;
+	  // const address = +`0x${it.value}` - 10 ; 每一个单独数据
+	  const address = +`0x${map_data[0].value}` - 10 + index * 72;
+	  const item = {};
+	  Object.keys(offset_set).forEach(name => {
+	      item[name] = offset_set[name].map(it => {
+		  const desc = `${role_name}---${it.name}`;
+		  const addr = (address + it.value).toString(16);
+		  return create(addr, desc);
+	      });
+	  });
+	  return item;
+      });
+      const list = [];
+      ['hp-remain', 'exp', 'level'].forEach(name => {
+	  item_data.forEach(item => {
+	      item[name].forEach(it => list.push(it));
+	  });
+      });
+
+      ['property', 'move', 'max-hp','wap'].forEach(name => {
+	  item_data.forEach(item => {
+	      item[name].forEach(it => list.push(it));
+	  });
+      });
+
+
+      const fs = require('fs');
+      const str =
+	  `<?xml version="1.0" encoding="utf-8"?>
+  <CheatTable CheatEngineTableVersion="29">
+    <CheatEntries>
+    ${list.join('\n')}
+    </CheatEntries>
+    <UserdefinedSymbols/>
+  </CheatTable>`;
+      fs.writeFile('./g.CT', str, function (err) {
+	  const msg = err ? 'error: ' + err : '写入成功';
+	  console.log(msg);
+      });
+
+  })();
+  (function () {
+      const val = [
+	  1,
+	  0,
+	  2,
+	  4,
+	  5,
+	  7,
+	  8,
+	  6,
+	  3,
+      ];
+      [
+	  '14 53 19 5 19 17 15 17 17',
+	  '70 70 30 32 30 33 30 30 32',
+	  // '71 71 33 36 34 34 30 30 34',
+	  '27 27 10 0 13 13 9 7 10',
+      ].map(it => it.split(' ').map(it => +it))
+	  .map(item => val.map(it => (item[it]).toString(16)).join(' '))
+	  .forEach(it => console.log(it));
+  })();
+
+
+  // 255 光系 1-2
+  // 246 光神器 1-2 +7
+  // 238 火系 1-2
+  // 231 理系 1-2
+  // 219 暗系
+  // 171 魔龙石 （米切尔、伊冬）
+  // 155、160 暗系 （米切尔专属）
+  // 159 理 1-3
+  // 135 光系 +3
+
+
+  // 229 冰神器 1-2 +7
+  // 154 暗神器 1-2 +7
+  // 243 弓神器 2-3 +7
+  // 244 命运之剑 命中高
+  // 251 雷剑 1-2
+  // 200 雷剑（A） 1-2
+  // 186 枪 1-2
+  // 253 君王之剑 1-3
+  // 146 剑 （米雷专用）1-2
+  // 160 封印术解封 （米切尔用）
+
+  // 178 盾（加属性）
+  // 206 疾风靴 阻碍为1
+  // 113 飞行特效护符
+
+  // 214 技能忘却书 （还原技能书）
+  // 250 连续之书
+  // 220 见切之书
+  // 137 成长率之书
+
+  // 136 勇士手卷 物理三转
+  // 138 秘术师 魔法三转
+  // 151 霸者之证（盗贼海贼）
+  // 152 星之腕轮
+  // 153 王家腕轮
+  // 100 英雄之证
+  // 101 骑士转职
+  // 102 弓箭转职
+  // 103 飞系转职
+  // 104 法系转职
+
+  // 105 宝箱钥匙
+  // 106 门钥匙
+  // 107 盗贼钥匙
+
+  // 199 冰龙之戒
+  // console.log(0x72 - 0x2A)
+  // console.log(0xBA - 0x72)
+
+  // 16 疾风迅雷
+  // 67 02 skill(10)
+#+END_SRC

@@ -1,0 +1,33 @@
+* 基础例子
+  #+BEGIN_SRC tex
+    \documentclass[UTF8]{ctexart}
+    \title{标题（中间位置）}
+    \author{作者名称}
+    \date{\today}
+    \bibliographystyle{plain}
+    \usepackage[greek, english]{babel}
+    \begin{document}
+	\maketitle
+	\tableofcontents
+
+	\section{昨天}
+	\section{今天}
+	\section{明天}
+    \end{document}
+  #+END_SRC
+  - ctexart
+    自动引入中文包
+  - cmd
+    - 生成pdf文件： pdflatex xxx(such as a)
+    - 生成参考文献库（需要数据文件）：bibtex xxx(such as a)
+
+* 一些特殊符号
+  还有很多，这里列举了几个
+  #+BEGIN_SRC tex
+    %% #
+    \# \quad
+    %% $
+    \$ \quad
+    %% \
+    \textbackslash
+  #+END_SRC

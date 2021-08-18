@@ -1,0 +1,102 @@
+#+startup: content
+
+* 三个目的
+** list,stack等ADT可以实例化多个
+** list,stack等ADT支持各种类型
+   数据类型使用void *,但是会失去类型检查
+** list,stack等ADT用同名函数操作数据
+   由于函数作用域C无法实现这个,妥协方案如加一些前缀,后缀之类的
+   #+begin_src C
+     int stack_push(Stack *stack, TYPE data);
+     int stack_push_int(Stack *stack, int data);
+     int stack_push_string(Stack *stack, char *data);
+   #+end_src
+   
+* type check
+
+** list
+   #+begin_src C
+
+     //typedef int ITEM_TYPE;
+     typedef struct {
+	 void *handle;
+     } List;
+
+     /*	explain return value follow	*/
+     /*	0: call success	*/
+     /*	-111: parameter error	*/
+     /*	-333: alloc memory error	*/
+
+     #define LIST_INTERFACE_GENERIC(ITEM_TYPE, SUFFIX_NAME) \
+     \
+     /*	init list env	*/\
+     int list_create_##SUFFIX_NAME(List **list);\
+     \
+     /*	free resource of list	*/\
+     int list_destroy_##SUFFIX_NAME(List **list);\
+     \
+     /*	retrieve element number of list	*/\
+     int list_size_##SUFFIX_NAME(List *list, int *out_size);\
+     \
+     /*	retrieve index of element of list	*/\
+     /*	-1: there not are match element	*/\
+     int list_search_##SUFFIX_NAME(List *list,\
+			 ITEM_TYPE in_data,\
+			 int *out_index,\
+			 int (*is_match)(ITEM_TYPE in_data, ITEM_TYPE ele_data));\
+     \
+     /*	insert new element	*/\
+     /*	explain index follow	*/\
+     /*	negative and out range: insert to last element	*/\
+     /*	other: move original to next, insert to position of original	*/\
+     int list_insert_##SUFFIX_NAME(List *list,\
+			 int in_index,\
+			 ITEM_TYPE in_data,\
+			 int *out_index);\
+     \
+     /*	remove element	*/\
+     /*	check index always	*/\
+     /*	explain parameter	*/\
+     /*	index is error when list is empty and out range, code is -111	*/\
+     /*	save data if needed	*/\
+     /*	free resource of element	*/\
+     int list_remove_##SUFFIX_NAME(List *list, int in_index, ITEM_TYPE *out_data);\
+     \
+     /*	peek element	*/\
+     /*	check index which the same of remove	*/\
+     /*	save index if needed	*/\
+     int list_peek_##SUFFIX_NAME(List *list, int in_index, ITEM_TYPE *out_data);\
+     \
+     /*	use new data replace original data	*/\
+     /*	check index which the same of remove	*/\
+     int list_replace_##SUFFIX_NAME(List *list,\
+			  int in_index,\
+			  ITEM_TYPE in_data,\
+			  ITEM_TYPE *out_data);\
+     \
+     /*	reverse list	*/\
+     int list_reverse_##SUFFIX_NAME(List *list);\
+
+
+   #+end_src
+** stack
+   #+begin_src C
+
+     typedef struct {
+	 void *handle;
+     } Stack;
+
+     /*	explain return value which the same as list	*/
+
+     #define STACK_INTERFACE_GENERIC(ITEM_TYPE, SUFFIX_NAME) \
+     \
+     int stack_create_##SUFFIX_NAME(Stack **stack);\
+     \
+     int stack_destroy_##SUFFIX_NAME(Stack **stack);\
+     \
+     int stack_size_##SUFFIX_NAME(Stack *stack, int *out_size);\
+     \
+     int stack_push_##SUFFIX_NAME(Stack *stack, ITEM_TYPE in_data);\
+     \
+     int stack_pop_##SUFFIX_NAME(Stack *stack, ITEM_TYPE *out_data);\
+   #+end_src

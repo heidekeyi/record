@@ -1,0 +1,58 @@
+* SPA 
+** Single Page Application
+** 页面不刷新
+
+* 创建项目
+参考 react.org
+* 简单的例子
+** index.js 入口配置
+#+BEGIN_SRC js
+  import React from 'react';
+  import ReactDOM from 'react-dom';
+  import './index.css';
+  import App from './App';
+  import * as serviceWorker from './serviceWorker';
+
+  //为了和其他的路由名称使用一致，重命名路由名 称
+  import {BrowserRouter as Router} from 'react-router-dom';
+
+  ReactDOM.render(
+      <Router>
+	  <App/>
+      </Router>,
+      document.getElementById('root'));
+
+  // If you want your app to work offline and load faster, you can change
+  // unregister() to register() below. Note this comes with some pitfalls.
+  // Learn more about service workers: https://bit.ly/CRA-PWA
+  serviceWorker.unregister();
+#+END_SRC
+** App.js 
+必要的一些组件自行创建
+#+BEGIN_SRC js
+  import React from 'react';
+
+  import {Link, Route} from 'react-router-dom';
+
+  import C1 from './components/C1';
+  import C2 from './components/C2';
+  import C3 from './components/C3';
+
+  // 路由规则是匹配前缀
+  // 添加 exact 要求精确匹配
+  function App() {
+      return (
+	  <div>
+	      <Link to='/'>p1</Link>
+	      <Link to={'/p2'}>p2</Link>
+	      <Link to={'/p3'}>p3</Link>
+
+	      <Route path='/' exact component={C1}/>
+	      <Route path={'/p2'} component={C2}/>
+	      <Route path={'/p3'} component={C3}/>
+	  </div>
+      )
+  }
+
+  export default App;
+#+END_SRC

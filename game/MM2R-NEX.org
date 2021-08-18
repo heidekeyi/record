@@ -1,0 +1,149 @@
+* 属性和道具
+  #+BEGIN_SRC js
+    // 17 全恢复饮料
+    // 55 外道兴奋剂
+    // 143 究极金属探测器
+    // 195-204 love芯片
+    // 867 左轮打桩机
+    // 875 真.降魔刀
+    // 882 强化古洛文改造炮
+    // 736 莫西干切者
+    // 407 快乐头盔
+    const rel = {
+	exp: 0,
+	mlv: -4,
+	clv: -6,
+	chp: 4,
+	mhp: 6,
+	hit: 8,
+	phy: 10,
+	sp: 12,
+	flv: 14,
+	dlv: 16,
+	sn: 0x307A9C4 - 0x307BF54, //stamp number
+	kn: 0x307B4B0 - 0x307BF54 - 1, //kill number逆序
+	h_tool: 0x307ADF8 - 0x307BF54,
+	h_re: 0x3165A80 - 0x307BF54,
+	h_fig: 0x3165980 - 0x307BF54,
+	h_wap: 0x3165B80 - 0x307BF54,
+    }
+
+
+    class Metal {
+	constructor(rel, arr_addr = []) {
+	    this.clear();
+	    this.config = rel;
+	    this.addr = arr_addr.map(it => +`0x${it}`)
+	}
+
+	createRoleData(keys = [], size = 2) {
+	    keys.forEach(item => {
+		this.addr.forEach((it, ix) => {
+		    const addr = it + this.config[item];
+		    const desc = `${ix + 1}--${item}`
+		    this.appendCheatItem(desc, addr, size);
+		});
+	    });
+	    return this;
+	}
+
+	createGlobalData(keys = [], size = 2) {
+	    const address = this.addr[0];
+	    keys.forEach(it => {
+		const addr = address + this.config[it];
+		this.appendCheatItem(it, addr, size);
+	    });
+	    return this;
+	}
+
+	createBagData(num, key, size) {
+	    const base = this.addr[0] + this.config[key];
+	    const sz = size / 2;
+	    for (let i = 0; i < num; ++i) {
+		const addr = base + i * size;
+		const desc = `${i + 1}--wap-type`;
+		this.appendCheatItem(desc, addr, sz);
+	    }
+	    for (let i = 0; i < num; ++i) {
+		const addr = base + i * size + sz;
+		const desc = `${i + 1}--wap-num`;
+		this.appendCheatItem(desc, addr, 1);
+	    }
+	    return this;
+	}
+
+	joinAddress(addr) {
+	    return `"desmume-0.9.9-JIT-x86-2013-02-18.exe"+${addr}`;
+	}
+
+	appendCheatItem(desc, addr, size) {
+	    const list = this.cheat_items;
+	    addr = this.joinAddress(addr.toString(16));
+	    const str = `
+	<CheatEntry>
+	  <ID>${list.length}</ID>
+	  <Description>${desc}</Description>
+	  <VariableType>${size} Bytes</VariableType>
+	  <Address>${addr}</Address>
+	</CheatEntry>`;
+	    list.push(str);
+	    return this;
+	}
+
+	joinCheatFile() {
+	    this.cheat_file_string = `<?xml version="1.0" encoding="utf-8"?>
+    <CheatTable CheatEngineTableVersion="29">
+      <CheatEntries>${this.cheat_items.join('')}
+      </CheatEntries>
+      <UserdefinedSymbols/>
+    </CheatTable>`;
+	    return this;
+	}
+
+	clear() {
+	    this.cheat_items = [];
+	    this.cheat_file_string = '';
+	    return this;
+	}
+
+	writeFile(pathname = './cheat.CT') {
+	    const res = require('fs').writeFileSync(pathname, this.cheat_file_string);
+	    const msg = res ? `err: ${res}` : '^__^';
+	    console.log(msg);
+	    return this;
+	}
+
+	createDefaultRole() {
+	    return this.createRoleData(['exp'], 4)
+		.createRoleData(['chp', 'mhp'], 2)
+		.createRoleData(['clv', 'mlv'], 2)
+		.createRoleData(['hit', 'phy', 'sp'], 2)
+		.createRoleData(['flv', 'dlv'], 2)
+		.createGlobalData(['sn'], 4)
+		.createGlobalData(['kn'], 2)
+		.createGlobalData(['h_tool', 'h_wap'], 4)
+		.createGlobalData(['h_re', 'h_fig'], 2)
+		.joinCheatFile()
+		.writeFile()
+		.clear()
+	}
+
+	createDefaultBag(num = 5, key = 'h_wap', size = 4) {
+	    return this.createBagData(num, key, size)
+		.joinCheatFile()
+		.writeFile()
+		.clear()
+	}
+    }
+
+
+    new Metal(rel, [
+	'307BF54',
+	'307C328',//萨拉
+	'307C638',//1自捏
+    ])
+	.createDefaultRole()
+	// .createDefaultBag(5, 'h_wap', 4)
+	// .createDefaultBag(5, 'h_tool', 4)
+
+  #+END_SRC

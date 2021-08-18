@@ -1,0 +1,114 @@
+#+BEGIN_SRC php
+  function toValues($dec, $len = 2)
+  {
+      $values = [];
+      while ($dec > 0) {
+	  $values[] = $dec % 256;
+	  $dec = floor($dec / 256);
+      }
+      $len -= count($values);
+      while (--$len >= 0) {
+	  $values[] = 0;
+      }
+      return $values;
+  }
+
+  function toHex($values)
+  {
+      $res = [];
+      foreach ($values as $v) {
+	  $val = dechex($v) . '';
+	  if ($v < 16) {
+	      $val = '0' . $val;
+	  }
+	  $res[] = $val;
+      }
+      return $res;
+  }
+
+
+  function writeFile($total, $addr_base)
+  {
+      $str_items = implode("\n", initItems($total, $addr_base));
+      $str_file = <<<"RRR"
+  <?xml version="1.0" encoding="utf-8"?>
+  <CheatTable CheatEngineTableVersion="29">
+    <CheatEntries>
+    {$str_items}
+    </CheatEntries>
+    <UserdefinedSymbols/>
+  </CheatTable>
+
+  RRR;
+
+      file_put_contents('../game.xml', $str_file);
+  }
+
+
+  function initItems($total, $addr_base)
+  {
+      $role_1 = '"desmume-0.9.9-JIT-x86-2013-02-18.exe"+316A7A2';
+      $role_2 = '"desmume-0.9.9-JIT-x86-2013-02-18.exe"+316A84A';
+  //    $role_base = '"desmume-0.9.9-JIT-x86-2013-02-18.exe"+316A7A6';
+      $addr_1 = hexdec('0x' . explode('+', $role_1)[1]);
+      $addr_2 = hexdec('0x' . explode('+', $role_2)[1]);
+      $role_diff = $addr_2 - $addr_1;
+      $res = [];
+      $addr_offset = [
+	  'exp' => 1,
+	  'rhp' => 2,
+	  'wap1' => 8,
+	  'lev' => 0,
+	  'move' => 3,
+      ];
+      $res[] = fillItem(count($res) + 1, 'gold', 0x3167CB0, 4);
+      foreach ($addr_offset as $key => $value) {
+	  for ($i = 0; $i < $total; ++$i) {
+	      $res[] = fillItem(count($res) + 1,
+		  ($i + 1) . '--' . $key,
+		  $addr_base + $role_diff * $i + $value, 1);
+	  }
+      }
+      return $res;
+  }
+
+  function fillItem($id, $desc, $addr, $bytes)
+  {
+      $bytes = $bytes === 1 ? 'Byte' : $bytes . ' Bytes';
+      $addr = strtoupper(dechex($addr));
+      return <<<"AAA"
+  <CheatEntry>
+	<ID>{$id}</ID>
+	<Description>"{$desc}"</Description>
+	<VariableType>{$bytes}</VariableType>
+	<Address>"desmume-0.9.9-JIT-x86-2013-02-18.exe"+{$addr}</Address>
+      </CheatEntry>
+  AAA;
+
+  }
+
+  convertAddress();
+  function convertAddress()
+  {
+      //90 00 01 统帅之证
+      //91 00 01 天空之鞭
+      //8 破甲剑
+      //5 雷剑
+      //12 勇者之剑
+      //75 万能钥匙
+      //11 倭刀
+      writeFile(4, hexdec('0x' . '3169DC6'));
+      $data = [[
+	  9,99, 42
+      ]];
+      foreach ($data as $item) {
+	  list($lev, $exp, $rhp) = $item;
+	  $arr = array_merge(
+	      toHex(toValues($lev, 1)),
+	      toHex(toValues($exp, 1)),
+	      toHex(toValues($rhp, 1)),
+	  );
+	  echo implode(' ', $arr) . PHP_EOL;
+      }
+  }
+#+END_SRC

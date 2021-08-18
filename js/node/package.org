@@ -1,0 +1,23 @@
+* json-server
+简单服务器
+* nodemon
+监视改变，自动重启服务器
+* moment
+格式化日期
+* formidable
+文件上传时使用
+* art-template
+魔板渲染
+
+* 使用CDN
++ key是包名称，value 是引入时使用的对象名称，一定要一直
++ 在HTML页面引入使用的CDN（script标签）
+#+BEGIN_SRC js
+  module.exports = {
+      externals: {
+	"vue": "Vue",
+	"vue-router":"VueRouter",
+      },
+      ...
+   }
+#+END_SRC

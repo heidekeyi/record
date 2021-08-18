@@ -1,0 +1,103 @@
+#+startup: content
+
+* 显示工具栏
+  勾选菜单中view->appearance->navigation bar
+
+
+* 快速打开设置
+  点击工具栏的扳手图标
+
+
+* 配色方案
+  在settings->editor->color scheme 中选darcula（自己喜欢的来）
+
+
+* keymap
+  - 在settings->keymap中选emacs（其他方案类似）
+  - M：代表Alt键
+  - 右侧按功能搜索快捷键，可以添加和修改快捷键
+
+
+* 字体
+  推荐settings->editor->font中选consolas字体，大小25
+
+
+* 补全输入
+  显示提示后tab
+
+
+* 使用emmet编辑html的例子
+  |------------------+-------------------------------------------------|
+  | key              | 补全                                            |
+  |------------------+-------------------------------------------------|
+  | div              | <div><div>                                      |
+  | div.box          | <div class="box"></div>                         |
+  | ul.r>li{li--$}*2 | <ul class="r"><li>li--1</li><li>li--2</li></ul> |
+  |------------------+-------------------------------------------------|
+
+
+* css快速补全的例子
+  |---------+----------------------------|
+  | key     | 补全                       |
+  |---------+----------------------------|
+  | bgc     | background-color           |
+  | bgc#333 | background-color: #333333; |
+  | h       | height                     |
+  | w       | width                      |
+  | h100px  | height: 100px;             |
+  | w100rem | width: 100rem;             |
+  |---------+----------------------------|
+
+
+* 添加abbr的流程
+  1. settings->editor->live template
+  2. 右侧的+和-对应添加和删除，左侧可以选择类型，上边可以设置补全快捷键
+  3. 点击+，填写对应的内容，选择相应的类型后确定，参考相似类型填写（组就是文件夹）
+
+
+* 调整以浏览器打开的提示
+  1. settings->tools->web browsers
+  2. 根据需要勾选，取消勾选可以禁用提示
+
+
+* terminal中使用gitbash
+  1. settings->tools->terminal
+  2. 在application settings中选择gitbash路径（默认：C:\Program Files\Git\bin\bash.exe）
+  3. 确认重启软件即可
+
+
+* 选择PHP版本
+  1. settings->languages & frameworks->php->composer
+  2. 保证synchronize ide settins with composer.json不勾选
+  3. settings->languages & frameworks->php
+  4. 在php language level 中选择对应版本，确定
+
+
+* 显示隐藏参数提示
+  1. settings->editor->inlay hints
+  2. 选择对应的语言勾选即可
+
+* 没有文件类型提示
+  以text文件处理为例（主要也是这个类型的问题）
+  1. settings->editor->file types
+  2. 上边窗口选text文件
+  3. 下边窗口移除对应的文件
+
+     
+* clion
+** toolchains
+   1. 需要安装对应的工具
+   2. 备份中mingw安装到某个路径就可以了(实际就是解压,为了方便path给加上)
+   3. setting->build execution, deployment->toolchains
+   4. 点击加号添加(有visual studio, mingw ...etc)
+   6. 选mingw,选安装位置(一般情况就可以了)
+** 编译选项
+   添加并设置参数
+   1. setting->setting->build execution, deployment->cmake
+   2. 在profiles中点击+,选择某项添加
+   3. camke options输入(开启全部错误,把警告当错误)
+      #+begin_src text
+	-DCMAKE_C_FLAGS="-Wall -Wextra -pedantic -Werror"
+      #+end_src
+
+    

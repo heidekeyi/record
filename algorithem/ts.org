@@ -1,0 +1,495 @@
+* sort
+** select
+   #+BEGIN_SRC typescript
+     const select = <T>(list: T[], predicate: (a: T, b: T) => boolean): T[] => {
+	 const res = [...list];
+	 const len = res.length;
+	 let tmp: T;
+	 // 对前n-1个数进行排序
+	 for (let i = 0, min = i; i < len - 1; ++i) {
+	     min = i;
+	     // 找到i及之后满足条件的下标
+	     for (let j = i + 1; j < len; ++j) {
+		 if (predicate(res[j], res[min])) {
+		     min = j;
+		 }
+	     }
+	     // 交换对象
+	     tmp = res[min];
+	     res[min] = res[i];
+	     res[i] = tmp;
+	 }
+	 return res;
+     };
+     const test = () => {
+	 const predicate = (a: number, b: number) => a < b;
+	 const isAsc = <T>(list: T[]) => {
+	     if (!list.length) {
+		 return true;
+	     }
+	     let tmp: T = list[0];
+	     return list.every(it => {
+		 if (it < tmp) {
+		     return false;
+		 } else {
+		     tmp = it;
+		     return true;
+		 }
+	     });
+	 };
+	 let times = 10;
+	 while (--times > 0) {
+	     const list = new Array(Math.round(Math.random() * 12)).fill(0)
+		 .map(() => Math.round(Math.random() * -1000 + 500))
+	     const res = select(list, predicate);
+	     console.log(isAsc(res), res);
+	 }
+     };
+     test();
+   #+END_SRC
+* recursion
+** permutation
+    #+BEGIN_SRC typescript
+      const permutation = <T>(list: T[], index: number = 0): void => {
+	  const len = list.length;
+	  // 最后一个元素时显示数据
+	  if (index === len - 1) {
+	      return console.log(list);
+	  }
+	  let tmp: T;
+	  // 和每一个都要交换一次
+	  // 交换之后对之后的全排列
+	  for (let i = index; i < len; ++i) {
+	      // 交换
+	      tmp = list[i];
+	      list[i] = list[index];
+	      list[index] = tmp;
+	      // 对之后的进行全排列
+	      permutation(list, index + 1);
+	      // 还原
+	      tmp = list[i];
+	      list[i] = list[index];
+	      list[index] = tmp;
+	  }
+      };
+      const test = () => {
+	  let times = 5;
+	  let len = 0;
+	  while (++len < times) {
+	      const list = new Array(len).fill(65)
+		  .map((it,ix) => (it+ix))
+		  // 数字转字符
+		  .map(it=>String.fromCharCode(it));
+	      permutation(list);
+	  }
+      };
+      test();
+    #+END_SRC
+** combine
+   #+BEGIN_SRC typescript
+     const combine = <T>(list: T[], values: T[], index: number = 0): void => {
+	 // 每一个位置都有values中可能
+	 // 初始化后，下一个所有可能组合
+	 for (let i = 0; i < values.length; ++i) {
+	     list[index] = values[i];
+	     if (index + 1 === list.length) {
+		 // 最后一个
+		 console.log(list);
+	     } else {
+		 combine(list, values, index + 1);
+	     }
+	 }
+     };
+     const test = () => {
+	 let times = 4;
+	 let len = 0;
+	 while (++len < times) {
+	     const list = new Array(len).fill(65)
+		 .map((it, ix) => (it + ix))
+		 // 数字转字符
+		 .map(it => String.fromCharCode(it));
+	     combine(new Array(len), list);
+	 }
+     };
+     test();
+   #+END_SRC
+** hanoi
+   #+BEGIN_SRC typescript
+     interface Tower<T> {
+	 name: string,
+	 spc: Array<T>
+     }
+
+     const move = <T>(from: Tower<T>, to: Tower<T>): void => {
+	 const sa = from.spc;
+	 const sb = to.spc;
+	 const tmp = sa.pop();
+	 if (tmp !== undefined) {
+	     sb.push(tmp);
+	 } else {
+	     throw new Error(`${from.name} is empty`);
+	 }
+	 console.log('move', from.name, 'to', to.name);
+     }
+     const show = <T>(A: Tower<T>, B: Tower<T>, C: Tower<T>): void => {
+	 [A, B, C].sort((a: Tower<T>, b: Tower<T>) => a.name.charCodeAt(0) - b.name.charCodeAt(0))
+	     .forEach(it => console.log(it.name, it.spc));
+     }
+     const hanoi = <T>(A: Tower<T>, B: Tower<T>, C: Tower<T>, num: number): void | never => {
+	 if (num <= 1) {
+	     move(A, C);
+	     show(A, B, C);
+	     return;
+	 }
+	 // 递归移动
+	 // 先移动上面的
+	 // 每一次移动都是新的hanoi，相当于重新定义了ABC
+	 // A移动到B|C（临时）上
+	 hanoi(A, C, B, num - 1);
+	 // A移动到C上
+	 move(A, C);
+	 show(A, B, C);
+	 // 将B上的移动到C上
+	 hanoi(B, A, C, num - 1);
+     };
+     const test = () => {
+	 let times = 5;
+	 let len = 0;
+	 while (++len < times) {
+	     const list = new Array(len).fill(65)
+		 .map((it, ix) => (it + ix))
+		 // 数字转字符
+		 .map(it => String.fromCharCode(it));
+	     hanoi({name: 'A', spc: list.reverse()}, {name: 'B', spc: []}, {name: 'C', spc: []}, len);
+	     console.log('================')
+	 }
+     };
+     test();
+   #+END_SRC
+** Fibonacci
+   #+BEGIN_SRC typescript
+     const fibonacci = (n: number): number => {
+	 const pair = [0, 1];
+	 if (n === 0) {
+	     return pair[0];
+	 }
+	 let count = 1;
+	 let sum: number;
+	 // 根据规则
+	 // 前两个数之和为后一个数
+	 // 叠加到对应的次数就是对应的值
+	 while (++count <= n) {
+	     sum = pair[0] + pair[1];
+	     pair[0] = pair[1];
+	     pair[1] = sum;
+	 }
+	 return pair[1];
+     };
+     const test = () => {
+	 let times = 10;
+	 let start = -1;
+	 while (++start <= times) {
+	     console.log(fibonacci(start));
+	 }
+     }
+     test();
+   #+END_SRC
+** powerset
+   #+BEGIN_SRC typescript
+     const powerset = <T>(values: T[], index: number = 0): Array<Array<T>> => {
+	 if (index >= values.length) {
+	     return [];
+	 } else {
+	     // 获取后面的幂集
+	     const res = powerset(values, index + 1);
+	     const item = values[index];
+	     // 包含内容
+	     // 后面的幂集
+	     // 当前项
+	     // 后面的幂集和当前项组成新的集合
+	     return [
+		 [item],
+		 ...res,
+		 ...res.map(it => [item, ...it])
+	     ];
+	 }
+     };
+     const test = () => {
+	 let times = 5;
+	 let len = 0;
+	 while (++len < times) {
+	     const list = new Array(len).fill(65)
+		 .map((it, ix) => (it + ix))
+		 // 数字转字符
+		 .map(it => String.fromCharCode(it));
+	     const tmp = powerset(list)
+		 .map(it => it.join(' '))
+		 // 字典排序
+		 .sort()
+		 // 长度排序
+		 .sort((a: string, b: string) => a.length - b.length)
+	     const res = ['∅', ...tmp]
+		 .map(it => `{${it}}`)
+		 .join(', ')
+	     console.log(res);
+	 }
+     };
+     test();
+   #+END_SRC
+** search
+*** binary
+    #+BEGIN_SRC typescript
+      const init = (len: number): number[] => {
+	  // Set会自动去重
+	  const set = new Set<number>();
+	  while (--len >= 0) {
+	      set.add(Math.round(Math.random() * -5200 + 2600));
+	  }
+	  // 转数组并从小到大排序
+	  return Array.from(set).sort((a, b) => a - b);
+      };
+      const binary = (list: number[], value: number): number | null => {
+	  const fn = (left: number, right: number): number | null => {
+	      // 下标交叉说明不存在
+	      if (right < left) {
+		  return null;
+	      }
+	      // 求中值下标
+	      const index = Math.floor((left + right) / 2);
+	      const middle = list[index];
+	      if (middle === value) {
+		  // 找到了
+		  return index;
+	      }
+	      if (value < middle) {
+		  // 在左边
+		  right = index - 1;
+	      } else {
+		  // 在右边
+		  left = index + 1;
+	      }
+	      // 缩小小范围继续找
+	      return fn(left, right);
+	  }
+	  return fn(0, list.length - 1);
+      }
+      const list = init(5500);
+      // 寻找下标
+      const index = binary(list, 2000);
+      // 存在下标显示对应的值
+      console.log(index, index !== null && list[index]);
+    #+END_SRC
+** magicOdd
+   #+BEGIN_SRC typescript
+     // 魔方
+     // 奇数n*n方格
+     // 每一行总和、每一列总和、主角线总和、副对角线总和相等
+     // a 第一行中间是第一个
+     // b 左上角移动填充
+     // c 左上角已填充就向下移动
+     // d 重复b直到全部填充完毕
+     class MagicOdd {
+	 private readonly num: number;
+	 private readonly total: number;
+	 private count = 0;
+	 private readonly container: number[][];
+	 private x = 0;
+	 private y = 0;
+	 private sum = 0;
+
+	 public constructor(num: number) {
+	     if (num > 0 && num % 2) {
+		 this.num = num;
+		 this.total = num * num;
+		 this.y = (num - 1) / 2;
+		 this.container = new Array(num).fill(num)
+		     .map(() => new Array(num).fill(0));
+	     } else {
+		 throw new Error(`${num} is even`);
+	     }
+	 }
+
+	 public fill(): MagicOdd {
+	     if (this.count >= this.total) {
+		 return this;
+	     }
+	     if (this.isFilled()) {
+		 return this.back().down().fill();
+	     } else {
+		 this.container[this.x][this.y] = ++this.count;
+		 return this.next().fill();
+	     }
+	 }
+
+	 public isFilled(): boolean {
+	     return this.container[this.x][this.y] > 0;
+	 }
+
+	 public show(): MagicOdd {
+	     this.container.map(item => item.map(it => it < 10 ? ` ${it}` : `${it}`))
+		 .forEach(it => console.log(it));
+	     return this;
+	 }
+
+	 private next(): MagicOdd {
+	     const max = this.num;
+	     const x = this.x;
+	     const y = this.y;
+	     this.x = x > 0 ? x - 1 : max - 1;
+	     this.y = y > 0 ? y - 1 : max - 1;
+	     return this;
+	 }
+
+	 private back(): MagicOdd {
+	     const max = this.num;
+	     const x = this.x + 1;
+	     const y = this.y + 1;
+	     this.x = x >= max ? max - x : x;
+	     this.y = y >= max ? max - y : y;
+	     return this;
+	 }
+
+	 private down(): MagicOdd {
+	     const max = this.num;
+	     const x = this.x + 1;
+	     this.x = x >= max ? max - x : x;
+	     return this;
+	 }
+
+	 public check(): boolean {
+	     if (this.count < this.total) {
+		 throw new Error('not fill before check');
+	     }
+	     this.container[0].forEach(it => this.sum += it);
+	     return this.checkRow() &&
+		 this.checkColumn() &&
+		 this.checkDiagonal();
+	 }
+
+	 private static reducer(cur: number, sum: number) {
+	     return cur + sum;
+	 }
+
+	 private checkRow(): boolean {
+	     return this.container
+		 .map(item => item.reduce(MagicOdd.reducer, 0))
+		 .every(it => this.sum === it);
+	 }
+
+	 private checkColumn(): boolean {
+	     const ret = this.transform().checkRow();
+	     this.transform();
+	     return ret;
+	 }
+
+	 private transform(): MagicOdd {
+	     const row = this.container;
+	     const len = this.num;
+	     for (let i = 0; i < len; ++i) {
+		 for (let j = 0; j < i; ++j) {
+		     const tmp = row[i][j];
+		     row[i][j] = row[j][i];
+		     row[j][i] = tmp;
+		 }
+	     }
+	     return this;
+	 }
+
+	 private checkDiagonal(): boolean {
+	     const list = this.container;
+	     const cnt = this.num - 1;
+	     const primary = list.map((_, ix) => list[ix][ix])
+		 .reduce(MagicOdd.reducer, 0);
+	     const minor = list.map((_, ix) => list[ix][cnt - ix])
+		 .reduce(MagicOdd.reducer, 0);
+	     return primary === minor && minor === this.sum;
+	 }
+     }
+
+     const o = new MagicOdd(7);
+     console.log(o.fill().show().check());
+   #+END_SRC
+* poly
+  #+BEGIN_SRC typescript
+    abstract class Poly {
+	public abstract print(): Poly;
+
+	public abstract add(ref: Poly): Poly;
+    }
+
+    interface PolySet {
+	[deg: number]: number
+    }
+
+    class PolyDegree extends Poly {
+	private readonly poly: number[];
+
+	constructor(pst: PolySet | number[]) {
+	    super();
+	    if (pst instanceof Array) {
+		this.poly = [...pst];
+	    } else {
+		const deg = Object.keys(pst)
+		    .map(it => +it);
+		const len = Math.max(...deg) + 1;
+		const tmp = new Array(len).fill(0);
+		deg.forEach(it => {
+		    tmp[len - 1 - it] = pst[it];
+		});
+		this.poly = tmp;
+	    }
+	}
+
+	public print(): Poly {
+	    const len = this.poly.length;
+	    const str = this.poly
+		.map((it, ix) => PolyDegree.join(it, len - 1 - ix))
+		.filter(it => it !== '')
+		.join(' + ');
+	    console.log(str);
+	    return this;
+	}
+
+	private static join(coef: number, deg: number): string {
+	    if (0 === coef) {
+		return '';
+	    }
+	    if (0 === deg) {
+		return `${coef}`;
+	    }
+	    const c = 1 === Math.abs(coef) ? '' : `${coef}*`;
+	    const d = deg === 1 ? '' : `^${deg}`;
+	    return `${c}x${d}`;
+	}
+
+	public add(ref: PolyDegree): Poly {
+	    const pa = this.poly,
+		pb = ref.poly;
+	    let la = pa.length,
+		lb = pb.length;
+	    const len = Math.max(la, lb);
+	    const res = new Array(len).fill(0);
+	    pa.forEach((c, ix) => res[ix + len - la] += c);
+	    pb.forEach((c, ix) => res[ix + len - lb] += c);
+	    return new PolyDegree(res);
+	}
+    }
+
+    let a = new PolyDegree({
+	    10: 1,
+	    2: 3,
+	    1: 1,
+	    5: 2,
+	    0: 1
+	}),
+	b = new PolyDegree({
+	    4: 3,
+	    10: 1,
+	    12: 1,
+	    1 : 10,
+	    0 : 3
+	});
+    a.print();
+    b.print();
+    a.add(b).print();
+  #+END_SRC

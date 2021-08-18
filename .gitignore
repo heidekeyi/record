@@ -1,0 +1,7 @@
+*
+!*.org
+!.gitignore
+!README.md
+!*/
+!*/草图/*
+!*.kms

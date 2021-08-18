@@ -1,0 +1,16 @@
+#+LATEX_HEADER: \usepackage{ctex}
+
+* 隐式转换
+** == 不同类型会转成数字再进行比较
+#+BEGIN_SRC javascript
+  // 不是转成字符串
+  console.log("10" > 2);
+
+
+  console.log("0" == false);
+  console.log("1" == true);
+
+  // 数字相等
+  console.log(0 == '0');
+  console.log(0 == false);
+#+END_SRC

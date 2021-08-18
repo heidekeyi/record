@@ -1,0 +1,633 @@
+#+LATEX_HEADER: \usepackage{ctex}
+
+* 实现原理
+** 原始方式
+#+BEGIN_SRC c++
+  #include <iostream>
+  using namespace std;
+
+  struct Person {
+	  int mAge;
+	  void info(const Person *p) {
+		  cout << p->mAge << endl;
+	  }
+  };
+
+  int main() {
+	
+	  Person p1, p2, p3;
+	  p1.mAge = 10;
+	  p2.mAge = 20;
+	  p3.mAge = 30;
+	  p1.info(&p1);
+	  p2.info(&p2);
+	  p3.info(&p3);
+
+	  getchar();
+	  return 0;
+  }
+#+END_SRC
+** 编译器将调用方法的对象地址传入调用方法中，就是 this 常指针
+#+BEGIN_SRC c++
+  #include <iostream>
+  using namespace std;
+
+  struct Person {
+	  int mAge;
+	  void info() {
+		  cout << this->mAge << endl;
+	  }
+  };
+
+  int main() {
+	
+	  Person p1, p2, p3;
+	  p1.mAge = 10;
+	  p2.mAge = 20;
+	  p3.mAge = 30;
+	  p1.info();
+	  p2.info();
+	  p3.info();
+
+	  getchar();
+	  return 0;
+  }
+#+END_SRC
+** 成员函数中的变量根据作用域链查找变量
+1. 函数内部变量
+2. 对象成员
+3. 对象外层
+#+BEGIN_SRC c++
+  struct Person {
+	  int mAge;
+	  void info() {
+		  cout << mAge << endl;
+	  }
+  };
+#+END_SRC
+** 本质
+类似 js 函数调用，谁莱调用就传递谁（this 就是指向谁）
+1. 编译器只是把调用对象的地址传入成员函数
+2. 对象调用传递的是对象地址，指针调用传递的是指针地址中的内容（指针指向的地址）
+3. 函数使用成员函数会直接使用偏移量而不会管调用对象是个什么东西
+
+#+BEGIN_SRC c++
+  #include <iostream>
+  using namespace std;
+  int mAge = 100;
+  struct Person {
+	  int mAge;
+	  int mId;
+	  void info() {
+		  cout << "age: " << mAge
+			  << "          id: " << mId << endl;
+	  }
+  };
+
+  int main() {
+	
+	  Person obj;
+	  obj.mAge = 10;
+	  obj.mId = 1001;
+	
+	  Person* p1 = (Person *)&obj;
+	  Person* p3 = (Person*)&obj.mAge;
+	  Person* p2 = (Person*)&obj.mId;
+
+	  obj.info();
+	  p1->info();
+	  p2->info();
+	  p3->info();
+	
+
+	  getchar();
+	  return 0;
+  }
+#+END_SRC
+
+* 堆空间操作
+** 申请和释放 
+#+BEGIN_SRC c++
+  int* p1 = (int*)malloc(sizeof(int));
+  free(p1);
+  int* p2 = new int;
+  delete p2;
+
+  size_t size = sizeof(int) * 10;
+  int* p3 = (int*)malloc(size);
+  free(p3);
+
+  int* p4 = new int[10];
+  delete[] p4;
+#+END_SRC
+** 初始化
+#+BEGIN_SRC c++
+  size_t size = sizeof(int) * 10;
+  int* p1 = (int*)malloc(size);
+  memset(p1, 0, size);//这个灵活，效率，推荐使用
+  free(p1);
+
+  int* p2 = new int(1);
+  delete p2;
+  int* p3 = new int[10]();//只能使用默认值
+  delete[] p3;
+  int* p4 = new int[10]{};//使用默认值
+  delete[] p4;
+  int* p5 = new int[10]{1};//除了第一个指定的，其余默认
+  delete[] p5;
+#+END_SRC
+* 构造函数
+#+BEGIN_SRC c++
+  class Person{
+  public:
+    Person(int age=0){
+      m_age = age;
+    }
+    int m_age;
+  };
+#+END_SRC
++ 构造函数没有返回值，会自动被调用
++ 构造函数可以重载
++ 自定义了构造函数，创建对象一定会调用其中的一个，没有就报错
++ malloc 申请分配转的对象不会调用构造函数
++ 构造函数和析构函数必须放在 public 区
+** 创建对象
+#+BEGIN_SRC c++
+  Person *p = new Person();
+#+END_SRC
+** 函数声明
+无参数，返回类型为 Person 的函数
+#+BEGIN_SRC c++
+  Person person();
+#+END_SRC
+* 成员初始化
+** 没有构造函数
++ 栈空间的对象，直接使用成员会报错，未初始化（栈空间的对象是局部对象）
++ 全局区数据默认值为0
++ 堆分配的空间调用构造函数也会初始化未默认值
+** 有构造函数，没有赋值操作（未初始化）
++ 全局区数据默认值为0，之后还是会调用构造函数，没有操作故值不变
++ 堆分配的空间调用构造函数，会执行构造函数，值都是随机的
+* 析构函数
++ 析构函数和构造函数必须放在 public 区
++ 析构函数有且只有一个
++ free 释放对空间不会调用析构函数
+* 名字空间
+#+BEGIN_SRC c++
+  int a = 10;
+  namespace TT {
+    void fn(){
+      int a = 0;
+    }
+  }
+
+  ::a = 123;//全局名字空间
+  TT::fn();//使用名字空间的对象
+  //using namespace TT; // 暴露名字空间的所有对象
+  //TT::XX::tt;//使用嵌套名字空间XX中的对象tt
+#+END_SRC
+* 成员访问权限
+** private 一般情况下，外界不能成员及方法
+** protected 和 private 基本相同
+** public 外界随意访问和修改
+#+BEGIN_SRC c++
+  //两者等价
+  struct Person {
+	  int m_age;
+  };
+  struct Person {
+  public:
+	  int m_age;
+  };
+  //两者等价
+  class Person {
+	  int m_age;
+  };
+  class Person {
+  private:
+	  int m_age;
+  };
+#+END_SRC
+* 继承
++ private 继承，一般情况下，只有自身能访问超类的成员和方法（允许的前提下）
++ protected 继承，一般情况下，自身和之后继承的子类都可以直接访问超类（允许的前提下）
++ public 继承，不改变超类中的访问权限（推荐使用，一般也是这么用）
++ 子类中成员和方法与父类相同会覆盖，优先使用子类的的成员和方法
+#+BEGIN_SRC c++
+  class Person {
+  private:
+	  int m_age;
+  };
+  //两者等价
+  class Student : Person{
+
+  };
+  class Student : private Person {
+
+  }; 
+  //两者等价
+  struct Teacher : Person {
+
+  };
+  struct Teacher : public Person {
+
+  };
+#+END_SRC
+例子：Doctor 不能直接访问 Person 的成员 m_age，因为 Student 使用了私有继承
+#+BEGIN_SRC c++
+  class Person {
+  private:
+	  int m_age;
+  };
+  //两者等价
+  class Student : Person{
+
+  };
+
+  struct Doctor : public Student {
+
+  };
+#+END_SRC
+* 构造函数初始化列表
+** 特殊点
++ 初始化列表传入的可以是表达式
++ 初始化列表会在函数执行前执行
++ 构造函数中是赋值操作（很容易当成初始化）
++ 参数初始化顺序与类定义中参数定义顺序一致
+#+BEGIN_SRC c++
+  class Person {
+  private:
+	  int m_age;
+	  int m_height;
+  public:
+	  Person(int age = 0, int height = 0) :m_age(age + 100), m_height(height * 1000) {
+
+	  }
+  };
+#+END_SRC
+** 声明和实现分离
++ 默认参数要写在声明（函数调用没有参数，编译器会直接插入默认参数）
++ 初始化列表写在实现（一般情况下，效果和写在函数体内差别不大）
+#+BEGIN_SRC c++
+  class Person {
+  private:
+	  int m_age;
+	  int m_height;
+  public:
+	  Person(int age = 0, int height = 0);
+  };
+
+  Person::Person(int age, int height) :m_age(age + 1), m_height(height * 1000) {
+
+  }
+#+END_SRC
+* 构造函数调用构造函数
+无参构造函数调用有参构造函数
+#+BEGIN_SRC c++
+  class Person {
+  public:
+    Person():Person(0,0){
+      //Person(10, 10);生成一个临时 Person 对象
+    }
+    Person(int age, int height) : m_age(age), m_height(height){
+    }
+  private:
+    int m_age;
+    int m_height;
+  };
+#+END_SRC
+* 子类构造函数调用父类构造函数
+** 父类没有构造函数
+不调用父类构造函数（啥也不干）
+** 父类有构造函数
++ 子类默认调用父类无参构造函数，没有就报错
++ 子类构造函数体执行之前调用父类构造函数（先创建父类）
+#+BEGIN_SRC c++
+  class Person{
+  public:
+    Person(int age) : m_age(age){
+    }
+  private:
+    int m_age;
+  };
+
+  class Student : public Person{
+  public:
+    Student(int age, int height) : Person(age), m_height(height){
+    }
+  private:
+    int m_height;
+  };
+#+END_SRC
+* 子类父类析构调用顺序
+先创建的后销毁，保证完整性（子类后创建先销毁，故先调用）
+* 父类类型的指针可以指向子类
+#+BEGIN_SRC c++
+  class P {
+  public:
+    void do(){}
+  };
+  class C : public P{
+  public:
+    void do(){}
+  };
+  C child;
+  P *p = &child;
+  p->do();//调用的是父类（P）的方法（编译器根据指针类型使用相应类中的方法）
+#+END_SRC
+* 多态（同一操作作用不同对有不同行为）
++ 父类是虚函数，子类重写也是虚函数
++ 父类指针指向子类对象
++ 调用的是虚函数
+#+BEGIN_SRC c++
+  class P {
+  public:
+    virtual void doing() {
+      cout << 'P' << endl;
+    }
+  };
+  class C : public P {
+  public:
+    void doing() {
+      cout << 'C' << endl;
+    }
+  };
+
+
+  P p1;
+  C c1;
+  C c2;
+  P* arr[] = { &p1, &c1, &c2 };
+  arr[0]->doing();
+  arr[1]->doing();
+  arr[2]->doing();
+#+END_SRC
+* 有虚函数的内存布局
+每一个类，如果有虚函数，都有创建一个虚表（创建对象是虚指针指向同一个虚表）
+#+ATTR_HTML: :border 1 :rules all :frame border
+|----------------+--------------------------|
+| 父类内存布局   | 子类内存布局             |
+|----------------+--------------------------|
+| 虚指针         | 虚指针                   |
+|----------------+--------------------------|
+| 成员对象的空间 | 父类成员（父类对象空间） |
+|----------------+--------------------------|
+|                | 成员变量的访问空间       |
+|----------------+--------------------------|
+虚表的布局
+#+ATTR_HTML: :border 1 :rules all :frame border
+|----------------------+--------------------+--------------------------|
+| 父类                 | 子类               | 子类                     |
+|----------------------+--------------------+--------------------------|
+| 有虚函数             | 完全重写虚函数     | 使用父类的虚函数         |
+|----------------------+--------------------+--------------------------|
+| 一个个虚函数地址排列 | 自身虚函数地址排列 | 相应的父类虚函数地址排列 |
+|----------------------+--------------------+--------------------------|
+|                      |                    | 子类虚函数地址排列       |
+|----------------------+--------------------+--------------------------|
+
+* 子类调用父类的成员阐述
+#+BEGIN_SRC c++
+  class P{
+  public:
+    virtual void doing(){}
+  };
+
+  class C : public P{
+  public:
+    void doing(){
+      P::doing();
+    }
+  }
+#+END_SRC
+
+* 有父类指针指向子类时，父类析构函数也应该是虚函数
+父类的析构函数是虚函数，子类的析构函数也是虚函数
+#+BEGIN_SRC c++
+  class P{
+  public:
+    virtual void doing(){}
+    virtual ~P(){}
+  };
+
+  class C : public P{
+  public:
+    void doing(){}
+    ~ C(){}
+  };
+#+END_SRC
+
+* 纯虚函数
++ 抽象类，用来定义接口，不能实例化
++ 子类需要找到纯虚函数的实现才可以实例化
+#+BEGIN_SRC c++
+  class P{
+  public:
+    virtual void doing() = 0;
+  };
+#+END_SRC
+* 多继承使用场景
+类中只使用纯虚函数，用来定义接口（规范、协议）
+* static
++ 子类可以访问父类静态成员和静态方法（类似于全局变量）
++ 重复定义成员变量不会覆盖，会有多个
++ 也有作用域限制
+** static 成员变量
++ 创建的实例共用一份（只占一份内存，放在数据段，全局区）
++ 必须在类外面初始化
++ 声明和实现分离放在实现中初始化，不能带 static 关键字
++ 会有多线程安全问题
+#+BEGIN_SRC c++
+  class P{
+    static int ms_age;
+  };
+  int P::ms_age = 10;
+#+END_SRC
+** static 成员方法
++ 函数内没有 this 变量
++ 不能是虚函数（虚函数地址在虚表中，必须是对象才可以调用）
++ 能使用静态成员和静态方法
++ 构造、析构函数不能是静态的
++ 声明和实现分离，实现中不能使用 static 关键字
+#+BEGIN_SRC c++
+  class P{
+  public:
+    static void run(){}
+  };
+#+END_SRC
+** 单例模式
++ 构造函数和析构函数使用 private 访问权限
++ 私有指针用于保存单例对象
++ 静态获取单例对象接口
++ 会有多线程安全问题
+#+BEGIN_SRC c++
+  class A{
+  public:
+    void doing(){}
+    static A *singleton(){
+      return ms_a ? ms_a : (ms_a = new A());
+    }
+    void free(){
+      if(ms_a != NULL){
+	delete ms_a;
+	ms_a = NULL;
+      }
+    }
+  private:
+    A(const A&a){}
+    void operater=(const A&a){}
+    A(){}
+    ~A(){}
+    static A *ms_a;
+  };
+
+  A* A::ms_a = NULL;
+#+END_SRC
+
+* const 
+** const 成员变量
+#+BEGIN_SRC c++
+  class P{
+  private:
+    const int m_age = 0;
+  };
+#+END_SRC
+*** 初始化方式
++ 声明时初始化
++ 初始化列表中初始化
+** const 成员函数
+#+BEGIN_SRC c++
+  class P{
+  public:
+    void doing const (){}
+  };
+#+END_SRC
++ 非静态函数才能修饰
++ 实现和分离，实现也需要 const 修饰
++ 函数内部保证不会修改内部成员变量
++ 函数内可以调用 static 函数和 const 成员函数
++ 非 const 函数 可以调用 const 成员函数
++ const 和 非 const 成员函数会构成重载（const 对象调用 const 函数）
++ 函数调用权限不能变宽，但可以变窄
++ 非 const 对象优先调用非 const 成员函数
+
+* 引用类型初始化
+1. 声明中初始化
+2. 初始化列表中初始化
+#+BEGIN_SRC c++
+  class P{
+    int &m_ref;
+  };
+#+END_SRC
+
+* 拷贝构造函数
+利用已存在的对象创建新对象时时调用
+#+BEGIN_SRC c++
+  class P{
+  public:
+    P (const P &rhs){
+      //doing something
+    }
+  };
+#+END_SRC
++ 没有定义拷贝构造函数，拷贝已存在对象的内存数据到新对象的内存
+** 显示调用父类拷贝函数
+#+BEGIN_SRC c++
+  class P{
+  public:
+    P (const P &rhs){}
+  };
+  class C : public P{
+  public:
+    C(const C &rhs) : P(rhs){}
+  };
+#+END_SRC
+
+* 深/浅拷贝
+堆空间指向栈空间地址很危险（栈空间可能会被回收）
+** 浅拷贝
++ 对象内存的值拷贝
++ 指针仅拷贝指针中保存的地址
+** 深拷贝
++ 构造函数 new 相应的堆空间
++ 析构函数释放对应的空间
++ 复制操作要执行释放和申请操作
++ 拷贝函数也要执行申请操作
++ 会产生对应的新的存储空间
+
+* 函数参数/返回值为对象
++ 参数推荐使用引用和指针，避免产生临时对象
++ 返回会调用拷贝构造产生新对象，不推荐
+* 隐式构造
++ 尝试将值调用构造函数实例化对象，不行就报错
++ explicit 禁止隐式调用构造
+#+BEGIN_SRC c++
+  class P{
+  public:
+    explicit P(int age){}
+  };
+#+END_SRC
+* 编译器创建默认构造
++ 有虚函数，记录虚指针
++ 对象成员需要初始化
++ 父类需要初始化
+
+* 友元函数
+可以访问私有成员，只能是非成员函数
+#+BEGIN_SRC c++
+  class P{
+    friend void fn(const P &p1);
+  };
+
+  void fn(const P &p1){}
+#+END_SRC
+* 友元类
+类似友元函数，友元类可以访问声明友元类的私有数据
+* 嵌套类
++ 禁止外部使用内部类（设置对应权限）
++ 内部类可以访问外层类的私有数据
++ 内部类不影响外部类内存布局
+
+* 局部类
++ 函数内部定义的类
++ 不允许使用 static 成员
++ 不能直接访问函数局部非 static 变量（临时变量）
+* 运算符重载
+#+BEGIN_SRC c++
+  class P{
+    friend const P operator -(const P &p1, const P &p2);
+    ostream &operator<<(ostream &cout, const P &p);
+    istream &operator<<(istream &cin, P &p);
+  public:
+    P(int a): m_a (a){}
+    const P operator+ const (const P &p){
+      return P(m_a + p.m_a));
+  }
+  //  ++xx
+    P &operator++(){
+      ++m_a;
+      return *this
+    }
+  //xx++
+    const P operator++(int){
+      const P p(this->m_a++);
+      return p;
+    }
+  private:
+  int m_a;
+  };
+
+  const P operator-(const P &p1, const P &p2){
+    return P(p1.m_a - p2.m_a);
+  }
+
+  //只能在外面实现的重载运算符，内部私有化不允许赋值
+  ostream &operator<<(ostream &cout, const P &p){
+    cout << p.m_a;
+    return cout;
+  }
+  istream &operator<<(istream &cin, P &p){
+    cin >> p.m_a;
+    return cin;
+  }
+#+END_SRC

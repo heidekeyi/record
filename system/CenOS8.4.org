@@ -1,0 +1,24 @@
+
+#+STARTUP: content
+
+* 安装VMware Workstation Pro
+  官网下载 v16.1(在workspace标签中)
+
+* 安装
+  默认安装
+  
+* 安装CentOS
+  1. 官网下载(download->centos linux->x86_64,任选一个地址)
+  2. 运行vmware workstation,创建虚拟机
+  3. 自定义,一直默认到选取光盘
+  4. 选稍后安装操作系统(简易安装:默认配置,稍后安装可以自定义)
+  5. 可以一直下一步到完成(系统选centos 8)
+  6. 完成后在设置cd中指定系统镜像,启动
+  7. 安装中选系统配置工作站(可以不选software,没有gcc之类的)
+  8. 在线安装工具
+  9. gcc gcc-c++ emacs make gdb(需要root权限)
+     yum -y install gcc gcc-c++ make gdb
+  10. 更新(可选,同样需要root权限)
+      yum -y update
+  11. 使用secureCRT连接(相关教程参考secureCRT教程)
+

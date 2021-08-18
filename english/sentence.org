@@ -1,0 +1,175 @@
+* 代词
+** 人称代词
+   陈述句中动词前可用主格，动词后用宾格（用的话）
+*** 主格
+    |----------+------+------------------|
+    | 名称     | 单词 | 翻译             |
+    |----------+------+------------------|
+    | 第一人称 | I    | 我               |
+    | 第一人称 | we   | 我们             |
+    | 第二人称 | you  | 你               |
+    | 第二人称 | you  | 你们             |
+    | 第三人称 | he   | 他               |
+    | 第三人称 | she  | 她               |
+    | 第三人称 | it   | 它               |
+    | 第三人称 | they | 他们、她们、它们 |
+    |----------+------+------------------|
+*** 宾格
+    |----------+------+------------------|
+    | 名词     | 单词 | 翻译             |
+    |----------+------+------------------|
+    | 第一人称 | me   | 我               |
+    | 第一人称 | us   | 我们             |
+    | 第二人称 | you  | 你               |
+    | 第二人称 | you  | 你们             |
+    | 第三人称 | him  | 他               |
+    | 第三人称 | her  | 她               |
+    | 第三人称 | it   | 它               |
+    | 第三人称 | them | 他们、她们、它们 |
+    |----------+------+------------------|
+** 形容词性物主代词
+   后面要接名词
+   |-------+----------------|
+   | 单词  | 翻译           |
+   |-------+----------------|
+   | my    | 我的           |
+   | your  | 你的、你们的   |
+   | his   | 他的           |
+   | her   | 她的           |
+   | its   | 它的           |
+   | our   | 我们的         |
+   | their | 你、他、它们的 |
+   |-------+----------------|
+
+* be动词
+  - is、am、are
+
+* 冠词
+  戴在名词头上的帽子，没有特殊情况不能摘帽子 a an the
+** 分类
+   - the 定冠词 确定的，知道的（特指）
+   - an 、a 不定冠词 不确定的、不知道的
+** an a 区别
+   an + 元音发音开头的单词(不是字母)，其余用a（下面的例子还可以连读）
+   - an egg
+   - an hour
+   - an orange
+** 特殊情况
+   国籍、国家、城市名、人名
+
+* 句型结构
+  - 主+谓
+  - 主+谓+宾
+  - 主+谓+宾+宾
+  - 主+谓+宾+宾补
+  - 主+系+表
+* 一般疑问句
+  - Is this your handbag?
+* 祈使句
+  表示请求、建议、劝告、命令
+  - come in
+  - My coat and my umbrella please
+  - a newspaper please
+  - tea please
+* 主语+联系动词+表语
+  be动词表达人或物的性状（身份、性质、特征状态）
+  - This is your handbag
+  - I am tired
+  - She is asleep
+* 句子种类
+** 大体分类
+   - 陈述句
+     - 肯定句
+     - 否定句
+   - 感叹句
+   - 祈使句
+   - 疑问句
+     - 一般疑问句
+     - 特殊疑问句
+     - 附加疑问句
+     - 反问句
+** 常用句子种类
+   - 肯定句
+   - 否定句
+   - 一般疑问句
+   - 特殊疑问句
+** 肯定句句式
+   主语 + 动词 + 其他成分
+   - I am French.
+   - She is French.
+** 否定句句式
+   主语 + 动词 + not + 其他成分
+   - I am not.
+   - This is not my umbrella.
+** 一般疑问句句式
+*** 特征
+    - yes-no question
+    - 可以直接用yes no来回答
+    - 动词 + 主语 + 其他成分？
+*** 例子
+    - Sophie is a new student.
+      - Is Sophie a new student?
+    - I am French.
+      - Are you French?
+** 特殊疑问句句式
+** 语序
+   特殊疑问词 + be n.
+*** 特征
+    - wh question
+    - 不但能直接用yes no来回答
+    - how what who whose which why when where 引领特殊疑问句
+*** 基本步骤
+    1. 找到肯定句中被提问的部分（句子中那个信息是未知部分）
+    2. 根据句意选择最合适的特殊疑问词
+    3. 将特殊疑问词置首
+    4. 该特殊疑问句不针对肯定句的主语提问时，动词放在主语前（动词提前），否则动词不提前(针对主语提问)
+*** 例子
+    - Your name is Bob.
+      - What is your name?
+      - Who is Bob?
+    - My book is on the table.
+      - What is on the table?(主语 my book)
+      - Where is my book?（宾语 on the table）
+    - 语序
+      - What is your name?
+      - What is your job?
+      - What color is your coat?
+
+* 名词所有格
+  加在名词后面
+** 分类
+   - 's
+   - of
+   - 双重所有格
+*** 's
+    - 名词's + 名词
+      |------------------+---------------------------|
+      | Mike's car       | This is Mike's car.       |
+      | Tom's watch      | That is Tom's watch.      |
+      | The boy's father | That is the boy's father. |
+      | Marry's dress    | This is Marry's dress.    |
+      | The bird's song  | That is the bird's song.  |
+      |------------------+---------------------------|
+    - 名词(s) 发音/ z /
+      两种写法都可以，是一样的，发音也一样
+      - 名词(s)'s + 名词
+      - 名词(s)' + 名词
+      |----------------+---------------|
+      | Tomas's book   | tomas' book   |
+      | Jones's car    | Jones' car    |
+      | Hopkins's bike | Hopkins' bike |
+      | James's coat   | James' coat   |
+      |----------------+---------------|
+    - 名词(s) 复数
+      名词(s)' + 名词
+      |----------------------------|
+      | The teachers' reading-room |
+      | The boys' teacher          |
+      | Ther birds' song           |
+      | The dogs' food             |
+      |----------------------------|
+    - 名词's + 名词（可省略）
+      |----------------------------+----------------------|
+      | This Shirt is Tim's shirt. | This shirt is Tim's. |
+      |                            | Is this shirt Tim's? |
+      |----------------------------+----------------------|

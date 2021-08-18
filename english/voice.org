@@ -1,0 +1,36 @@
+* 目标
+  看字就能认，听音就能写
+
+* 元音
+  a e i o u
+
+* 拼读
+  一辅一元，前辅后元
+
+* 浊化
+   - student
+   - sport / p /   / b /
+   - star / t /   / d /
+   - skirt / k /   / g /
+
+* 规律发音
+** ie ae oe ue
+   - bike kite fine
+   - take name fate
+   - nose hope
+   - cute
+** qu
+   - quit
+   - queen
+   - quiet
+
+* 发音不一样
+** man
+  - man woman
+  - policeman milkman postman
+** the
+   - the student
+   - the Italian
+
+* 连读
+  - look at

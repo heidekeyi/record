@@ -1,0 +1,467 @@
+#+LATEX_HEADER: \usepackage{ctex}
+
+* 环境
+** windows 10 + visual studio 2019
+*** 主题设置
+1. 点击 工具（菜单）->选项
+2. 点击 环境->常规，选择相应的主题之后确定
+*** 字体设置
+1. 点击 工具（菜单）->选项
+2. 点击 环境->字体和颜色，选择相应的内容之后确定
+*** 语言设置和添加
+- 选择语言
+ 1. 点击 工具（菜单）->选项
+ 2. 环境->区域设置右侧选项选择之后确定
+- 添加语言
+ 1. 点击 工具（菜单）->获取工具和功能，进入安装配置界面
+ 2. 点击 语言包（菜单），勾选要添加的语言
+ 3. 点击 修改（右下角），等待下载安装（根据提示操作，可能需要重启软件）
+
+*** 文本格式配置（自动使用 utf8）
+- 安装扩展 ForceAllUtf8
+  1. 点击 扩展（菜单）->管理扩展
+  2. 在 联机->搜索（在右上角位置） 中输入需要安装的东西
+  3. 选中要安装的内容，点击安装，点击 关闭
+  4. 关闭应用程序，按提示安装
+
+* 一些汇编知识点
+** 栈区、堆区、代码区、全局区一些知识
++ 全局区数据默认值为0
++ 编译好的函数代码在代码区，代码区是只读的（受保护的）
++ 执行函数时为函数分配栈空间，用于保存局部变量，分配的栈空间有个首地址，局部变量使用这个地址加偏移地址来访问（如：ebp-0cH）
+** 一些简单指令
+#+BEGIN_SRC c++
+  /*
+  左边机器码，右边汇编指令，一一对应
+  机器码和CPU架构有关，编译器根据不同平台编译，虽然不一样，但是形式应该差不多
+  一般都是借助寄存器中转，来修改内存地址
+  [xxx] xxx 一般都代表某个地址
+  mov 读写寄存器和地址的内容
+  add +
+  sub -
+  inc ++
+  dec --
+  lea 装载地址
+
+	  int a = 2;
+  C7 45 F8 02 00 00 00 mov         dword ptr [ebp-8],2  //2 保存到 ebp - 8 指定的地址
+	  int b = a + 2;
+  8B 45 F8             mov         eax,dword ptr [ebp-8]  //ebp-8地址的内容保存到eax寄存器中
+  83 C0 02             add         eax,2  //eax 寄存器 + 2
+  89 45 EC             mov         dword ptr [ebp-14h],eax  //将寄存器的内容保存到 ebp - 14 指定的内存地址
+	  int c = a + b;
+  8B 45 F8             mov         eax,dword ptr [ebp-8]  //quard 是4个字节，dword 是2个字节
+  03 45 EC             add         eax,dword ptr [ebp-14h]  
+  89 45 E0             mov         dword ptr [ebp-20h],eax  
+	  int d = c + 1;
+  8B 45 E0             mov         eax,dword ptr [ebp-20h]  
+  83 C0 01             add         eax,1  
+  89 45 D4             mov         dword ptr [ebp-2Ch],eax  
+	  int e = c - 1;
+  8B 45 E0             mov         eax,dword ptr [ebp-20h]  
+  83 E8 01             sub         eax,1  
+  89 45 C8             mov         dword ptr [ebp-38h],eax  
+	  int f = e - 2;
+  8B 45 C8             mov         eax,dword ptr [ebp-38h]  
+  83 E8 02             sub         eax,2  //相减
+  89 45 BC             mov         dword ptr [ebp-44h],eax 
+
+
+	  int a = 2;
+  C7 45 F4 02 00 00 00 mov         dword ptr [ebp-0Ch],2
+	  int* p = &a;
+  保存地址ebp-0Ch（a的地址）到eax中
+  8D 45 F4             lea         eax,[ebp-0Ch] 
+  保存eax中的内容到 ebp - 18h 地址中
+  89 45 E8             mov         dword ptr [ebp-18h],eax               mov         dword ptr [ebp-18h],eax
+	  ,*p = a;
+  8B 45 E8             mov         eax,dword ptr [ebp-18h]
+  8B 4D F4             mov         ecx,dword ptr [ebp-0Ch]
+  89 08                mov         dword ptr [eax],ecx
+
+  int sum(int v1, int v2, int *p) {
+	  return v1 + v2 + *p;
+  }
+
+	  int a = 2;
+  C7 45 F4 02 00 00 00 mov         dword ptr [ebp-0Ch],2
+	  int* p = &a;
+  8D 45 F4             lea         eax,[ebp-0Ch]
+  89 45 E8             mov         dword ptr [ebp-18h],eax
+	  int b = sum(a, 3, p);
+  将ebp-18h(p)地址的内容保存到eax
+  8B 45 E8             mov         eax,dword ptr [ebp-18h]
+  50                   push        eax
+  6A 03                push        3
+  8B 4D F4             mov         ecx,dword ptr [ebp-0Ch]
+  51                   push        ecx
+  E8 C3 D0 FF FF       call        003613B1
+
+
+	  return v1 + v2 + *p;
+  8B 45 08             mov         eax,dword ptr [ebp+8]
+  03 45 0C             add         eax,dword ptr [ebp+0Ch]
+  将ebp+10h地址的内容保存到 ecx
+  将eax 中的内容和ecx中的地址中的内容相加，保存到eax中
+  mov eax dword ptr [xxx]
+  mov eax dword ptr [ecx]
+  8B 4D 10             mov         ecx,dword ptr [ebp+10h]
+  03 01                add         eax,dword ptr [ecx]
+  ,*/
+#+END_SRC
+* C++ 知识点
+** 输入、输出
+#+BEGIN_SRC c++
+  #include <iostream>
+  using namespace std;
+  //输入完成会自动换行
+  //内容如果有空格会截断，当成下一次输入的内容
+  int main() {
+	  int age = -1;
+	  cout << "please input age:";
+	  cin >> age;
+	  cout << "age is:" << age << endl;
+	  getchar();//抵消回车
+	  getchar();//阻塞代码，等待输入，用于查看结果
+	  return 0;
+  }
+#+END_SRC
+** 函数默认参数
+*** 简单例子
+#+BEGIN_SRC c++
+  int sum(int v1 = 10) {
+	  return v1;
+  }
+#+END_SRC
+*** 默认参数只能放在最右边
+#+BEGIN_SRC c++
+  int sum(int v1, int v2 = 20) {
+	  return v1 + v2;
+  }
+  int sum(int v1, int v2 = 20, int v3 = 30) {
+	  return v1 + v2 + v3;
+  }
+#+END_SRC
+*** 函数同时有声明和实现，默认参数只能放在声明当中
+#+BEGIN_SRC c++
+  #include <iostream>
+  using namespace std;
+  int sum(int v1 = 10);
+
+  int main() {
+	  cout << sum() << endl;
+	  getchar();
+	  return 0;
+  }
+
+  int sum(int v1) {
+	  return v1;
+  }
+#+END_SRC
+** 函数重载
+*** 参数精确匹配
+**** 参数个数不同
+#+BEGIN_SRC c++
+  int sum(int v) {
+	  return v;
+  }
+  int sum(int v1, int v2) {
+	  return v1 + v2;
+  }
+#+END_SRC
+**** 类型不同
+#+BEGIN_SRC c++
+  int sum(int v) {
+	  return v;
+  }
+  int sum(double v) {
+	  return v;
+  }
+#+END_SRC
+**** 顺序不同
+#+BEGIN_SRC c++
+  int sum(int v1, double v2) {
+	  return v1 + v2;
+  }
+  int sum(double v1, int v2) {
+	  return v1 + v2;
+  }
+#+END_SRC
+*** 错误示例
+**** 由于C++编译器使用 name decorate，改变了函数的名称，C中函数名不变，不支持重载
+**** 仅返回值不同
+#+BEGIN_SRC c++
+  int sum(int v) {
+	  return v;
+  }
+  double sum(int v) {
+	  return v * 1.0;
+  }
+#+END_SRC
+**** 隐式提升
+#+BEGIN_SRC c++
+  int sum(long v) {
+	  return v;
+  }
+  int sum(double v) {
+	  return v;
+  }
+
+  ......
+  sum(10);
+  ......
+#+END_SRC
+**** 默认参数导致匹配到多个函数，产生二义性
+#+BEGIN_SRC c++
+  int sum(int v1) {
+	  return v1;
+  }
+  int sum(int v1, int v2 = 20) {
+	  return v1 + v2;
+  }
+  ......
+  sum(1);
+  ......
+#+END_SRC
+*** 函数默认参数本质
+函数调用时，不传默认参数和传入默认参数编译的结果是一样的（机器码基本一样）
+
+** extern "C"
+要求以C的方式编译
+*** 修饰单行
+#+BEGIN_SRC c++
+  extern "C" int sum(int v1) {
+	  return v1;
+  }
+#+END_SRC
+*** 修饰块
+#+BEGIN_SRC c++
+  extern "C" {
+	  int sum(int v1) {
+		  return v1;
+	  }
+  }
+#+END_SRC
+*** 同时有声明和定义，修饰声明（定义也可以同时修饰，不推荐同时修饰）
+#+BEGIN_SRC c++
+  #include <iostream>
+  using namespace std;
+
+  extern "C" {
+	  int add(int a, int b);
+	  int mul(int a, int b);
+  }
+
+  int main() {
+	  getchar();
+	  return 0;
+  }
+
+  int add(int a, int b) {
+	  return a + b;
+  }
+  int mul(int a, int b) {
+	  return a * b;
+  }
+#+END_SRC
+*** 使用场景
+C、C++ 混合开发
+**** 一般都是把声明写到头文件中（假设库文件为 xxx.c，用C来编写的文件）
+***** 头文件引入写法
+****** 标准库
+#+BEGIN_SRC c++
+  #include <xxx>
+#+END_SRC
+****** 第三方库
+#+BEGIN_SRC c++
+  #include "xxx.h"
+#+END_SRC
+***** C++ 引入形式
+#+BEGIN_SRC c++
+  extern "C" {
+	  int sum(int v);
+  }
+#+END_SRC
+***** C 引入形式
+由于以 C 的方式编译不认识 extern "C"，就是简单的函数声明
+#+BEGIN_SRC c++
+  int sum(int v);
+#+END_SRC
+***** xxx.h 文件同时满足两种引入方式
+利用 C++ 编译器内置的宏 __cplusplus 来进行条件编译
+#+BEGIN_SRC c++
+  #ifdef __cplusplus
+  extern "C" {
+  #endif // __cplusplus
+
+	  int sum(int v);
+
+  #ifdef __cplusplus
+  }
+  #endif // __cplusplus
+#+END_SRC
+***** 同一头文件保证一次引入
+引入相当于简单替换，多次引入会浪费编译资源
+****** 使用 #ifdef #ifndef #endif 的方式
+利用宏名称减少冲突率概，灵活，可以根据需要包含相应的内容，编译器支持这个标准
+#+BEGIN_SRC c++
+  #ifndef __TEST_H
+  #define __TEST_H
+
+
+  #ifdef __cplusplus
+  extern "C" {
+  #endif // __cplusplus
+
+	  int sum(int v);
+
+  #ifdef __cplusplus
+  }
+  #endif // __cplusplus
+
+  #endif // !__TEST_H
+#+END_SRC
+****** 使用 #pragma once 的方式
+整体保证一次编译，需要新的编译器支持
+#+BEGIN_SRC c++
+  #pragma once
+
+  #ifdef __cplusplus
+  extern "C" {
+  #endif // __cplusplus
+
+	  int sum(int v);
+
+  #ifdef __cplusplus
+  }
+  #endif // __cplusplus
+
+#+END_SRC
+**** 头文件对应的实现文件一般也会引入头文件
+实现有先后顺序，后面的可能会使用前面的东西，引入头文件就不用考虑位置顺序了
+** inline function (内联函数)
+*** 用法
+inline 关键字很随意，可以放在声明，也可以放在定义，都写也可以（推荐）
+#+BEGIN_SRC c++
+  inline int sum(int a, int b) {
+	  return a + b;
+  }
+#+END_SRC
+*** 特点
++ 是否应用取决于编译器
++ 函数内容一般不超过10行
++ 有递归等的复杂函数是不会有效果的
++ 具有函数特性和一般函数一样使用（会进行语法检查），编译时会替换
+*** 本质（不考虑编译器优化）
++ 函数调用的地方直接用函数体进行替换
++ 可以减少函数调用栈的开销，提高效率
++ 会增大代码体积（执行文件变大）
+** 宏替换
+直接进行替换，用于计算很容易出问题
+#+BEGIN_SRC c++
+  #define sq(a) (a) + (a)
+
+  ......
+  int a = 10;
+  sq(++a); //24
+  //++a + ++a; //替换成这样
+  ......
+#+END_SRC
+*** 表达式赋值
+**** C 中不支持
+***** 三元运算符
+#+BEGIN_SRC c++
+  int a = 1;
+  int b = 2;
+  a > b ? a : b = 100;
+#+END_SRC
+** const 
+*** 指针常量
+指针指向的内容不能改
+#+BEGIN_SRC c++
+  int a[] = { 1, 2, 3 };
+  int b = 100;
+  const int* p = a;
+  //p[0] = 123; 不能通过 p 来修改 p 指向的内容
+  p = &b; //指针指向的内容新的地址
+#+END_SRC
+*** 常量指针
+指针指向不能改
+#+BEGIN_SRC c++
+  int a = 100;
+  int b = 10;
+  int * const p = &a;
+  //p = &b; 不能再次赋值 p
+  ,*p = 125; //p 指向的内容可以修改
+#+END_SRC
+*** 指向常量的常量指针
+赋值后不变，只能读不能写（三种情况是正常手段下是这样）
+** 引用
+*** 用法
+**** 简单用法
+#+BEGIN_SRC c++
+  int a = 100;
+  int &ref = a;
+#+END_SRC
+**** 用于复杂对象（以结构体为例）
+#+BEGIN_SRC c++
+  struct Date{
+    int &year;
+    int &month;
+    int &day;
+  }
+#+END_SRC
+*** 特点
++ 定义引用时必须初始化
++ 已经定义的引用不能重新指向其他对象
+*** 本质
+编译器将引用转成指针，生成的机器代码和使用指针是一样的（反编译可查看）
+*** 数组的引用
+#+BEGIN_SRC c++
+  int arr[] = { 1,2,3 };
+  int(&a)[3] = arr;
+  //arr 是常量指针
+  int* const& b = arr;
+#+END_SRC
+*** const 引用
+**** 不能通过引用修改引用或者指针指向的对象
+#+BEGIN_SRC c++
+  int val = 123;
+  const int& r1 = val;
+  int const& r2 = val;
+
+  //对比指针写法
+  const int* r1 = &val;
+  int const* r2 = &val;
+#+END_SRC
+**** 可以构成重载函数
+#+BEGIN_SRC c++
+  #include <iostream>
+  using namespace std;
+
+  int sum(int& v1, int& v2) {
+	  return (v1 + v2) * 2;
+  }
+  int sum(const int& v1, const int& v2) {
+	  return v1 + v2;
+  }
+  int main() { 
+	  int a = 1;
+	  const int b = 1;
+	  sum(a, a); //4
+	  //const 引用参数匹配
+	  sum(b, b);
+	  sum(1, 1); //2
+
+	  getchar();
+	  return 0;
+  }
+#+END_SRC
+**** 指向常量，临时对象（某些表达式返回值、函数返回值）
+#+BEGIN_SRC c++
+  const int $fa = 123;
+  const int a = 123;
+  const double &fb = a;
+#+END_SRC
+*** 不存在引用的引用
+引用相当于引用对象的别名，引用没有开辟内存空间，再次引用对象是同一个对象

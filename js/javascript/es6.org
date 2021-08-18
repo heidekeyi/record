@@ -1,0 +1,435 @@
+#+LATEX_HEADER: \usepackage{ctex}
+
+* 作用域
++ 全局作用域
++ 函数作用域
++ 块级作用域
+  - 循环语句
+  - 条件语句
+  - ｛｝
+
+* 变量声明方式
+  :PROPERTIES:
+  :hello:    value
+  :END:
+| 形式     | 声明提升 | 支持块级作用域 | 支持重复声明 |
+|----------+----------+----------------+--------------|
+| var      | y        | n              | y            |
+| let      | n        | y              | n            |
+| const    | n        | y              | n            |
+| function | y        | n              | y            |
+
+* Symbol
+应用场景例子：私有化（数据保护）
+#+BEGIN_SRC javascript
+  const Person = function (name, age) {
+      const sym = Symbol('name');
+      this[sym] = name;
+      this.age = age;
+      this.getName = function () {
+	  // 只有这个方法可以操作name
+	  return this[sym];
+      }
+  };
+
+  Person.prototype = {
+      constructor : Person,
+  };
+
+  const p = new Person('pick', 78);
+  console.log(p.getName(), p.age);
+#+END_SRC
+
+* 解构
++ 解构数组
+#+BEGIN_SRC javascript
+  const [a, , c] = [1, 2, 3];
+#+END_SRC
++ 解构对象
+#+BEGIN_SRC javascript
+  const {a, b} = {a : 1, b:2}
+#+END_SRC
++ 多重解构
+#+BEGIN_SRC javascript 
+  //const a, b
+  const {val : [a, b]} = {val : [1, 2]}; 
+  //const aa, bb
+  const [{val: {a : aa, b : bb}},t] = [{val:{a:1, b:2}},1];
+#+END_SRC
+
+* 扩展运算符
+#+BEGIN_SRC javascript
+  //使用方式一
+  const a = {a : 1};
+  const b = {b : 2};
+  const c = {...a, ...b};
+
+  //使用方式二
+  const a1 = [1, 2, 3];
+  Math.max(...a1);
+#+END_SRC
+
+* 模板字符串
+- 保持格式
+- 表达式解析
+ #+BEGIN_SRC javascript
+   const val = 'hello world';
+   const view = `
+   <html>
+       <body>
+	   <div>
+	       ${val}
+	   </div>
+       </body>
+   </html>
+   `;
+ #+END_SRC
+
+* 进制
+#+BEGIN_SRC javascript
+  var val = 0b10; //2
+  var val = 0o10; //8
+  var val = 10; //10
+  var val = 0x10; //16
+#+END_SRC
+
+* 对象扩展
+- 属性简写
+#+BEGIN_SRC javascript
+  const a = 1;
+  const b = {a};//{a : a}
+#+END_SRC
+- 属性名表达式
+#+BEGIN_SRC javascript
+  const a = 'age';
+  const b = {[a] : a}; // {age: 'age'}
+#+END_SRC
+- 扩展方法
+- Object.defineProperty
+#+BEGIN_SRC javascript
+  const obj = {a : 123, b : 'abc'};
+  Object.defineProperty(obj, 'a', { //默认值
+      configurable : false, //不等删除
+      writable : false, //不能修改
+      enumerable : false, //不能迭代，类似原型对象
+      value : 'hhh'
+  });
+#+END_SRC
+* 迭代
+- 迭代协议
+- 迭代器
+- 迭代对象
+- 迭代语句
+  | type   | for ... in    | for ... of             |
+  |--------+---------------+------------------------|
+  | Array  | index         | item                   |
+  | Object | 可以枚举的key | 不支持（没有迭代实现） |
+  - Object 迭代实现的例子
+#+BEGIN_SRC javascript
+  const obj = {a: 123, b: 'abc'};
+  obj[Symbol.iterator] = function () {
+      const keys = Object.keys(this);
+      const len = keys.length;
+      let cur = 0, next = 0;
+      return {
+	  next: () => {
+	      cur = next++;
+	      return {
+		  done: cur >= len,
+		  value : {
+		      key : keys[cur],
+		      value : this[keys[cur]]
+		  }
+	      }
+	  }
+      };
+  };
+
+  for(let o of obj){
+      console.log(o)
+  }
+  //{ key: 'a', value: 123 }
+  //{ key: 'b', value: 'abc' }
+#+END_SRC
+
+* 函数扩展
+- 默认值
+#+BEGIN_SRC javascript
+  function add(a, b = 123) {//默认参数在右边
+      return a + b;
+  }
+#+END_SRC
+- rest 剩余参数
+#+BEGIN_SRC javascript
+  function  append(arr, ...r) {//剩余参数...在最后
+      for(var val of r){
+	  arr.push(val);
+      }
+  }
+  const arr = [11, 22,];
+  append(arr, 1, 2, 'a');
+  console.log(arr);
+#+END_SRC
+- 箭头函数
+  - 不能用作构造函数
+  - 函数中的this是静态的
+  - 没有arguments参数
+  - 不能作为生成器函数
+#+BEGIN_SRC javascript
+  var fn = () => 1 + 2; // function() { return 1 + 2; }
+  var fn = a => a * a;  // function(a) { return a * a; }
+  var fn = (a) => {a * a}; // function(a) { a * a; } 返回值是undefined
+  var fn = (a, b) => {
+      a += 10;
+      b += 5;
+      return a + b;
+  };
+#+END_SRC
+
+* Set
+应用场景：数组去重
+#+BEGIN_SRC javascript
+  const set = new Set([1,2,1,3]);
+  const arr = [...set];
+  console.log(arr)
+#+END_SRC
+
+* Map/weakMap
+- Map 强引用，实例对象中的key不会被回收（key是对象的话）
+- weakmap 弱引用，实例中的key必须是对象，这个对象在其他地方不适用会自动回收
+使用例子（不是很好）
+#+BEGIN_SRC javascript
+  const Teacher = (function () {
+      let retire = new Map(); //保存所有老师的状态
+
+      function P(name, age) {
+	  this.age = age;
+	  this.name = name;
+	  retire.set(this, age > 65);
+      }
+
+      P.prototype = {
+	  constructor : P,
+	  isRetirement() {
+	      return retire.get(this);
+	  },
+	  getTeachers() {
+	      return retire;
+	  }
+      };
+      return P;
+  })();
+
+  const t1 = new Teacher('tea', 50);
+  const t2 = new Teacher('tea', 80);
+  console.log(t1.getTeachers());
+  console.log(t2.isRetirement());
+#+END_SRC
+
+* Class
+- 定义
+#+BEGIN_SRC javascript
+  class Person {
+      constructor(name, age){
+	  this.name = name;
+	  this.age = age;
+      }
+      getType(){
+	  return 'goven';
+      }
+  }
+
+  const p1 = new Person('aa', 11);
+  console.log(p1.getType());
+#+END_SRC
+- 继承
+#+BEGIN_SRC javascript
+
+  class Person {
+      constructor(name, age){
+	  this.name = name;
+	  this.age = age;
+      }
+      getType(){
+	  return 'goven';
+      }
+  }
+
+  const p1 = new Person('aa', 11);
+  console.log(p1.getType());
+
+  class Teacher extends Person{
+      constructor(name, age){
+	  super(name, age); //父类有constructor是必须有super
+      }
+      say(){
+	  console.log('hello', this.getType());
+      }
+  }
+
+  const t1 = new Teacher('tt', 60);
+  console.log(t1.name, t1.age, t1.getType());
+  t1.say();
+#+END_SRC
+
+* 异步编程
+** Promise
+   - 简单例子
+:syn:
+#+BEGIN_SRC javascript
+  new Promise((resolve, reject) => {
+      setTimeout(function () {
+	  if (Math.random() > 0.5) {
+	      resolve('保留');
+	  } else {
+	      reject('丢弃');
+	  }
+      }, 1000);
+  }).then(res => {
+      console.log(res);
+  }).catch(err => {
+      console.log(err);
+  });
+#+END_SRC
+:END:
+   - 简写
+:sym:
+#+BEGIN_SRC javascript
+  //resolve
+  Promise.resolve(100);
+  new Promise(resolve => {
+      resolve(100);
+  });
+  //reject
+  Promise.reject(100);
+  new Promise((resolve, reject) => {
+      reject(100);
+  });
+#+END_SRC
+:END:
+   - 多个任务一起完成
+:sym:
+#+BEGIN_SRC javascript
+  let p1 = new Promise((resolve, reject) => {
+      setTimeout(function () {
+	  resolve('p1完成了');
+	  // reject('p1完成了');
+      }, 1500);
+  });
+  let p2 = new Promise(resolve => {
+      setTimeout(function () {
+	  resolve('p2完成了');
+      }, 2000);
+  });
+  let p3 = new Promise(resolve => {
+      setTimeout(function () {
+	  resolve('p3完成了');
+      }, 1000);
+  });
+
+  Promise.all([p1, p2, p3]).then(res=>{
+      //[ 'p1完成了', 'p2完成了', 'p3完成了' ]
+      console.log(res);
+  }).catch(err=>{
+     console.log('出错: ', err);
+  });
+#+END_SRC
+:END:
+
+   - 多个任务有一个完成（优先完成）
+:sym:
+#+BEGIN_SRC javascript
+  let p1 = new Promise((resolve, reject) => {
+      setTimeout(function () {
+	  resolve('p1完成了');
+	  // reject('p1完成了');
+      }, 1500);
+  });
+  let p2 = new Promise(resolve => {
+      setTimeout(function () {
+	  resolve('p2完成了');
+      }, 2000);
+  });
+  let p3 = new Promise(resolve => {
+      setTimeout(function () {
+	  resolve('p3完成了');
+      }, 1000);
+  });
+
+  Promise.race([p1, p2, p3]).then(res=>{
+      //p3完成了
+      console.log(res);
+  }).catch(err=>{
+     console.log('出错: ', err);
+  });
+#+END_SRC
+:END:
+
+
+** Generator
+#+BEGIN_SRC javascript
+  // 任务一个接一个的做，顺序执行任务
+  function *fn() {
+      let r1 = yield new Promise(resolve => {
+	  setTimeout(function () {
+	      resolve('3000')
+	  }, 3000);
+      });
+      console.log(r1);
+      let r2 = yield new Promise(resolve => {
+	  setTimeout(function () {
+	      resolve('1000')
+	  }, 1000);
+      });
+      console.log(r2);
+      let r3 = yield new Promise(resolve => {
+	  setTimeout(function () {
+	      resolve('2000')
+	  }, 2000);
+      });
+      console.log(r3);
+  }
+
+  //next 函数执行fn函数，遇到yield停止， 执行yield后面的表达式并返回ret
+  //ret 包含状态和返回值
+  function co(f) {
+      let gen = f();//获取迭代对象
+      next();
+      function next(val){
+	  let ret = gen.next(val);
+	  // console.log('next: ', val)
+	  if(ret.done === false){
+	      ret.value.then(res=>{
+		  next(res);
+	      }).catch(err=>{
+		  next(err);
+	      });
+	  }
+      }
+  }
+
+  co(fn);
+#+END_SRC
+** async/await 类似Generator（不需要自己实现类似co的函数了）
+#+BEGIN_SRC javascript
+  (async function () {
+      let r1 = await new Promise(resolve => {
+	  setTimeout(function () {
+	      resolve('3000')
+	  }, 3000);
+      });
+      console.log(r1);
+      let r2 = await new Promise(resolve => {
+	  setTimeout(function () {
+	      resolve('1000')
+	  }, 1000);
+      });
+      console.log(r2);
+      let r3 = await new Promise(resolve => {
+	  setTimeout(function () {
+	      resolve('2000')
+	  }, 2000);
+      });
+      console.log(r3);
+  })();
+#+END_SRC

@@ -1,0 +1,111 @@
+#+startup: content
+
+* @
+** Recipe开头,不显示shell命令,只显示结果
+   #+begin_src makefile
+     v = variable
+     e:
+	     @echo ${v}
+	     @ls -l
+	     echo ${v}
+   #+end_src
+   #+begin_src shell
+     [heidekeyi@localhost lib]$ make
+     variable
+     total 80
+     -rw-rw-r--. 1 heidekeyi heidekeyi    42 Aug  6 02:28 add.c
+     -rw-rw-r--. 1 heidekeyi heidekeyi     0 Aug  7 05:21 add.d
+     -rw-rw-r--. 1 heidekeyi heidekeyi    61 Aug  6 02:28 add.h
+     drwxrwxr-x. 2 heidekeyi heidekeyi     6 Aug  7 05:26 adt
+     -rwxrwxr-x. 1 heidekeyi heidekeyi 17488 Aug  6 02:31 app
+     -rw-rw-r--. 1 heidekeyi heidekeyi   178 Aug  6 11:52 app.c
+     -rwxrwxr-x. 1 heidekeyi heidekeyi 17744 Aug  7 05:47 cli
+     -rw-rw-r--. 1 heidekeyi heidekeyi  1137 Aug  6 02:53 command.org
+     drwxrwxr-x. 2 heidekeyi heidekeyi     6 Aug  6 11:26 include
+     -rw-rw-r--. 1 heidekeyi heidekeyi   102 Aug  7 05:46 list.c
+     -rw-rw-r--. 1 heidekeyi heidekeyi   117 Aug  7 05:47 list.h
+     drwxrwxr-x. 2 heidekeyi heidekeyi     6 Aug  7 05:26 log
+     -rw-rw-r--. 1 heidekeyi heidekeyi   124 Aug  6 11:29 logging.c
+     -rw-rw-r--. 1 heidekeyi heidekeyi    82 Aug  6 11:28 logging.h
+     -rw-rw-r--. 1 heidekeyi heidekeyi   595 Aug  7 22:30 makefile
+     -rw-rw-r--. 1 heidekeyi heidekeyi  3125 Aug  6 04:02 new.org
+     echo variable
+     variable
+   #+end_src
+* variable
+** 为什么使用括号
+   把一个字符当变量解析
+   #+begin_src makefile
+     v = variable                                                           
+     e:
+	     echo $vzzzzzz
+   #+end_src
+   #+begin_src shell
+     [heidekeyi@localhost lib]$ make
+     echo variablezzzzzz
+     variablezzzzzz
+   #+end_src
+** 使用
+   用()和{}都可以,等效的
+   #+begin_src makefile
+     v = variable
+     e:
+     echo ${v}
+     echo $(v)
+   #+end_src
+   #+begin_src shell
+     [heidekeyi@localhost lib]$ make
+     echo variable
+     variable
+     echo variable
+     variable
+   #+end_src
+** 类型
+*** = 执行shell时解析   
+    #+begin_src makefile
+      v = $(val)
+      e:
+	      @echo${v}
+
+      val=value
+    #+end_src
+    #+begin_src shell
+      [heidekeyi@localhost lib]$ make
+      value
+    #+end_src
+*** ?= 未定义才赋值
+    #+begin_src makefile
+      v1 ?= value_1
+      v2 := inited
+      v2 ?= value_2
+      v3 ?=
+      v3 ?= value_3                                                          
+      e:
+	      @echo ${v1}
+	      @echo ${v2}
+	      @echo ${v3}
+    #+end_src
+    #+begin_src shell
+      [heidekeyi@localhost lib]$ make
+      value_1
+      inited
+
+      [heidekeyi@localhost lib]$ 
+    #+end_src
+*** := 定义并赋值
+*** ::= 同:=,较新版本才支持
+    #+begin_src makefile
+      v = variable
+      v1 := $(v)                                                             
+      v2 ::= $(v)
+      e:
+	      @echo ${v1}
+	      @echo ${v2}
+
+      v = lastest
+    #+end_src
+    #+begin_src shell
+      [heidekeyi@localhost lib]$ make
+      variable
+      variable
+    #+end_src

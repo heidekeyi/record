@@ -1,0 +1,143 @@
+#+BEGIN_SRC php
+  <?php
+
+  //exp
+  //"desmume-0.9.9-JIT-x86-2013-02-18.exe"+2F58C22
+  //hp
+  //"desmume-0.9.9-JIT-x86-2013-02-18.exe"+2F58D6A
+  $data = [
+      [
+	  192, 39
+      ],
+  //    [
+  //        4202, 4202, 2603, 2603, 20, 640
+  //    ],
+  //    [
+  //        1865, 1865, 1035, 1060, 93, 350
+  //    ],
+  ];
+
+
+  function toValues($dec, $len = 2)
+  {
+      $values = [];
+      while ($dec > 0) {
+	  $values[] = $dec % 256;
+	  $dec = floor($dec / 256);
+      }
+      $len -= count($values);
+      while (--$len >= 0) {
+	  $values[] = 0;
+      }
+      return $values;
+  }
+
+  function toHex($values)
+  {
+      $res = [];
+      foreach ($values as $v) {
+	  $val = dechex($v) . '';
+	  if ($v < 16) {
+	      $val = '0' . $val;
+	  }
+	  $res[] = $val;
+      }
+      return $res;
+  }
+
+  foreach ($data as $item) {
+      list($hp, $mp) = $item;
+      $arr = array_merge(
+	  toHex(toValues($hp)),
+	  toHex(toValues($mp)),
+      );
+      echo implode(' ', $arr) . PHP_EOL;
+  }
+
+
+  function writeFile($total)
+  {
+      $str_items = implode("\n", initItems($total));
+      $str_file = <<<"RRR"
+  <?xml version="1.0" encoding="utf-8"?>
+  <CheatTable CheatEngineTableVersion="29">
+    <CheatEntries>
+    {$str_items}
+    </CheatEntries>
+    <UserdefinedSymbols/>
+  </CheatTable>
+
+  RRR;
+
+      file_put_contents('./game.xml', $str_file);
+  }
+
+  function initItems($total)
+  {
+      $diff_role = 984;
+      $hp = '"desmume-0.9.9-JIT-x86-2013-02-18.exe"+2F58D6A';
+      $exp = '"desmume-0.9.9-JIT-x86-2013-02-18.exe"+2F58C22';
+      $base_hp = hexdec('0x' . explode('+', $hp)[1]);
+      $base_exp = hexdec('0x' . explode('+', $exp)[1]);
+      $res = [];
+  //    for ($i = 0; $i < $total; ++$i) {
+  //        $res[] = fillItem(count($res) + 1,
+  //            ($i + 1) . '--hit',
+  //            $base_exp + $diff_role * $i + 16, 1);
+  //    }
+      for ($i = 0; $i < $total; ++$i) {
+	  $res[] = fillItem(count($res) + 1,
+	      ($i + 1) . '--move',
+	      $base_exp + $diff_role * $i + 19, 1);
+      }
+      for ($i = 0; $i < $total; ++$i) {
+	  $res[] = fillItem(count($res) + 1,
+	      ($i + 1) . '--lv',
+	      $base_exp + $diff_role * $i + 5, 1);
+      }
+      for ($i = 0; $i < $total; ++$i) {
+	  $res[] = fillItem(count($res) + 1,
+	      ($i + 1) . '--exp',
+	      $base_exp + $diff_role * $i, 1);
+      }
+      for ($i = 0; $i < $total; ++$i) {
+	  $res[] = fillItem(count($res) + 1,
+	      ($i + 1) . '--hp',
+	      $base_hp + $diff_role * $i, 2);
+      }
+      $res[] = fillItem(count($res) + 1, 'pt-number', 0x2F53ED8, 1);
+      $res[] = fillItem(count($res) + 1, 'goods-list', 0x2f4f1bc, 1);
+  //    $res[] = fillItem(count($res) + 1, 'job-level-1', 0x2f4f165, 1);
+      for ($i = 0; $i < 17; ++$i) {
+	  $res[] = fillItem(count($res) + 1,
+	      ($i + 1) . '--job-level', 0x2f4f165 + $i, 1);
+      }
+      return $res;
+  }
+
+  function fillItem($id, $desc, $addr, $bytes)
+  {
+      $bytes = $bytes === 1 ? 'Byte' : $bytes . ' Bytes';
+      $addr = strtoupper(dechex($addr));
+      return <<<"AAA"
+  <CheatEntry>
+	<ID>{$id}</ID>
+	<Description>"{$desc}"</Description>
+	<VariableType>{$bytes}</VariableType>
+	<Address>"desmume-0.9.9-JIT-x86-2013-02-18.exe"+{$addr}</Address>
+      </CheatEntry>
+  AAA;
+
+  }
+
+  writeFile(1);
+
+
+
+  //$s = 0x03358c35;
+  //$o =  0x2F58C35;
+  //$j = 0x0334F165;
+  //$v = $j-($s-$o);
+  //echo dechex($v);
+  //0x0334F165 job1
+#+END_SRC

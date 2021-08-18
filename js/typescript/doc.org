@@ -1,0 +1,8 @@
+* base types
+  |---------+------------------------+------------------------|
+  | type    | values                 | example                |
+  | boolean | true/false             | let a:boolean = false; |
+  | number  | 198/0xff22/0b111/0o644 | let a:number = 11;     |
+  | string  | ''/""                  | let a:string = 'a${1}'; |
+  |         |                        |                        |
+  |---------+------------------------+------------------------|

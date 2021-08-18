@@ -1,0 +1,968 @@
+#+LATEX_HEADER: \usepackage{ctex}
+
+* select 语句查询流程
+1. from 'table_name' 从集合中获取数据
+2. where 过滤
+3. group by 分组
+4. 聚合计算
+5. having 筛选
+6. order by 排序
+7. limit 限制结果数量
+
+* 导入文件
+#+BEGIN_SRC sql
+  source 'pathname';
+#+END_SRC
+* 查询固定数据
+#+BEGIN_SRC sql
+  -- 查询固定
+  MariaDB [db1]> select 'abc';
+  +-----+
+  | abc |
+  +-----+
+  | abc |
+  +-----+
+
+  -- 使用了函数和表达式
+  MariaDB [db1]> select 1, 1 + 2, round(2.2);
+  +---+-------+------------+
+  | 1 | 1 + 2 | round(2.2) |
+  +---+-------+------------+
+  | 1 |     3 |          2 |
+  +---+-------+------------+
+
+  -- 加密函数
+  MariaDB [(none)]> select password('hello'), md5('hello');
+  +-------------------------------------------+----------------------------------+
+  | password('hello')                         | md5('hello')                     |
+  +-------------------------------------------+----------------------------------+
+  | *6B4F89A54E2D27ECD7E8DA05B4AB8FD9D1D8B119 | 5d41402abc4b2a76b9719d911017c592 |
+  +-------------------------------------------+----------------------------------+
+
+
+  -- 重命名显示的字段名称
+  MariaDB [db1]> select 1 as first, 1 + 2 as sum, round(2.2) as result;
+  +-------+-----+--------+
+  | first | sum | result |
+  +-------+-----+--------+
+  |     1 |   3 |      2 |
+  +-------+-----+--------+
+
+  -- 重命名显示的字段名称的简写形式（不清晰，故不推荐）
+  MariaDB [db1]> select 1 + 2 * 3 number;
+  +--------+
+  | number |
+  +--------+
+  |      7 |
+  +--------+
+
+  -- 配合现有表使用固定值生成查询数据
+  MariaDB [db1]> desc t3;
+  +------------+------------------------------------------------------------------+------+-----+---------+-------+
+  | Field      | Type                                                             | Null | Key | Default | Extra |
+  +------------+------------------------------------------------------------------+------+-----+---------+-------+
+  | birth_year | enum('1990','2000','2010','2020')                                | YES  |     | NULL    |       |
+  | sports     | set('basketball','football','baseball','badminton','volleyball') | YES  |     | NULL    |       |
+  +------------+------------------------------------------------------------------+------+-----+---------+-------+
+  MariaDB [db1]> select * from t3;
+  +------------+---------------------+
+  | birth_year | sports              |
+  +------------+---------------------+
+  | 1990       | football,badminton  |
+  | 2000       | basketball,baseball |
+  | 2000       | volleyball          |
+  +------------+---------------------+
+  MariaDB [db1]> select birth_year, sports , '9月份' as month from t3;
+  +------------+---------------------+-------+
+  | birth_year | sports              | month |
+  +------------+---------------------+-------+
+  | 1990       | football,badminton  | 9月份 |
+  | 2000       | basketball,baseball | 9月份 |
+  | 2000       | volleyball          | 9月份 |
+  +------------+---------------------+-------+
+#+END_SRC
+* 消除重复行
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from tb1;
+  +----+--------+------------+-----+
+  | id | name   | job        | age |
+  +----+--------+------------+-----+
+  |  1 | Tom    | Teacher    |  28 |
+  |  2 | Hall   | bus driver |  20 |
+  |  3 | Jim    | cooker     |  50 |
+  |  4 | Hans   | NULL       |  28 |
+  |  5 | Jeff   | Teacher    |  28 |
+  |  6 | Steven | Teacher    |  28 |
+  |  7 | Bob    | boss       |  66 |
+  +----+--------+------------+-----+
+
+  -- 分别作用在多个字段上，都相同才会过滤（只保留第一个）
+  MariaDB [db1]> select distinct job, age from tb1;
+  +------------+-----+
+  | job        | age |
+  +------------+-----+
+  | Teacher    |  28 |
+  | bus driver |  20 |
+  | cooker     |  50 |
+  | NULL       |  28 |
+  | boss       |  66 |
+  +------------+-----+
+#+END_SRC
+* 模糊查询
+#+BEGIN_SRC sql
+  MariaDB [db1]> create table tb1 (id int auto_increment primary key , name varchar(32) not null unique key, job varchar(32));
+  MariaDB [db1]> insert into tb1 (name, job) values ('Tom', 'Teacher');
+  MariaDB [db1]> insert into tb1 (name, job) values ('Hall', 'bus driver');
+  MariaDB [db1]> insert into tb1 (name, job) values ('Jim', 'cooker');
+  MariaDB [db1]> insert into tb1 (name) values ('Hans');
+  MariaDB [db1]> select * from tb1;
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  1 | Tom  | Teacher    |
+  |  2 | Hall | bus driver |
+  |  3 | Jim  | cooker     |
+  |  4 | Hans | NULL       |
+  +----+------+------------+
+
+  -- % 匹配所有字符
+  -- /.*a.*/
+  MariaDB [db1]> select * from tb1 where name like '%a%';
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  2 | Hall | bus driver |
+  |  4 | Hans | NULL       |
+  +----+------+------------+
+
+  -- - 匹配一个字符，一定要存在
+  -- /.a../
+  MariaDB [db1]> select * from tb1 where name like '_a__';
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  2 | Hall | bus driver |
+  |  4 | Hans | NULL       |
+  +----+------+------------+
+
+  -- /.a.*/
+  MariaDB [db1]> select * from tb1 where name like '_a%';
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  2 | Hall | bus driver |
+  |  4 | Hans | NULL       |
+  +----+------+------------+
+#+END_SRC
+* 简单条件查询
++ 比较： <=  >=  <  >  <>  !=  =
++ 逻辑：&&  !  ||  and  or  not
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from tb1;
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  1 | Tom  | Teacher    |
+  |  2 | Hall | bus driver |
+  |  3 | Jim  | cooker     |
+  |  4 | Hans | NULL       |
+  +----+------+------------+
+
+  -- <> 和 ！= 是一样的，&& 和 and 是一样的
+  MariaDB [db1]> select * from tb1 where id < 3 && name <> 'Tom';
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  2 | Hall | bus driver |
+  +----+------+------------+
+
+  MariaDB [db1]> select * from tb1 where not job;
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  1 | Tom  | Teacher    |
+  |  2 | Hall | bus driver |
+  |  3 | Jim  | cooker     |
+  +----+------+------------+
+#+END_SRC
+* 范围查询
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from tb1;
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  1 | Tom  | Teacher    |
+  |  2 | Hall | bus driver |
+  |  3 | Jim  | cooker     |
+  |  4 | Hans | NULL       |
+  +----+------+------------+
+
+  -- 闭区间
+  MariaDB [db1]> select * from tb1 where id between 3 and 4;
+  +----+------+--------+
+  | id | name | job    |
+  +----+------+--------+
+  |  3 | Jim  | cooker |
+  |  4 | Hans | NULL   |
+  +----+------+--------+
+#+END_SRC
+* 属于集合
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from tb1;
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  1 | Tom  | Teacher    |
+  |  2 | Hall | bus driver |
+  |  3 | Jim  | cooker     |
+  |  4 | Hans | NULL       |
+  +----+------+------------+
+
+  -- in (a, b, c[,...])
+  MariaDB [db1]> select * from tb1 where id in (1, 3, 4);
+  +----+------+---------+
+  | id | name | job     |
+  +----+------+---------+
+  |  1 | Tom  | Teacher |
+  |  3 | Jim  | cooker  |
+  |  4 | Hans | NULL    |
+  +----+------+---------+
+#+END_SRC
+* 是否为 null
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from tb1;
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  1 | Tom  | Teacher    |
+  |  2 | Hall | bus driver |
+  |  3 | Jim  | cooker     |
+  |  4 | Hans | NULL       |
+  +----+------+------------+
+
+  -- 是 null
+  MariaDB [db1]> select * from tb1 where job is null;
+  +----+------+------+
+  | id | name | job  |
+  +----+------+------+
+  |  4 | Hans | NULL |
+  +----+------+------+
+
+  -- 不是 null
+  MariaDB [db1]> select * from tb1 where job is not null;
+  +----+------+------------+
+  | id | name | job        |
+  +----+------+------------+
+  |  1 | Tom  | Teacher    |
+  |  2 | Hall | bus driver |
+  |  3 | Jim  | cooker     |
+  +----+------+------------+
+#+END_SRC
+* 分组查询
++ 使用分组之后，数据只具有集合属性
++ 信息：分组字段的信息 + 相应的统计信息
++ 聚合函数
+  - max 每个组某个字段的最大值
+  - min 每个组某个字段的最小值
+  - avg 每个组某个字段的平均值
+  - sum 计算某个字段的总和
+  - count 统计每个组中有多少条数据
+** 准备数据（使用PHP创建随机数）
+#+BEGIN_SRC sql
+  -- 创建表及插入数据测试
+  create table student (
+      id int auto_increment primary key,
+      name varchar(8),
+      gender enum('男', '女'),
+      age tinyint,
+      edu enum('小学','初中','高中','大专','本科','研究生','硕士','博士'),
+      salary double,
+      bonus double,
+      addr char(8)
+  ) charset = utf8 engine = InnoDB;
+  insert into student (
+  name, gender, age, edu, salary, bonus, addr
+  ) values
+  ('a', 1, 23, 8, 7000, 2000, 'GX');
+#+END_SRC
+#+BEGIN_SRC php
+  $db_info = [
+      '127.0.0.1',
+      'root',
+      ''
+  ];
+
+  !($link = @mysqli_connect(...$db_info)) && exit('connect failure');
+  !mysqli_set_charset($link, 'utf8') && die('set charset failure');
+  !mysqli_select_db($link, 'db1') && die('select db failure');
+
+  $sql = "
+  create table student (
+      id int auto_increment primary key,
+      name varchar(8),
+      gender enum('男', '女'),
+      age tinyint,
+      edu enum('小学','初中','高中','大专','本科','研究生','硕士','博士'),
+      salary double,
+      bonus double,
+      addr char(8)
+  ) charset = utf8 engine = InnoDB;";
+  !mysqli_query($link, $sql) && !var_dump(mysqli_error($link)) && exit('create table failure');
+
+
+  $arrArg = [];
+  for ($i = 1; $i <= 220; ++$i) {
+      $arr = ['\'学生' . $i . '\'',
+	  mt_rand(1, 2),
+	  mt_rand(25, 77),
+	  mt_rand(1, 8),
+	  mt_rand(3000, 200000) * 0.75,
+	  mt_rand(200, 3500) * 0.8,
+	  '\'' . strtoupper(chr(mt_rand(97, 122)) . chr(mt_rand(97, 122))) . '\''];
+      array_push($arrArg, '(' . join(', ', $arr) . ')');
+  }
+  $values = join($arrArg, ', ');
+  $sql = "insert into student (
+      name, gender, age, edu, salary, bonus, addr
+  ) values " . $values . ";";
+  !mysqli_query($link, $sql) && !var_dump(mysqli_error($link)) && exit('insert failure');
+  mysqli_close($link);
+#+END_SRC
+** 统计表中的数据个数
+#+BEGIN_SRC sql
+  MariaDB [db1]> select count(*) from student;
+  +----------+
+  | count(*) |
+  +----------+
+  |      220 |
+  +----------+
+#+END_SRC
+** 数据例子
+前面几条数据
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from student limit 5;
+  +----+-------+--------+------+--------+-----------+--------+------+
+  | id | name  | gender | age  | edu    | salary    | bonus  | addr |
+  +----+-------+--------+------+--------+-----------+--------+------+
+  |  1 | 学生1 | 男     |   75 | 研究生 |  39537.75 | 1764.8 | YC   |
+  |  2 | 学生2 | 男     |   71 | 初中   |  14928.75 |  160.8 | GT   |
+  |  3 | 学生3 | 女     |   74 | 硕士   | 144182.25 | 1039.2 | UW   |
+  |  4 | 学生4 | 女     |   70 | 大专   |  26525.25 | 1213.6 | FK   |
+  |  5 | 学生5 | 女     |   73 | 本科   |  34136.25 | 1953.6 | GY   |
+  +----+-------+--------+------+--------+-----------+--------+------+
+#+END_SRC
+** 一级分组
+对学历分组
+#+BEGIN_SRC sql
+  -- 简单分组
+  MariaDB [db1]> select edu from student group by edu;
+  +--------+
+  | edu    |
+  +--------+
+  | 小学   |
+  | 初中   |
+  | 高中   |
+  | 大专   |
+  | 本科   |
+  | 研究生 |
+  | 硕士   |
+  | 博士   |
+  +--------+
+
+  -- 统计各个学历人数，平均年龄，年纪最大，年纪最小
+  MariaDB [db1]> select
+      ->        edu, age,
+      ->        sum(salary) as sum_salary,
+      ->        count(*) as count_number,
+      ->        avg(age), max(age), min(age)
+      -> from student group by edu;
+  +--------+------+------------+--------------+----------+----------+----------+
+  | edu    | age  | sum_salary | count_number | avg(age) | max(age) | min(age) |
+  +--------+------+------------+--------------+----------+----------+----------+
+  | 小学   |   60 |    1587942 |           24 |  44.2500 |       77 |       27 |
+  | 初中   |   71 |    2884443 |           33 |  53.6970 |       75 |       28 |
+  | 高中   |   42 | 1539132.75 |           20 |  52.0000 |       77 |       25 |
+  | 大专   |   70 | 1990229.25 |           27 |  55.5185 |       77 |       28 |
+  | 本科   |   73 | 2841071.25 |           34 |  49.5882 |       77 |       25 |
+  | 研究生 |   75 |    1775028 |           23 |  52.3043 |       77 |       25 |
+  | 硕士   |   74 |  2355337.5 |           30 |  54.0667 |       77 |       26 |
+  | 博士   |   67 | 2038595.25 |           29 |  46.4828 |       71 |       25 |
+  +--------+------+------------+--------------+----------+----------+----------+
+#+END_SRC
+** 多级分组
+先对学历分组，再对性别分组（级数更多的依次增加分组的字段）
+#+BEGIN_SRC sql
+  -- 统计各学历中男女人数、平均薪水、最大年龄、最小年龄
+  MariaDB [db1]> select edu, gender,
+      -> sum(salary) as sum_salary,
+      -> count(*) as count_number,
+      -> avg(salary), max(age), min(age)
+      -> from student group by edu, gender;
+  +--------+--------+------------+--------------+-------------------+----------+----------+
+  | edu    | gender | sum_salary | count_number | avg(salary)       | max(age) | min(age) |
+  +--------+--------+------------+--------------+-------------------+----------+----------+
+  | 小学   | 男     |  747477.75 |           13 | 57498.28846153846 |       75 |       27 |
+  | 小学   | 女     |  840464.25 |           11 | 76405.84090909091 |       77 |       30 |
+  | 初中   | 男     | 1851992.25 |           21 | 88190.10714285714 |       75 |       29 |
+  | 初中   | 女     | 1032450.75 |           12 |        86037.5625 |       75 |       28 |
+  | 高中   | 男     |  774347.25 |           10 |         77434.725 |       77 |       34 |
+  | 高中   | 女     |   764785.5 |           10 |          76478.55 |       72 |       25 |
+  | 大专   | 男     |   806218.5 |           11 | 73292.59090909091 |       77 |       36 |
+  | 大专   | 女     | 1184010.75 |           16 |      74000.671875 |       76 |       28 |
+  | 本科   | 男     |  1398667.5 |           15 |           93244.5 |       77 |       31 |
+  | 本科   | 女     | 1442403.75 |           19 | 75915.98684210527 |       74 |       25 |
+  | 研究生 | 男     |     799458 |            9 | 88828.66666666667 |       75 |       27 |
+  | 研究生 | 女     |     975570 |           14 | 69683.57142857143 |       77 |       25 |
+  | 硕士   | 男     |  1077016.5 |           13 | 82847.42307692308 |       70 |       26 |
+  | 硕士   | 女     |    1278321 |           17 | 75195.35294117648 |       77 |       28 |
+  | 博士   | 男     |  954174.75 |           17 | 56127.92647058824 |       71 |       27 |
+  | 博士   | 女     |  1084420.5 |           12 |         90368.375 |       61 |       25 |
+  +--------+--------+------------+--------------+-------------------+----------+----------+
+
+  -- 统计地址中含有'S'各学历男女人数、平均年龄、工资总数
+  MariaDB [db1]> select edu, gender,
+      ->        sum(salary) as sum_salary,
+      ->        count(*) as count_number, avg(age)
+      -> from student where addr like '%S%' group by edu, gender;
+  +--------+--------+------------+--------------+----------+
+  | edu    | gender | sum_salary | count_number | avg(age) |
+  +--------+--------+------------+--------------+----------+
+  | 小学   | 男     |     207030 |            3 |  42.0000 |
+  | 初中   | 男     |  335604.75 |            3 |  57.0000 |
+  | 初中   | 女     |  181826.25 |            2 |  37.0000 |
+  | 高中   | 男     |    4370.25 |            1 |  42.0000 |
+  | 大专   | 男     |    12421.5 |            1 |  71.0000 |
+  | 本科   | 男     |   217543.5 |            2 |  61.0000 |
+  | 本科   | 女     |  213038.25 |            4 |  47.7500 |
+  | 研究生 | 男     |     265872 |            2 |  64.0000 |
+  | 研究生 | 女     |   132844.5 |            1 |  63.0000 |
+  | 硕士   | 男     |  318785.25 |            3 |  49.3333 |
+  | 硕士   | 女     |   143236.5 |            2 |  40.0000 |
+  | 博士   | 男     |   161338.5 |            2 |  48.5000 |
+  +--------+--------+------------+--------------+----------+
+#+END_SRC
+* 筛选
+having 只能对分组的数据进行赛选
+#+BEGIN_SRC sql
+  -- 统计各学历中男女人数、最大年龄、最小年龄，平局薪水大于80000
+  MariaDB [db1]> select edu, gender,
+      -> count(*) as count_number,
+      -> avg(salary), max(age), min(age)
+      -> from student group by edu, gender having avg(salary) >= 80000;
+  +--------+--------+--------------+-------------------+----------+----------+
+  | edu    | gender | count_number | avg(salary)       | max(age) | min(age) |
+  +--------+--------+--------------+-------------------+----------+----------+
+  | 初中   | 男     |           21 | 88190.10714285714 |       75 |       29 |
+  | 初中   | 女     |           12 |        86037.5625 |       75 |       28 |
+  | 本科   | 男     |           15 |           93244.5 |       77 |       31 |
+  | 研究生 | 男     |            9 | 88828.66666666667 |       75 |       27 |
+  | 硕士   | 男     |           13 | 82847.42307692308 |       70 |       26 |
+  | 博士   | 女     |           12 |         90368.375 |       61 |       25 |
+  +--------+--------+--------------+-------------------+----------+----------+
+#+END_SRC
+* 排序
+对筛选结果进行排序
+#+BEGIN_SRC sql
+  -- 按平均工资逆序
+  -- 逆序：desc 
+  -- 正序：asc（可以不写，默认是正序）
+  MariaDB [db1]> select edu, gender,
+      ->        count(*) as count_number,
+      ->        avg(salary) as avg_salary,
+      ->        max(age), min(age)
+      -> from student group by edu, gender
+      -> having avg_salary >= 80000
+      -> order by avg_salary desc;
+  +--------+--------+--------------+-------------------+----------+----------+
+  | edu    | gender | count_number | avg_salary        | max(age) | min(age) |
+  +--------+--------+--------------+-------------------+----------+----------+
+  | 本科   | 男     |           15 |           93244.5 |       77 |       31 |
+  | 博士   | 女     |           12 |         90368.375 |       61 |       25 |
+  | 研究生 | 男     |            9 | 88828.66666666667 |       75 |       27 |
+  | 初中   | 男     |           21 | 88190.10714285714 |       75 |       29 |
+  | 初中   | 女     |           12 |        86037.5625 |       75 |       28 |
+  | 硕士   | 男     |           13 | 82847.42307692308 |       70 |       26 |
+  +--------+--------+--------------+-------------------+----------+----------+
+
+  -- 多级排序
+  -- 例子：先最高学历，再按年纪（还要就继续添加）
+  MariaDB [db1]> select id, salary, edu, age from student
+      -> order by edu desc, age limit 5;
+  +-----+----------+------+------+
+  | id  | salary   | edu  | age  |
+  +-----+----------+------+------+
+  | 199 | 83784.75 | 博士 |   25 |
+  |  73 | 13451.25 | 博士 |   27 |
+  | 198 |  12991.5 | 博士 |   29 |
+  | 154 |  18226.5 | 博士 |   30 |
+  |  85 |  13567.5 | 博士 |   30 |
+  +-----+----------+------+------+
+#+END_SRC
+* 限制数据的个数
+对排序（可以没有）之后的数据个数进行限制
+#+BEGIN_SRC sql
+  -- 从第3条开始，显示之后3条
+  -- 分页公式：limit (n-1) * pageSize , pageSize
+  -- 如每页三条：
+  -- limit 0, 3
+  -- limit 3, 3
+  -- limit 6, 3
+  -- ...
+  -- limit (n-1) * 3, 3
+  MariaDB [db1]> select edu, gender,
+      ->        count(*) as count_number,
+      ->        avg(salary) as avg_salary,
+      ->        max(age), min(age)
+      -> from student group by edu, gender
+      -> having avg_salary >= 80000
+      -> order by avg_salary desc
+      -> limit 2 , 3;
+  +--------+--------+--------------+-------------------+----------+----------+
+  | edu    | gender | count_number | avg_salary        | max(age) | min(age) |
+  +--------+--------+--------------+-------------------+----------+----------+
+  | 研究生 | 男     |            9 | 88828.66666666667 |       75 |       27 |
+  | 初中   | 男     |           21 | 88190.10714285714 |       75 |       29 |
+  | 初中   | 女     |           12 |        86037.5625 |       75 |       28 |
+  +--------+--------+--------------+-------------------+----------+----------+
+#+END_SRC
+* 多表查询
+** 准备数据
+#+BEGIN_SRC sql
+  create table employee (
+      eid int auto_increment primary key ,
+      name varchar(8),
+      department int,
+      phone char(11)
+  );
+  insert into employee (name, phone)values('李强', '13233355532');
+  insert into employee (name, phone, department)
+  values ('宋微微', '13511122212', 1),('赵倩倩', '13988899912', 2),
+	 ('夏侯军', '13355577732', 3),('王刚', '13999877712', 5);
+
+
+  create table department (
+      did int auto_increment,
+      name varchar(8),
+      primary key (did)
+  );
+  insert into department (name)
+  values('开发部'),('特效部'),('美术组'),
+	 ('宣传部'),('销售部'),('后勤部');
+
+
+  create table student (
+			   id int primary key auto_increment,
+			   name char(8),
+			   phone char(11)
+  );
+  insert into student (name, phone)
+  values('宋微微', '13511122212'), ('夏侯军', '13688899988'),
+	('邓超', '13722255567'), ('李丽', '13911166621');
+#+END_SRC
+** 联合查询
++ 相当于纵向连接表
++ 行数：连个表记录之和（去重就少于总和）
++ 字段名称使用第一个表的名称
++ 自动消除重复行
++ 使用 all 可以保留重复行
+#+BEGIN_SRC sql
+  -- 连表查询联系人
+
+  -- 默认是去重的
+  MariaDB [db1]> select name as contact, phone from employee
+      -> union
+      -> select name, phone from student
+      -> order by contact limit 5;
+  +---------+-------------+
+  | contact | phone       |
+  +---------+-------------+
+  | 夏侯军  | 13355577732 |
+  | 夏侯军  | 13688899988 |
+  | 宋微微  | 13511122212 |
+  | 李丽    | 13911166621 |
+  | 李强    | 13233355532 |
+  +---------+-------------+
+
+  -- 显示去重
+  MariaDB [db1]> select name as contact, phone from employee
+      -> union distinct
+      -> select name, phone from student
+      -> order by contact limit 5;
+  +---------+-------------+
+  | contact | phone       |
+  +---------+-------------+
+  | 夏侯军  | 13355577732 |
+  | 夏侯军  | 13688899988 |
+  | 宋微微  | 13511122212 |
+  | 李丽    | 13911166621 |
+  | 李强    | 13233355532 |
+  +---------+-------------+
+
+  -- 保留所有数据
+  MariaDB [db1]> select name as contact, phone from employee
+      -> union all
+      -> select name, phone from student
+      -> order by contact limit 5;
+  +---------+-------------+
+  | contact | phone       |
+  +---------+-------------+
+  | 夏侯军  | 13355577732 |
+  | 夏侯军  | 13688899988 |
+  | 宋微微  | 13511122212 |
+  | 宋微微  | 13511122212 |
+  | 李丽    | 13911166621 |
+  +---------+-------------+
+#+END_SRC
+** 连接查询
+形式：select * from tb1 [..] join [...] [where ... group by .... limit m, ]n;
+*** 交叉连接
++ 表一每一行都会和表二的所有行连接
++ 笛卡尔积的形式
++ cross 可以省略（inner 效果也一样）
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from employee cross join department;
+  +-----+--------+------------+-------------+-----+--------+
+  | eid | name   | department | phone       | did | name   |
+  +-----+--------+------------+-------------+-----+--------+
+  |   1 | 李强   |       NULL | 13233355532 |   1 | 开发部 |
+  |   2 | 宋微微 |          1 | 13511122212 |   1 | 开发部 |
+  |   3 | 赵倩倩 |          2 | 13988899912 |   1 | 开发部 |
+  |   4 | 夏侯军 |          3 | 13355577732 |   1 | 开发部 |
+  |   5 | 王刚   |          5 | 13999877712 |   1 | 开发部 |
+  |   1 | 李强   |       NULL | 13233355532 |   2 | 特效部 |
+  |   2 | 宋微微 |          1 | 13511122212 |   2 | 特效部 |
+  |   3 | 赵倩倩 |          2 | 13988899912 |   2 | 特效部 |
+  |   4 | 夏侯军 |          3 | 13355577732 |   2 | 特效部 |
+  |   5 | 王刚   |          5 | 13999877712 |   2 | 特效部 |
+  |   1 | 李强   |       NULL | 13233355532 |   3 | 美术组 |
+  ......
+  |   5 | 王刚   |          5 | 13999877712 |   6 | 后勤部 |
+  +-----+--------+------------+-------------+-----+--------+
+#+END_SRC
+*** 内连接
++ inner 可以省略，推荐写上
++ 可以筛选出有意义的数据
++ 重点是找关联的字段
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from employee as e
+      ->     inner join department as d
+      ->         on e.department = d.did;
+  +-----+--------+------------+-------------+-----+--------+
+  | eid | name   | department | phone       | did | name   |
+  +-----+--------+------------+-------------+-----+--------+
+  |   2 | 宋微微 |          1 | 13511122212 |   1 | 开发部 |
+  |   3 | 赵倩倩 |          2 | 13988899912 |   2 | 特效部 |
+  |   4 | 夏侯军 |          3 | 13355577732 |   3 | 美术组 |
+  |   5 | 王刚   |          5 | 13999877712 |   5 | 销售部 |
+  +-----+--------+------------+-------------+-----+--------+
+
+  -- 得到的结果过滤排序
+  MariaDB [db1]> select * from employee as e
+      -> inner join department as d
+      -> on e.department = d.did
+      -> where e.eid < 4 order by e.eid desc;
+  +-----+--------+------------+-------------+-----+--------+
+  | eid | name   | department | phone       | did | name   |
+  +-----+--------+------------+-------------+-----+--------+
+  |   3 | 赵倩倩 |          2 | 13988899912 |   2 | 特效部 |
+  |   2 | 宋微微 |          1 | 13511122212 |   1 | 开发部 |
+  +-----+--------+------------+-------------+-----+--------+
+#+END_SRC
+*** 外连接
++ 左外连接和有右外连接可以相互替换使用只需要调整数据集顺序即可
++ outer 关键字可以省略
++ 左右连接分别保证左右两表数据的完整性（后者可能会用NULL填充）
+**** 左外连接
+也叫左连接
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from employee as e
+      -> left join department as d
+      -> on e.department = d.did;
+  +-----+--------+------------+-------------+------+--------+
+  | eid | name   | department | phone       | did  | name   |
+  +-----+--------+------------+-------------+------+--------+
+  |   1 | 李强   |       NULL | 13233355532 | NULL | NULL   |
+  |   2 | 宋微微 |          1 | 13511122212 |    1 | 开发部 |
+  |   3 | 赵倩倩 |          2 | 13988899912 |    2 | 特效部 |
+  |   4 | 夏侯军 |          3 | 13355577732 |    3 | 美术组 |
+  |   5 | 王刚   |          5 | 13999877712 |    5 | 销售部 |
+  +-----+--------+------------+-------------+------+--------+
+#+END_SRC
+**** 右外连接
+也叫右连接
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from employee as e
+      -> right join department as d
+      -> on e.department = d.did;
+  +------+--------+------------+-------------+-----+--------+
+  | eid  | name   | department | phone       | did | name   |
+  +------+--------+------------+-------------+-----+--------+
+  |    2 | 宋微微 |          1 | 13511122212 |   1 | 开发部 |
+  |    3 | 赵倩倩 |          2 | 13988899912 |   2 | 特效部 |
+  |    4 | 夏侯军 |          3 | 13355577732 |   3 | 美术组 |
+  |    5 | 王刚   |          5 | 13999877712 |   5 | 销售部 |
+  | NULL | NULL   |       NULL | NULL        |   4 | 宣传部 |
+  | NULL | NULL   |       NULL | NULL        |   6 | 后勤部 |
+  +------+--------+------------+-------------+-----+--------+
+
+  -- 使用 outer
+  MariaDB [db1]> select * from employee as e
+      -> right outer join department as d
+      -> on e.department = d.did;
+  +------+--------+------------+-------------+-----+--------+
+  | eid  | name   | department | phone       | did | name   |
+  +------+--------+------------+-------------+-----+--------+
+  |    2 | 宋微微 |          1 | 13511122212 |   1 | 开发部 |
+  |    3 | 赵倩倩 |          2 | 13988899912 |   2 | 特效部 |
+  |    4 | 夏侯军 |          3 | 13355577732 |   3 | 美术组 |
+  |    5 | 王刚   |          5 | 13999877712 |   5 | 销售部 |
+  | NULL | NULL   |       NULL | NULL        |   4 | 宣传部 |
+  | NULL | NULL   |       NULL | NULL        |   6 | 后勤部 |
+  +------+--------+------------+-------------+-----+--------+
+#+END_SRC
+*** 自连接
+场景：省市区三级查询、多级评论
+#+BEGIN_SRC sql
+  create table addr(
+      id int primary key auto_increment,
+      name varchar(8),
+      pid int
+  );
+  insert into addr(name, pid) values ('广西', 0),('广东', 0), ('北京', 0);
+  insert into addr(name, pid) values ('梅州', 2),('惠州', 2);
+  insert into addr(name, pid) values('柳州', 1),('桂林', 1);
+  insert into addr(name, pid) values ('南宁', 1),('玉林', 1), ('广州', 2);
+  insert into addr(name, pid) values ('惠阳', 5),('柳江', 6),('柳城', 6);
+  insert into addr(name, pid) values ('三亚', 5),('宾阳', 8),('阳朔', 8);
+#+END_SRC
+#+BEGIN_SRC sql
+  -- 省市区三级数据查询
+
+  -- 完整省
+  MariaDB [db1]> select  g.p_name as '省', g.c_name as '市',a.name as '区'
+      -> from (
+      ->     select p.name as p_name , c.name as c_name, c.id as id
+      ->         from addr p left join addr as c on c.pid = p.id where p.pid = 0
+      ->     ) as g left join addr a on a.pid = g.id;
+  +------+------+------+
+  | 省   | 市   | 区   |
+  +------+------+------+
+  | 广东 | 惠州 | 惠阳 |
+  | 广西 | 柳州 | 柳江 |
+  | 广西 | 柳州 | 柳城 |
+  | 广东 | 惠州 | 三亚 |
+  | 广西 | 南宁 | 宾阳 |
+  | 广西 | 南宁 | 阳朔 |
+  | 广东 | 梅州 | NULL |
+  | 广西 | 桂林 | NULL |
+  | 广西 | 玉林 | NULL |
+  | 广东 | 广州 | NULL |
+  | 北京 | NULL | NULL |
+  +------+------+------+
+
+  -- 完整市
+  MariaDB [db1]> select  g.p_name as '省', g.c_name as '市',a.name as '区'
+      -> from (
+      ->          select p.name as p_name , c.name as c_name, c.id as id
+      ->          from addr p right join addr as c on c.pid = p.id where p.pid = 0
+      ->      ) as g left join addr a on a.pid = g.id;
+  +------+------+------+
+  | 省   | 市   | 区   |
+  +------+------+------+
+  | 广东 | 惠州 | 惠阳 |
+  | 广西 | 柳州 | 柳江 |
+  | 广西 | 柳州 | 柳城 |
+  | 广东 | 惠州 | 三亚 |
+  | 广西 | 南宁 | 宾阳 |
+  | 广西 | 南宁 | 阳朔 |
+  | 广东 | 梅州 | NULL |
+  | 广西 | 桂林 | NULL |
+  | 广西 | 玉林 | NULL |
+  | 广东 | 广州 | NULL |
+  +------+------+------+
+
+  -- 完整区
+  MariaDB [db1]> select  p.name as '省', g.c_name as '市',g.a_name as '区'
+      -> from (
+      ->      select c.name as c_name, a.name as a_name, c.pid as pid
+      ->      from addr as a left join addr as c on a.pid = c.id where c.pid <> 0
+      ->     ) as g left join addr as p on p.id = g.pid;
+  +------+------+------+
+  | 省   | 市   | 区   |
+  +------+------+------+
+  | 广东 | 惠州 | 惠阳 |
+  | 广西 | 柳州 | 柳江 |
+  | 广西 | 柳州 | 柳城 |
+  | 广东 | 惠州 | 三亚 |
+  | 广西 | 南宁 | 宾阳 |
+  | 广西 | 南宁 | 阳朔 |
+  +------+------+------+
+  -- 内连接查询完整区
+  MariaDB [db1]> select p.name as '省', c.name as '市', a.name as '区'
+      -> from addr as p join addr c join addr a on
+      ->             c.pid = p.id and a.pid = c.id;
+  +------+------+------+
+  | 省   | 市   | 区   |
+  +------+------+------+
+  | 广东 | 惠州 | 惠阳 |
+  | 广西 | 柳州 | 柳江 |
+  | 广西 | 柳州 | 柳城 |
+  | 广东 | 惠州 | 三亚 |
+  | 广西 | 南宁 | 宾阳 |
+  | 广西 | 南宁 | 阳朔 |
+  +------+------+------+
+#+END_SRC
+** 子查询
+#+BEGIN_SRC sql
+  create table programmer (
+      id int primary key auto_increment,
+      name varchar(8),
+      age tinyint,
+      salary decimal(15, 3),
+      language enum('C++','PHP','Java','Net','Lua'),
+      city enum('北京','上海','杭州','深圳')
+  );
+  insert into programmer(name,age,salary,language, city)
+  values ('宋微微', 20,5000,2,2),('李强', 21,12000,3,3),
+	 ('夏侯军', 30,3500,1,1),('赵倩倩', 25,5800,2,2),
+	 ('邓超', 40,8900,3,3),('王刚', 35,7000,5,1),
+	 ('李丽', 50,6000,2,3),('李想', 42,8500,2,2);
+#+END_SRC
+*** 标量子查询
+一行一列，当一个值来使用
+#+BEGIN_SRC sql
+  -- 薪资大于平均薪资的程序员
+  MariaDB [db1]> select * from programmer where salary > (
+      ->     select avg(salary) from programmer
+      ->     );
+  +----+------+------+-----------+----------+------+
+  | id | name | age  | salary    | language | city |
+  +----+------+------+-----------+----------+------+
+  |  2 | 李强 |   21 | 12000.000 | Java     | 杭州 |
+  |  5 | 邓超 |   40 |  8900.000 | Java     | 杭州 |
+  |  8 | 李想 |   42 |  8500.000 | PHP      | 上海 |
+  +----+------+------+-----------+----------+------+
+#+END_SRC
+*** 列子查询
+很适用 in （...）
+#+BEGIN_SRC sql
+  MariaDB [db1]> select * from programmer where language in (
+      ->     select distinct language from programmer where salary > (
+      ->         select avg(salary) from programmer
+      ->         )
+      -> ) order by salary desc;
+  +----+--------+------+-----------+----------+------+
+  | id | name   | age  | salary    | language | city |
+  +----+--------+------+-----------+----------+------+
+  |  2 | 李强   |   21 | 12000.000 | Java     | 杭州 |
+  |  5 | 邓超   |   40 |  8900.000 | Java     | 杭州 |
+  |  8 | 李想   |   42 |  8500.000 | PHP      | 上海 |
+  |  7 | 李丽   |   50 |  6000.000 | PHP      | 杭州 |
+  |  4 | 赵倩倩 |   25 |  5800.000 | PHP      | 上海 |
+  |  1 | 宋微微 |   20 |  5000.000 | PHP      | 上海 |
+  +----+--------+------+-----------+----------+------+
+#+END_SRC
+*** 行子查询
++ 航构造符：... where (a,b) = (va, vb)
+#+BEGIN_SRC sql
+  -- 查找最小年纪且最小ID程序员所在的城市和开发用的语言相同的所有程序员
+  MariaDB [db1]> select * from programmer where (language, city) = (
+      ->     select language, city from programmer order by age,id desc limit 0, 1
+      ->     ) order by salary desc;
+  +----+--------+------+----------+----------+------+
+  | id | name   | age  | salary   | language | city |
+  +----+--------+------+----------+----------+------+
+  |  8 | 李想   |   42 | 8500.000 | PHP      | 上海 |
+  |  4 | 赵倩倩 |   25 | 5800.000 | PHP      | 上海 |
+  |  1 | 宋微微 |   20 | 5000.000 | PHP      | 上海 |
+  +----+--------+------+----------+----------+------+
+#+END_SRC
+*** 表子查询
++ 当成一个表，需要给这个表起名称
+#+BEGIN_SRC sql
+  -- 这里只是使用例子（使用标量子查询更方便）
+  -- 暂时没有想到什么好的例子
+  -- 查询薪资大于平均薪资的年长程序员
+  MariaDB [db1]> select * from (
+      ->     select * from programmer
+      ->     where salary > (
+      ->         select avg(salary) from programmer)
+      ->     ) as avg order by age desc, id limit 0, 1
+      -> ;
+  +----+------+------+----------+----------+------+
+  | id | name | age  | salary   | language | city |
+  +----+------+------+----------+----------+------+
+  |  8 | 李想 |   42 | 8500.000 | PHP      | 上海 |
+  +----+------+------+----------+----------+------+
+  1 row in set (0.000 sec)
+#+END_SRC
+*** 可用关键字
+**** in 
+在集合中
+#+BEGIN_SRC sql
+  -- 薪资超过8000的语言的所有程序员
+  MariaDB [db1]> select * from programmer where language in (
+      ->     select distinct language from programmer where salary > 8000
+      ->     );
+  +----+--------+------+-----------+----------+------+
+  | id | name   | age  | salary    | language | city |
+  +----+--------+------+-----------+----------+------+
+  |  1 | 宋微微 |   20 |  5000.000 | PHP      | 上海 |
+  |  2 | 李强   |   21 | 12000.000 | Java     | 杭州 |
+  |  4 | 赵倩倩 |   25 |  5800.000 | PHP      | 上海 |
+  |  5 | 邓超   |   40 |  8900.000 | Java     | 杭州 |
+  |  7 | 李丽   |   50 |  6000.000 | PHP      | 杭州 |
+  |  8 | 李想   |   42 |  8500.000 | PHP      | 上海 |
+  +----+--------+------+-----------+----------+------+
+#+END_SRC
+**** any
+满足一个条件
+#+BEGIN_SRC sql
+  -- 超过PHP最底薪资
+  MariaDB [db1]> select * from programmer where salary > any (
+      ->     select salary from programmer where language = 'PHP'
+      ->     );
+  +----+--------+------+-----------+----------+------+
+  | id | name   | age  | salary    | language | city |
+  +----+--------+------+-----------+----------+------+
+  |  2 | 李强   |   21 | 12000.000 | Java     | 杭州 |
+  |  4 | 赵倩倩 |   25 |  5800.000 | PHP      | 上海 |
+  |  5 | 邓超   |   40 |  8900.000 | Java     | 杭州 |
+  |  6 | 王刚   |   35 |  7000.000 | Lua      | 北京 |
+  |  7 | 李丽   |   50 |  6000.000 | PHP      | 杭州 |
+  |  8 | 李想   |   42 |  8500.000 | PHP      | 上海 |
+  +----+--------+------+-----------+----------+------+
+#+END_SRC
+**** all
+满足所有条件
+#+BEGIN_SRC sql
+  -- 超过PHP最大薪资
+  MariaDB [db1]> select * from programmer where salary > all (
+      ->     select salary from programmer where language = 'PHP'
+      ->     );
+  +----+------+------+-----------+----------+------+
+  | id | name | age  | salary    | language | city |
+  +----+------+------+-----------+----------+------+
+  |  2 | 李强 |   21 | 12000.000 | Java     | 杭州 |
+  |  5 | 邓超 |   40 |  8900.000 | Java     | 杭州 |
+  +----+------+------+-----------+----------+------+
+#+END_SRC
+*** exists 子查询
++ 格式：... where exists (子查询)
++ 默认子查询查到数据就是true，空则为false
++ 配合使用上级表中的数据进行查询才有意义（可以筛选数据）
++ 有点连表查询的意思
+#+BEGIN_SRC sql
+  -- 号码已121结尾，属于部门号在部门表中有效
+  MariaDB [db1]> select * from employee as e where exists(
+      ->     select * from department as d
+      ->     where phone like '%12' and e.department = d.did
+      ->                                  );
+  +-----+--------+------------+-------------+
+  | eid | name   | department | phone       |
+  +-----+--------+------------+-------------+
+  |   2 | 宋微微 |          1 | 13511122212 |
+  |   3 | 赵倩倩 |          2 | 13988899912 |
+  |   5 | 王刚   |          5 | 13999877712 |
+  +-----+--------+------------+-------------+
+#+END_SRC

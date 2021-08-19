@@ -1,77 +1,35 @@
 #+startup: content
 
-* 显示工具栏
-  勾选菜单中view->appearance->navigation bar
-
-
-* 快速打开设置
-  点击工具栏的扳手图标
-
-
-* 配色方案
-  在settings->editor->color scheme 中选darcula（自己喜欢的来）
-
-
-* keymap
-  - 在settings->keymap中选emacs（其他方案类似）
-  - M：代表Alt键
-  - 右侧按功能搜索快捷键，可以添加和修改快捷键
-
-
-* 字体
-  推荐settings->editor->font中选consolas字体，大小25
-
-
-* 补全输入
-  显示提示后tab
-
-
-* 使用emmet编辑html的例子
-  |------------------+-------------------------------------------------|
-  | key              | 补全                                            |
-  |------------------+-------------------------------------------------|
-  | div              | <div><div>                                      |
-  | div.box          | <div class="box"></div>                         |
-  | ul.r>li{li--$}*2 | <ul class="r"><li>li--1</li><li>li--2</li></ul> |
-  |------------------+-------------------------------------------------|
-
-
-* css快速补全的例子
-  |---------+----------------------------|
-  | key     | 补全                       |
-  |---------+----------------------------|
-  | bgc     | background-color           |
-  | bgc#333 | background-color: #333333; |
-  | h       | height                     |
-  | w       | width                      |
-  | h100px  | height: 100px;             |
-  | w100rem | width: 100rem;             |
-  |---------+----------------------------|
-
-
-* 添加abbr的流程
+* version
+  2020.1.1
+* 共同的设置  
+** toolbar
+   view->appearance->navigation->toolbar
+** settings
+   click setting icon on toobar
+*** theme
+    appearance & behavior->theme->darcula
+*** keymap
+    1. keymap->emacs
+    2. search format, add C-c C-c for format file
+*** font
+    edit->font
+    - font: consolas
+    - size: 24
+* 类型参数显示和隐藏
+  setting->editor->inlay hints, select item then apply
+* 文件类型提示缺失
+  移除 setting->editor->file types中的提定文件* 添加abbr的流程
   1. settings->editor->live template
   2. 右侧的+和-对应添加和删除，左侧可以选择类型，上边可以设置补全快捷键
   3. 点击+，填写对应的内容，选择相应的类型后确定，参考相似类型填写（组就是文件夹）
-
-
 * 调整以浏览器打开的提示
   1. settings->tools->web browsers
   2. 根据需要勾选，取消勾选可以禁用提示
-
-
 * terminal中使用gitbash
   1. settings->tools->terminal
   2. 在application settings中选择gitbash路径（默认：C:\Program Files\Git\bin\bash.exe）
   3. 确认重启软件即可
-
-
-* 选择PHP版本
-  1. settings->languages & frameworks->php->composer
-  2. 保证synchronize ide settins with composer.json不勾选
-  3. settings->languages & frameworks->php
-  4. 在php language level 中选择对应版本，确定
-
 
 * 显示隐藏参数提示
   1. settings->editor->inlay hints
@@ -82,8 +40,6 @@
   1. settings->editor->file types
   2. 上边窗口选text文件
   3. 下边窗口移除对应的文件
-
-     
 * clion
 ** toolchains
    1. 需要安装对应的工具
@@ -99,5 +55,10 @@
       #+begin_src text
 	-DCMAKE_C_FLAGS="-Wall -Wextra -pedantic -Werror"
       #+end_src
+* phpstrom
+** php version
+   1. settings->languages & frameworks->php->composer
+   2. 保证synchronize ide settins with composer.json不勾选
+   3. settings->languages & frameworks->php
+   4. 在php language level 中选择对应版本，确定
 
-    

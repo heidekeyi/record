@@ -1,11 +1,8 @@
-* env
-* download
-  版本为5.12.11,离线版本
-* 地址
-  - https://www.qt.io/
-  - 各镜像(如华中科技大学,清华大学)
-* install
-  为了方便,全选,需要账号,联网才能安装
+#+startup: content
+
+
+* init env(remove directories)
+  C:\Users\12131\AppData\Roaming\QtProject
 * setting
 ** language
    tools->options->enviroment->interface->language->english
@@ -16,6 +13,7 @@
    4. select one->record->hit key->stop record
    5. 录入对应快捷键,解决冲突
    6. export file (in order to save)
+   7. 导入 ./qt-emacs.kms
 ** use kits
    1. tools->options->kits->kits
    2. 选中某个,make default
@@ -28,139 +26,3 @@
 ** set theme
    1. tools->options->enviroment->interface->theme
    2. 选dark
-* test
-** Qt Console Application
-   1. new->application(qt)->qt console application->choose
-   2. (input name)->next(more steps)
-   3. windows select mingw(vs select msvc)->next->finish
-   4. main.cpp
-      #+BEGIN_SRC c++
-	#include <QCoreApplication>
-	#include <iostream>
-	int main(int argc, char *argv[])
-	{
-	    QCoreApplication a(argc, argv);
-	    std::cout<<"hello world"<<std::endl;
-	    return a.exec();
-	}
-      #+END_SRC
-   5. run (arrow of left bottom of window)
-** Qt WidgetsApplication
-   1. new->application(qt)->Qt WidgetsApplication->choose
-   2. 类似Console Application(多了一个类创建过程)
-   3. 原生代码即可
-      - main.cpp
-        #+BEGIN_SRC c++
-	  #include "mainwindow.h"
-
-	  #include <QApplication>
-
-	  int main(int argc, char *argv[])
-	  {
-	      QApplication a(argc, argv);
-	      MainWindow w;
-	      w.show();
-	      return a.exec();
-	  }
-	#+END_SRC
-      - mainwindow.h
-	#+BEGIN_SRC c++
-	  #ifndef MAINWINDOW_H
-	  #define MAINWINDOW_H
-
-	  #include <QMainWindow>
-
-	  QT_BEGIN_NAMESPACE
-	  namespace Ui { class MainWindow; }
-	  QT_END_NAMESPACE
-
-	  class MainWindow : public QMainWindow
-	  {
-	      Q_OBJECT
-
-	  public:
-	      MainWindow(QWidget *parent = nullptr);
-	      ~MainWindow();
-
-	  private:
-	      Ui::MainWindow *ui;
-	  };
-	  #endif // MAINWINDOW_H
-	#+END_SRC
-      - mainwindow.cpp
-	#+BEGIN_SRC c++
-	  #include "mainwindow.h"
-	  #include "ui_mainwindow.h"
-
-	  MainWindow::MainWindow(QWidget *parent)
-	      : QMainWindow(parent)
-	      , ui(new Ui::MainWindow)
-	  {
-	      ui->setupUi(this);
-	  }
-
-	  MainWindow::~MainWindow()
-	  {
-	      delete ui;
-	  }
-
-	#+END_SRC
-   4. 修改后的代码
-      添加了一个lable各button
-      - mainwindow.h
-	#+BEGIN_SRC c++
-	  #ifndef MAINWINDOW_H
-	  #define MAINWINDOW_H
-
-	  #include <QMainWindow>
-
-	  QT_BEGIN_NAMESPACE
-	  namespace Ui { class MainWindow; }
-	  QT_END_NAMESPACE
-
-	  class MainWindow : public QMainWindow
-	  {
-	      Q_OBJECT
-
-	  public:
-	      MainWindow(QWidget *parent = nullptr);
-	      ~MainWindow();
-
-	  private slots:
-	      void on_pushButton_clicked();
-
-	  private:
-	      Ui::MainWindow *ui;
-	  };
-	  #endif // MAINWINDOW_H
-
-	#+END_SRC
-      - mainwindow.cpp
-	#+BEGIN_SRC c++
-	  #include "mainwindow.h"
-	  #include "ui_mainwindow.h"
-
-	  MainWindow::MainWindow(QWidget *parent)
-	      : QMainWindow(parent)
-	      , ui(new Ui::MainWindow)
-	  {
-	      ui->setupUi(this);
-	  }
-
-	  MainWindow::~MainWindow()
-	  {
-	      delete ui;
-	  }
-
-
-	  void MainWindow::on_pushButton_clicked()
-	  {
-	      QApplication::exit(0);
-	  }
-	#+END_SRC
-** Qt Quick
-   1. new->application(qt quick)->qt quick application-empty->choose
-   2. 其佘过程类似console(version选qt5.12,其它未测试)
-
-* 重新初始化
-  删除C:\Users\12131\AppData\Roaming\QtProject目录即可

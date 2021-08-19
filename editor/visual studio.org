@@ -1,0 +1,41 @@
+#+startup: content
+
+* version
+  2019
+* code
+  NYWVH-HT4XC-R2WYW-9Y3CM-X4V3Y
+* environment    
+  setting: tools->options->environment
+** theme
+   general, color theme: dark
+** font
+   fonts and colors
+   |-------------------+----------------------------+------|
+   | show settings for | font (bold type ... fonts) | size |
+   |-------------------+----------------------------+------|
+   | text editor       | consolas                   |   18 |
+   |-------------------+----------------------------+------|
+   | output window     | 新宋体                     |   12 |
+   |-------------------+----------------------------+------|
+** language
+   international settings, language: english
+** keymap
+   keyboard, select emacs from apply the .... scheme
+* extensions
+  extensions->mannage extensions
+  |----------------------+-----------------|
+  | extension name       | explain         |
+  |----------------------+-----------------|
+  | force utf-8 (no bom) | file coding     |
+  |----------------------+-----------------|
+  | emacs emulation 2    | keymap on emacs |
+  |----------------------+-----------------|
+  1. online search(top right corner)
+  2. select
+  3. download
+  4. close editor
+  5. install
+  6. start editor
+
+
+      

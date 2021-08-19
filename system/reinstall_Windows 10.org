@@ -74,3 +74,14 @@
 ** php
    1. 为C:\wamp64\bin\apache\apache2.4.41\conf\extra\httpd-vhosts.conf注释AllowOverride All防止重写不能访问
    2. 为C:\Windows\System32\drivers\etc\hosts添加127.0.0.1 log.cn
+** navicat
+   1. 卸载掉早期版本，卸载干净，然后安装最新版navicat
+   2. 安装完成后将破解补丁复制到安装目录下,运行破解补丁
+   3. patch(点击右上角patch)
+   4. 然后选择版本和语言(product,language),一般默认即可
+   5. 运行navicat，弹出注册界面，如果没有弹出注册界面，手动在菜单打开：帮助->注册
+   6. 点击注册机的generate按钮(右边中间,serial keygen右侧)
+   7. 点击navicat注册界面的激活按钮，提示手动激活(已自动录入xxx)
+   8. 点击手动激活，然后将得到的RequestCode复制到注册机(request code大框中,一般自动录入了)
+   9. 点击注册机左下方的Generate按钮，生成ActivationCode
+   10. 复制粘贴到navicat的激活码框，完成激活(一般自动录入了)

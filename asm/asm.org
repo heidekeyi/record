@@ -1,0 +1,30 @@
+#+startup: content
+
+
+* DOSBox
+  version: dosbox-0.74-3
+** download
+   from https://www.dosbox.com/, select download menu, click download icon
+** install
+   install with default setting
+** setting
+   in order to enter dir auto
+*** config file
+    information of dosbox terminal when start dosbox
+    1. path
+      C:\Users\12131\AppData\Local\DOSBox\dosbox-0.74-3.conf
+    2. custom
+       #+begin_src conf
+	 # ......
+	 # there are many content above(this is comment of mine)
+	 [autoexec]
+	 # Lines in this section will be run at startup.
+	 # You can put your MOUNT lines here.
+
+	 # append content to enter C auto
+	 mount C C:\Users\12131\Desktop\asm
+
+	 C:
+       #+end_src
+*** masm tool
+    copy tool to C:\Users\12131\Desktop\asm

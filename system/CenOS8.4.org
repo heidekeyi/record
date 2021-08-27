@@ -22,3 +22,63 @@
       yum -y update
   11. 使用secureCRT连接(相关教程参考secureCRT教程)
 
+* package manager
+  dnf
+  #+begin_src shell
+    dnf install -y gcc gcc-c++
+    dnf install -y make gdb
+    dnf install -y emacs
+  #+end_src
+* ip information
+  ip
+  #+begin_src shell
+    ip route
+  #+end_src
+* 网卡
+  #+begin_src shell
+    # 激活网卡 ens33
+    nmcli c up ens33
+    # 禁用网卡 ens33
+    nmcli c down ens33
+  #+end_src
+* network
+  modyfy with vi
+  #+begin_src shell
+    [heidekeyi@localhost ~]$ cat /etc/sysconfig/network-scripts/ifcfg-ens32 
+    TYPE=Ethernet
+    PROXY_METHOD=none
+    BROWSER_ONLY=no
+    # BOOTPROTO=dhcp
+    BOOTPROTO=static
+    DEFROUTE=yes
+    IPV4_FAILURE_FATAL=no
+    IPV6INIT=yes
+    IPV6_AUTOCONF=yes
+    IPV6_DEFROUTE=yes
+    IPV6_FAILURE_FATAL=no
+    NAME=ens32
+    UUID=8669289f-2230-472e-9bb2-737bf77cedba
+    DEVICE=ens32
+    # ONBOOT=no
+    ONBOOT=yes
+
+
+
+
+    # static ip setting
+    IPADDR=192.168.1.9
+    GATEWAY=192.168.1.1
+    DNS1=192.168.1.1
+    NETMASK=255.255.255.0
+    PREFEX=32
+  #+end_src
+* 重启
+  #+begin_src shell
+    init 6
+  #+end_src
+* vi
+  - yy copy line (then p is paste)
+  - dd delete line
+  - dw delete word
+  - gU to upper case
+    

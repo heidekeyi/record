@@ -237,3 +237,37 @@
 	return 0;
     }
   #+end_src
+* string
+  #+begin_src c++
+    #include <iostream>
+
+    using namespace std;
+
+    int main() {
+	const char *str = "const char *str=\"hello world!\"";
+	cout << str << endl;
+	str = R"(const char *msg = "const char *str=\"hello world!\"";)";
+	cout << str << endl;
+	str = R"(
+    Hello
+    World
+    !)";
+	cout << str << endl;
+	str = R"&( ")"" )&";
+	cout << str << endl;
+	str = R"--( ")"" )--";
+	cout << str << endl;
+	return 0;
+    }
+  #+end_src
+  #+begin_src text
+    const char *str="hello world!"
+    const char *msg = "const char *str=\"hello world!\"";
+
+    Hello
+    World
+    !
+     ")""
+     ")""
+  #+end_src
+  

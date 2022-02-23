@@ -26,6 +26,7 @@
 * 调整以浏览器打开的提示
   1. settings->tools->web browsers
   2. 根据需要勾选，取消勾选可以禁用提示
+  3. 取消勾选for html files (disable build in preview)
 * terminal中使用gitbash
   1. settings->tools->terminal
   2. 在application settings中选择gitbash路径（默认：C:\Program Files\Git\bin\bash.exe）

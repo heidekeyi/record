@@ -1,0 +1,223 @@
+#+LATEX_HEADER: \usepackage{ctex}
+
+* links
+** 系统
+*** 镜像站点
+    1. [[https://mirrors.tuna.tsinghua.edu.cn/][清华大学开源软件镜像站]]
+    2. [[http://ftp.sjtu.edu.cn/][上海交通大学开源镜像站]]
+*** 工具
+**** 改键工具 KeyTWeak
+     主要用于EMACS中的键 caps 和 ctrl 替换
+*** 光盘文件
+    1. [[https://tb.rg-adguard.net/public.php?lang=zh-CN][rg-adguard]] （速度杠杆的）
+    2. [[https://msdn.itellyou.cn/][i tell you]] (不单系统，Windows 系列的软件很多都有）
+
+** 应用软件
+   1. [[https://www.52pojie.cn/][吾爱破解]] （首推这个）
+   2. [[http://www.ssdtop.com/][8号站]] （思维导图，还有一些其他的）
+
+** Ebook
+   google 被墙不考虑
+   1. [[http://www.java1234.com/][Java知识分享网]]
+   2. [[https://www.xz577.com/][码农之家]]
+   3. [[https://www.jb51.net/books/][脚本之家]]
+   4. [[http://www.banshujiang.cn/][搬书匠]] （很新的，大多英文的，很给你，非常感谢提供者）
+   5. [[https://www.zybuluo.com/hangxin111/note/1493869#%25E8%2587%25AA%25E8%25A1%258C%25E6%2590%259C%25E7%25B4%25A2%25E7%2594%25B5%25E5%25AD%2590%25E4%25B9%25A6][计算机书籍下载 - 作业部落]]（非常感谢建站的大神）
+   6. [[https://libgen.is/][Library Genesis]]（都是精装英文版）
+
+** BBS
+   - [[http://www.santongit.com/plugin.php?id=maque365_tpage][三通IT]]
+   - [[https://www.lthack.com/][龙天论坛]]
+   - [[http://www.javaxxz.com/][java学习者论坛]]
+   - [[http://www.ccievide.com/forum-2-1.html][自学之家]]
+
+** 工具站点
+   1. [[https://www.iconfont.cn/][阿里图标]]
+   2. [[https://www.processon.com/][线上流程图]]
+   3. [[https://js.do/][js 线上模拟运行（支持 https）]]
+
+** 资源网站 （用于工作）
+*** 文档接口
+    - [[https://www.eolinker.com/#/][eolinker]]
+*** javascript
+**** 文档
+     - [[https://developer.mozilla.org/zh-CN/][MDN]]
+     - [[https://youzan.github.io/vant/#/zh-CN/intro][vant]]
+**** 资源
+     - [[https://www.npmjs.com/][npm]]
+     - [[https://npm.taobao.org/][淘宝镜像]]
+*** often
+    - [[https://github.com/][github（版本控制）]]
+    - [[https://www.cnblogs.com/][博客园（记录一些东西）]]
+
+
+* reinstall win10
+** 准备安装U盘
+   1. 到 [[https://msdn.itellyou.cn/][I Tell You]] 上获取系统下载地址，用百度用离线下载（office 下载也一样）
+   2. 用 UltraISO 制作启动盘
+** 安装系统
+   设置启动项，根据系统提示安装系统，使用 HWIDGEN 激活（不一定行）
+** 启动后提示 nvidia control panel is not found 弹窗
+   用win10自带的商城（store）搜索 NVIDIA Control Panel 然后安装
+** 添加字体
+   安装 文泉驿微米黑（微米黑 + 等宽微米黑）
+** 配置软件
+   各种坑
+*** office
+    使用资源管理器打开加载光盘，直接安装（登录各种错）
+*** Git
+    安装的时候取消右键 GUI，美化设置（标题栏右键-Options，修改后要应用并保存）
+    + window：设置窗口大小，current size 可以计算当前窗口大小
+    + Keys：除了 Copy and Paste 其他都不选
+    + Text：选择 Consolas 三号字体
+    + Looks：Theme 选 Dracula，Transparent 选 Low，Cursor 选 Block
+*** 百度网盘下载器
+    必要设置
+    + 基本：取消开机启动和我的电脑中显示网盘
+    + 传输：2个任务数，地址定位到下载文件下
+    + 安全：取消锁定
+    + 隐私：允许任何人
+    + 提醒：取消声音，取消备份提示
+*** node
+    安装好后需要修改源（淘宝镜像），使用 yarn
+*** tim 
+    取消开机启动就好
+*** haskell
+    下载平台的完整包来安装（带 ghci）
+*** jetbrains 系
+    + 单击菜单 View-Appearance，勾选 Tool Bar，方便设置
+    + 字体设置成 25 的大小是比较合适的
+**** pycharm 配置默认解释器
+     1. File-Settings
+     2. 选中 Project xxx（xxx 为项目文件夹名称）-Project Interpreter-Show All...
+     3. 点击 + 号，选中 System Interpreter 确定
+*** visual studio 2019
+**** 下载
+     到 https://visualstudio.microsoft.com/zh-hans/vs/ 下载
+**** 安装配置
+     选择 VC++ 桌面应用（目前是这样的）
+**** 使用英语
+     1. 单击菜单 工具-获取工具和功能
+     2. 单击语言包，勾选英语，单击修改，安装过程要关闭 VS（会提示）
+     3. 重启 VS，单击菜单 工具-选项-环境-区域设置-English，确定
+     4. 重启 VS 变成英文界面
+**** 添加扩展
+***** force utf-8
+      1. 单击菜单 Extensions-Manager Extensions-online
+      2. 在右上角 search 中输入要搜索的扩展 force utf-8
+      3. 在刷新的列表中选中并单击 download，关闭 VS
+      4. 在弹出窗中点击修改进行安装
+***** emacs emulation 2
+      1. 添加方法类似 force utf-8
+      2. 是再次启动 VS 弹出修改确认权限，点确定
+      3. 单击菜单 Tools-Options-Environment-KeyBoard
+      4. 选择 emacs 确定，使用 emacs 快捷键
+*** PHP 使用环境
+    先微软常用运行库，在安装 wampserver（顺序不能错）
+*** IDM
+    运行 IDM\App\IDM\绿化 程序添加插件方便下载
+*** PotPlayer
+    运行绿化工具，创建关联和运行图标（桌面图标）
+*** Foobar2000
+    添加音乐文件即可
+*** UltraISO
+    主要用来制作系统启动盘
+*** WinRAR
+    处理压缩包必不可少
+*** kis
+    卡巴防毒工具，使用激活码激活（可选配，习惯了，一直使用）
+*** emacs
+    根据配置安装相应的包（配置中需要的包都需要下载，下载源也很坑人的）
+*** 搜狗拼音输入法
+    基本取消所有快捷键，最小化显示
+*** KeyTweak
+    调换 键Left-Ctrl 和 键Caps Lock 的位置，需要重启系统生效
+*** firefox
+    下载安装，登录账号（获取之前的书签和扩展）
+*** textlive
+    - 下载地址
+      - 上海镜像->ctan->/systems/texlive/Images/
+      - 清华镜像->/CTAN/systems/texlive/Images/
+    - 卸载批处理
+      C:\texlive\2020\tlpkg\installer\uninst.bat
+** 设置中文/非中文输入法快捷键（超级巨坑）
+   Windows 10 versions v1909 10/70/72 regedit 中virtual code值全部改为ba,热键顺序选semicln
+*** 控制面板中的相关设置
+    1. 选择 时间和语言-语言
+    2. 选中中文（中华人民共和国），单击 选项，键盘项只保留搜狗拼音输入法，其他删除
+    3. 返回，回到 语言 界面
+    4. 单击 选择始终默认使用的输入法
+    5. 选 搜狗拼音输入法 为默认输入法
+    6. 单击 输入 语言热键
+    7. 选中 中文（简体）输入法-输入法/非输入法切换 项
+    8. 单击更改按键顺序，键（K）中选 QUOTE 后确定（用 QUOTE 举例, virtual code 为de）
+    9. 其他项都取消快捷键
+*** 修改注册表防止系统自动还原快捷键（Ctrl + SPC）
+    1. 在 \HKEY_CURRENT_USER\Control Panel\Input Method\Hot Keys\ 下
+    2. 查看项 00000070、00000072、00000010 中的Virtual Key 值 
+    3. 20 00 00 00 是系统原来的值，参考这个（将QUOTE切换成其测出来的）确定设置后的新值
+    4. 系统 1903 使用 00000010 记录新修改的值 de 00 00 00
+    5. 修改相同路径下的 00000070 中的 Virtual Key 值为 de 00 00 00
+    6. 00000072 中 Virtual Key 的值不是默认的 20 00 00 00，一般不修改
+    7. 修改 \HKEY_USERS\.DEFAULT\Control Panel\Input Method\Hot Keys\ 路径下
+    8. 修改 00000010 和 00000070 中的 Virtual Key 值为 de 00 00 00
+    9. 不同系统情况不同，但是很类似，系统 1809 之前好像是以 00000070 参考修改其他项的值
+
+** 输入法选择
+   为了使用Ctrl+SPC，不能用Windows10自带的输入法
+   - QQ拼音
+   - QQ五笔（正在练习使用中）
+
+* vmware
+
+** 环境
+   Windows 10 + VMware Workstation 15.5 + CentOS7.7
+
+** 网络使用桥接的方式
+   在虚拟网络编辑器中选桥接模式，在虚拟机设置网络连接中根据名称选择对应的自定义
+
+** 挂载点
+   访问分区的文件夹叫挂载点
+   1. Windows 将分区装入某个文件夹访问
+   2. Linux 将分区挂在到某个文件夹
+** 安装碰到的问题
+*** 再次启动网络无法连接
+    ifconfig 查看，发现没有IP地址
+**** 办法（仅供参考）
+     1. 设置 VMware Workstation 软件
+     2. 编辑虚拟机设置
+     3. 选中硬件选项卡 -> 网络适配器，右侧有设备状态，选中启动时连接
+     4. CentOS7 设置开启自动连接，以便自动获取IP，否则每次都需要手动连接（网络设置中开启）
+
+*** 连接虚拟机慢
+    成功的连接仍然需要几秒钟
+**** 修改文件 /etc/ssh/sshd_config
+     1. vi /etc/ssh/sshd_config （用 /xxx 可以进行快速查找）
+     2. UseDNS no #有注释就去掉
+     3. GSSAPIAuthentication no #有注释就去掉
+
+** 设置共享
+*** CentOS
+    1. 编辑虚拟机设置
+    2. 选中 选项 -> 共享文件夹
+    3. 选择 总是启用
+    4. 点击 添加 -> 下一步，点击 浏览 选择共享文件夹并确定
+    5. 下一步，完成
+*** XP
+    1. Vmware workstation 设置同 Centos
+    2. XP中右击 我的电脑, 点击 映射网络驱动器 （文件夹中工具菜单也可以）
+    3. 点击 浏览，网上邻居 -> 整个网络 -> VMware 共享文件夹 -> vmware-host
+    4. 展开文件夹 Shared Folders，会显示 VMware workstation 中设置的共享文件夹
+    5. 选中文件夹确定
+    6. 设置对应的盘符，点击 完成
+    注：虚拟机慢的可能需要几分钟才可以看到共享文件夹
+
+** CentOS 简单命令
+*** 立即关机
+    #+BEGIN_SRC shell
+      shutdown -h now
+    #+END_SRC
+*** 重启
+    #+BEGIN_SRC shell
+      init 6
+    #+End_SRC

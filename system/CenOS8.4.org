@@ -1,0 +1,84 @@
+
+#+STARTUP: content
+
+* 安装VMware Workstation Pro
+  官网下载 v16.1(在workspace标签中)
+
+* 安装
+  默认安装
+  
+* 安装CentOS
+  1. 官网下载(download->centos linux->x86_64,任选一个地址)
+  2. 运行vmware workstation,创建虚拟机
+  3. 自定义,一直默认到选取光盘
+  4. 选稍后安装操作系统(简易安装:默认配置,稍后安装可以自定义)
+  5. 可以一直下一步到完成(系统选centos 8)
+  6. 完成后在设置cd中指定系统镜像,启动
+  7. 安装中选系统配置工作站(可以不选software,没有gcc之类的)
+  8. 在线安装工具
+  9. gcc gcc-c++ emacs make gdb(需要root权限)
+     yum -y install gcc gcc-c++ make gdb
+  10. 更新(可选,同样需要root权限)
+      yum -y update
+  11. 使用secureCRT连接(相关教程参考secureCRT教程)
+
+* package manager
+  dnf
+  #+begin_src shell
+    dnf install -y gcc gcc-c++
+    dnf install -y make gdb
+    dnf install -y emacs
+  #+end_src
+* ip information
+  ip
+  #+begin_src shell
+    ip route
+  #+end_src
+* 网卡
+  #+begin_src shell
+    # 激活网卡 ens33
+    nmcli c up ens33
+    # 禁用网卡 ens33
+    nmcli c down ens33
+  #+end_src
+* network
+  modyfy with vi
+  #+begin_src shell
+    [heidekeyi@localhost ~]$ cat /etc/sysconfig/network-scripts/ifcfg-ens32 
+    TYPE=Ethernet
+    PROXY_METHOD=none
+    BROWSER_ONLY=no
+    # BOOTPROTO=dhcp
+    BOOTPROTO=static
+    DEFROUTE=yes
+    IPV4_FAILURE_FATAL=no
+    IPV6INIT=yes
+    IPV6_AUTOCONF=yes
+    IPV6_DEFROUTE=yes
+    IPV6_FAILURE_FATAL=no
+    NAME=ens32
+    UUID=8669289f-2230-472e-9bb2-737bf77cedba
+    DEVICE=ens32
+    # ONBOOT=no
+    ONBOOT=yes
+
+
+
+
+    # static ip setting
+    IPADDR=192.168.1.9
+    GATEWAY=192.168.1.1
+    DNS1=192.168.1.1
+    NETMASK=255.255.255.0
+    PREFEX=32
+  #+end_src
+* 重启
+  #+begin_src shell
+    init 6
+  #+end_src
+* vi
+  - yy copy line (then p is paste)
+  - dd delete line
+  - dw delete word
+  - gU to upper case
+    

@@ -1,0 +1,114 @@
+* 搭建 PHP 开发环境
+使用 wampserve，到[[https://sourceforge.net/projects/wampserver/files/][下载地址]]中选择最新版本下载，默认安装
+* 默认配置简单说明
++ 安装路径：C:\wamp64
++ 项目根目录 C:\wamp64\www
++ 安装的组件 C:\wamp64\bin
+* 使用虚拟主机
+配置好需要重启服务（简单全部重启就完事了）
+** 修改 Apache 配置
+编辑 C:\wamp64\bin\apache\apache2.4.41\conf\extra\httpd-vhosts.conf（原先的全部注释掉就好）
+#+BEGIN_SRC conf
+  # 第一个站点是默认站点
+  <VirtualHost *:80>
+    # 域名
+    ServerName localhost
+    # 文件目录
+    DocumentRoot "${INSTALL_DIR}/www"
+    # 权限配置
+    <Directory "${INSTALL_DIR}/www">
+      # 允许列出目录
+      Options Indexes
+      # 允许覆盖
+      AllowOverride All
+      # 允许所有访问
+      Require all granted
+    </Directory>
+    # 默认文件（首页）
+    DirectoryIndex index.html index.php
+  </VirtualHost>
+
+  <VirtualHost *:80>
+    ServerName www.from
+    DocumentRoot "${INSTALL_DIR}/www/from"
+    <Directory "${INSTALL_DIR}/www/from">
+      Options Indexes
+      AllowOverride All
+      Require all granted
+    </Directory>
+    DirectoryIndex index.html index.php
+  </VirtualHost>
+#+END_SRC
+** 配置本机域名解析
+编辑 C:/Windows/System32/drivers/etc/hosts，添加如下
+#+BEGIN_SRC conf
+  127.0.0.1 www.from
+  127.0.0.1 www.to
+  127.0.0.1 www.test
+#+END_SRC
+* 一些配置说明
+** Apache
+*** 配置文件路径
+C:\wamp64\bin\apache\apache2.4.41\conf\httpd.conf
+*** 安装路径
+C:\wamp64\bin\apache\apache2.4.41
+*** 安装服务
+C:\wamp64\bin\apache\apache2.4.41\bin\httpd.exe -k install
+*** 卸载服务
+C:\wamp64\bin\apache\apache2.4.41\bin\httpd.exe -k uninstall
+*** 测试配置语法
+C:\wamp64\bin\apache\apache2.4.41\bin\httpd.exe -t
+*** 启动/停止服务方式
++ 控制面板：运行 C:\wamp64\bin\apache\apache2.4.41\bin\ApacheMonitor.exe，根据提示操作面板
++ 使用 Windows 系统服务管理
++ 命令：net start|stop Apache2.4（服务名称要一致）
+
+** PHP
+*** 配置文件路径、启用模块、设置文件的后缀
+修改 Apache 配置文件（搜索关键字，有注释就去掉注释，没有就添加）
+#+BEGIN_SRC conf
+  PHPIniDir "C:/wamp64/bin/apache/apache2.4.41/bin"
+  LoadModule php7_module "C:/wamp64/bin/php/php7.3.12/php7apache2_4.dll"
+  AddType application/x-httpd-php .php
+#+END_SRC
+*** 配置文件
++ 开发配置：C:\wamp64\bin\php\php7.3.12\php.ini-development
++ 产品配置：C:\wamp64\bin\php\php7.3.12\php.ini-production
+**** 放置配置文件
+1. 拷贝文件开发配置（看情况选择）到C:/wamp64/bin/apache/apache2.4.41/bin/中（和前面的位置相同就行）
+2. 修改文件名为 php.ini
+*** 修正时区
+修改配置
+#+BEGIN_SRC conf
+  date.timezone ="PRC"
+#+END_SRC
+** 数据库
+*** 设置模块路径、启用模块
+修改 PHP 配置文件（有注释去掉，没有就添加）
+#+BEGIN_SRC conf
+  ; On windows:
+  extension_dir ="c:/wamp64/bin/php/php7.3.12/ext/"
+  extension=mysqli
+  extension=pdo_mysql
+#+END_SRC
+*** 安装 mysql 建议 (更换版本的话）
+安装路径和数据库数据存放路径在同一路径
+
+* 一些测试
+** 时间正确性
+#+BEGIN_SRC php
+  echo date("Y-m-d H:i:s");
+#+END_SRC
+** PHP 环境
+可以看版本、目录、配置这些信息
+#+BEGIN_SRC php
+  phpinfo();
+#+END_SRC
+** 数据库连接
+#+BEGIN_SRC php
+    if (mysqli_connect('127.0.0.1', 'root', '')) {
+	echo '<h1>ok</h1>';
+    } else {
+	echo '<h1>boom</h1>';
+    }
+#+END_SRC

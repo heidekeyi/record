@@ -1,0 +1,317 @@
+* 简单算数
+#+BEGIN_SRC haskell
+  Prelude> 1 + 2
+  3
+  Prelude> (1+3)*(2+5)
+  28
+  Prelude> 5 * (-2)
+  -10
+#+END_SRC
+* Boolean 代数
+#+BEGIN_SRC haskell
+  Prelude> True && False
+  False
+  Prelude> False || True
+  True
+  Prelude> not False
+  True
+#+END_SRC
+* 测试相等
+#+BEGIN_SRC haskell
+  Prelude> "hello" == "hello"
+  True
+  Prelude> "a" /= "b"
+  True
+  Prelude> 1 /= 2
+  True
+#+END_SRC
+* 函数调用（使用内置函数）
+不需要括号，括号用来改变优先级
+#+BEGIN_SRC haskell
+  Prelude> succ 100
+  101
+  Prelude> succ 1
+  2
+  Prelude> min 1 100
+  1
+  Prelude> max 1 100
+  100
+#+END_SRC
+* 函数优先级很高（有限结合）
+#+BEGIN_SRC haskell
+  Prelude> succ 5 * 10 * 10
+  600
+  Prelude> succ (5 * 10) * 10
+  510
+#+END_SRC
+* 使用反引号的中缀函数
+#+BEGIN_SRC haskell
+  Prelude> div 92 10
+  9
+  Prelude> 92 `div` 10
+  9
+#+END_SRC
+* 多次调用同一函数
+调用参数只有一个
+#+BEGIN_SRC haskell
+  Prelude> succ (succ 110)
+  112
+#+END_SRC
+* 函数定义
+** 无参数
+#+BEGIN_SRC haskell
+  size = 123
+#+END_SRC
+** 带参数
+#+BEGIN_SRC haskell
+  add a b = a + b
+#+END_SRC
+
+** 没有顺序要求（前面定义的也可以调用后面的函数）
+#+BEGIN_SRC haskell
+  doubleUs x y = doubleMe x + doubleMe y
+  doubleMe x = x + x
+#+END_SRC
+* 列表
+** ++ 操作符
+#+BEGIN_SRC haskell
+  λ> [1,2] ++ [1,3]
+  [1,2,1,3]
+  λ> "ab" ++ "12"
+  "ab12"
+#+END_SRC
+** ：操作符
+#+BEGIN_SRC haskell
+  λ> 'a':"123"
+  "a123"
+  λ> 1:[2,1]
+  [1,2,1]
+#+END_SRC
+** 列表语法糖（前面的是语法糖）和本质
+#+BEGIN_SRC haskell
+  λ> [1,2,3,4]
+  [1,2,3,4]
+  λ> 1:2:3:4:[]
+  [1,2,3,4]
+#+END_SRC
+** 取下标对应的数据
+#+BEGIN_SRC haskell
+  λ> "123456" !! 3
+  '4'
+#+END_SRC
+** 列表包含列表
+列表中的同级元素要相似（如：同级元素是列表且元素都是整数，不能有其他类型）
+#+BEGIN_SRC haskell
+  λ> let a = [[1], [2,3]]
+  λ> a
+  [[1],[2,3]]
+#+END_SRC
+** 列表比较
+默认使用字典比较每一个元素
+#+BEGIN_SRC haskell
+  λ> let a = [10];
+  λ> let b = [1, 2];
+  λ> a > b
+  True
+#+END_SRC
+* 操作列表的基本函数
+** 获取第一个元素
+#+BEGIN_SRC haskell
+  λ> head [ 2, 1, 3]
+  2
+#+END_SRC
+** 去除首元素
+#+BEGIN_SRC haskell
+  λ> tail [2, 1, 3]
+  [1,3]
+#+END_SRC
+** 获取最后一个元素
+#+BEGIN_SRC haskell
+  λ> last [2, 1, 3]
+  3
+#+END_SRC
+** 去除最后一个元素
+#+BEGIN_SRC haskell
+  λ> init [2, 1, 3]
+  [2,1]
+#+END_SRC
+** head last init tail 不能作用在空列表上（编译通过，运行发生错误）
+#+BEGIN_SRC haskell
+  λ> head []
+  ** Exception: Prelude.head: empty list
+#+END_SRC
+** 列表长度
+#+BEGIN_SRC haskell
+  λ> length [2, 1, 3]
+  3
+#+END_SRC
+** 反转列表
+#+BEGIN_SRC haskell
+  λ> reverse [1, 1, 3]
+  [3,1,1]
+#+END_SRC
+** 从首元素开始，提取指定个数的元素
+#+BEGIN_SRC haskell
+  λ> let a = [1, 2, 3, 4, 5]
+  λ> take 2 a
+  [1,2]
+  λ> take 8 a
+  [1,2,3,4,5]
+  λ> take 0 a
+  []
+#+END_SRC
+** 从首元素开始，删除指定个数的元素
+#+BEGIN_SRC haskell
+  λ> let a = [2, 1, 5, 4, 3]
+  λ> drop 3 a
+  [4,3]
+  λ> drop 0 a
+  [2,1,5,4,3]
+  λ> drop 10 a
+  []
+#+END_SRC
+** 获取可以排序的列表的最大最小值
+#+BEGIN_SRC haskell
+  λ> let a = [1, 3, 2, 5]
+  λ> maximum a
+  5
+  λ> minimum a
+  1
+#+END_SRC
+** 计算列表的总和和乘积
+#+BEGIN_SRC haskell
+  λ> let a = [0, 1, 2, 3]
+  λ> sum a
+  6
+  λ> product a
+  0
+  λ> product [2, 3]
+  6
+#+END_SRC
+** 判断是否是列表中的元素
+#+BEGIN_SRC haskell
+  λ> let a = [1, 2, 3]
+  λ> 2 `elem` a
+  True
+  λ> 10 `elem` a
+  False
+#+END_SRC
+* ranges
+数字和字符序列，也可以使用差值
+** 简单使用
+#+BEGIN_SRC haskell
+  λ> [1..10]
+  [1,2,3,4,5,6,7,8,9,10]
+  λ> [2,5..20]
+  [2,5,8,11,14,17,20]
+  λ> ['c'..'z']
+  "cdefghijklmnopqrstuvwxyz"
+  λ> ['c', 'h'..'z']
+  "chmrw"
+#+END_SRC
+** 逆序
+#+BEGIN_SRC haskell
+  λ> [10, 8..1]
+  [10,8,6,4,2]
+#+END_SRC
+** 获取指定个数的两种方式
+#+BEGIN_SRC haskell
+  λ> [10, 20..10 * 10]
+  [10,20,30,40,50,60,70,80,90,100]
+  λ> take 10 [10, 20..]
+  [10,20,30,40,50,60,70,80,90,100]
+#+END_SRC
+** 获取指定个数循环列表内的元素（列表内的元素无限循环）
+#+BEGIN_SRC haskell
+  λ> take 5 (cycle [1, 2, 3])
+  [1,2,3,1,2]
+#+END_SRC
+** 获取指定个数的单个元素的两种方式（推荐用函数的方式）
+#+BEGIN_SRC haskell
+  λ> take 10 (repeat 10)
+  [10,10,10,10,10,10,10,10,10,10]
+  λ> replicate 6 10
+  [10,10,10,10,10,10]
+#+END_SRC
+* 集合
+** 一个条件
+#+BEGIN_SRC haskell
+  λ> [3*x | x <- [1..7]]
+  [3,6,9,12,15,18,21]
+#+END_SRC
+** 多个条件
+** 使用余数
+#+BEGIN_SRC haskell
+  λ> [x | x <- [50..100], x `mod` 7 == 3]
+  [52,59,66,73,80,87,94]
+#+END_SRC
+** 奇数
+是奇数，小于10则xxx，否则xxx
+#+BEGIN_SRC haskell
+  λ> let str set = [if x < 10 then "odd" else "even" | x <- set, odd x]
+  λ> str [6..13]
+  ["odd","odd","even","even"]
+#+END_SRC
+** 多个列表组合
+#+BEGIN_SRC haskell
+  λ> [x*y|x<-[1..3],y<-[1..3]]
+  [1,2,3,2,4,6,3,6,9]
+#+END_SRC
+** 计算长度
+#+BEGIN_SRC haskell
+  λ> let len list = sum [1|_<-list]
+  λ> len [1..5]
+  5
+  λ> len [1..8]
+  8
+#+END_SRC
+** 使用字符串
+#+BEGIN_SRC haskell
+  λ> let filter str = [ch | ch <- str,  ch `elem` ['A'..'Z']]
+  λ> filter "Welcome, Hello, World!"
+  "WHW"
+#+END_SRC
+** 嵌套集合
+#+BEGIN_SRC haskell
+  λ> let xxs = [[1,4..10], [1..10]]
+  λ> [[x|x<-xs, odd x, x > 3] | xs<-xxs]
+  [[7],[5,7,9]]
+#+END_SRC
+* 元组
+** 获取二元组第一、第二部分
+#+BEGIN_SRC haskell
+  λ> fst (1, "hello")
+  1
+  λ> snd (1, "hello")
+  "hello"
+#+END_SRC
+** 合成元组构成的列表
+#+BEGIN_SRC haskell
+  λ> zip [1..3] ['a'..'c']
+  [(1,'a'),(2,'b'),(3,'c')]
+  λ> zip [1..] ['a','b']
+  [(1,'a'),(2,'b')]
+#+END_SRC
+** 正三角形例子（很高端的样子）
++ 边不大于 10
++ 正三角形
++ 周长 24
+#+BEGIN_SRC c++
+  λ> [(a,b,c)|c<-[1..10],b<-[1..c],a<-[1..b], a^2 + b^2 == c^2]
+  [(3,4,5),(6,8,10)]
+  λ> [(a,b,c)|c<-[1..10],b<-[1..c],a<-[1..b], a^2 + b^2 == c^2, a+b+c==24]
+  [(6,8,10)]
+#+END_SRC
+* 判断类型
+#+BEGIN_SRC haskell
+  λ> :t 'a'
+  'a' :: Char
+  λ> :t True
+  True :: Bool
+  λ> :t "hello"
+  "hello" :: [Char]
+  λ> :t (True, 'a')
+  (True, 'a') :: (Bool, Char)
+  λ> :t 2==3
+  2==3 :: Bool
+#+END_SRC

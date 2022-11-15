@@ -1,0 +1,28 @@
+#+startup: content
+
+
+* init env(remove directories)
+  C:\Users\12131\AppData\Roaming\QtProject
+* setting
+** language
+   tools->options->enviroment->interface->language->english
+** use emacs keymap
+   1. about->about plugins
+   2. 输入emacs搜索,勾选中
+   3. tools->options->enviroment->keyboard
+   4. select one->record->hit key->stop record
+   5. 录入对应快捷键,解决冲突
+   6. export file (in order to save)
+   7. 导入 ./qt-emacs.kms
+** use kits
+   1. tools->options->kits->kits
+   2. 选中某个,make default
+** set project directory
+   1. tools->options->build&run->general
+   2. 选择directory    
+** use terminal
+   1. tools->options->build&run->general
+   2. 设置default for 'run in terminal'(在比较下面的位置),推荐选 deduce from project
+** set theme
+   1. tools->options->enviroment->interface->theme
+   2. 选dark

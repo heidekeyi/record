@@ -1,0 +1,137 @@
+#+begin_src js
+  class CheatCode {
+      constructor() {
+	  this.data = '';
+	  this.items = [];
+	  this._desc = '';
+	  this._type = '';
+	  this._addr = '';
+      }
+
+      write(pathname) {
+	  const fs = require('fs/promises');
+	  new Promise((resolve, reject) => {
+	      fs.writeFile(pathname, this.data)
+		  .then(() => resolve('success'))
+		  .catch(() => reject('error'))
+	  }).then((msg) => {
+	      console.log(msg);
+	  });
+	  return this;
+      }
+
+      join() {
+	  this.data = `<?xml version="1.0" encoding="utf-8"?>
+  <CheatTable CheatEngineTableVersion="29">
+    <CheatEntries>
+    ${this.items.join('\n')}</CheatEntries>
+    <UserdefinedSymbols/>
+  </CheatTable>`;
+	  return this;
+      }
+
+      item() {
+	  const item = `    <CheatEntry>
+	<ID>${this.items.length + 1}</ID>
+	<Description>"${this._desc}"</Description>
+	<VariableType>${this._type}</VariableType>
+	<Address>VirtuaNES.exe+${this._addr}</Address>
+      </CheatEntry>`;
+	  this.items.push(item);
+	  return this;
+      }
+
+      byte() {
+	  this._type = 'byte';
+	  return this;
+      }
+
+      bytes() {
+	  this._type = 'bytes';
+	  return this;
+      }
+
+      desc(desc) {
+	  this._desc = desc;
+	  return this;
+      }
+
+      addr(addr) {
+	  this._addr = addr;
+	  return this;
+      }
+
+      find(data) {
+	  const res = [...data]
+	      .map(it => (+it).toString(16))
+	      .join(' ');
+	  console.log(res);
+	  return this;
+      }
+
+      append() {
+	  const roles = [
+	      ['马尔斯', 0],
+	      // ['莱安', 1],
+	      // ['赛西尔', 2],
+	      // ['玛利娅', 3],
+	      // ['卡秋娅', 4],
+	      // ['朱利安', 5],
+	      // ['马切斯', 6],
+
+
+	      // ['鲁克', 1],
+	      // ['阿兰', 2],
+	      // ['罗迪', 3],
+	      // ['多卡', 4],
+	      // ['乌奥雷', 9],
+
+	  ].map(it => {
+	      const [name, value] = it;
+	      return [
+		  name, 0x198962 + value * 0x1b
+	      ];
+	  });
+	  const offsets = [
+	      [["exp"], 3],
+	      [["weapon", 'number', '1'], 21],
+	      [["hp", 'now'], 1],
+	      [["lv"], 0],
+	      [["move"], 11],
+	      [["def", 'mag'], 13],
+	      [["hp", 'max'], 2],
+	      [["hit"], 5],
+	      [["skill"], 6],
+	      [["weapon"], 7],
+	      [["speed"], 8],
+	      [["lucky"], 9],
+	      [["def", 'phy'], 10],
+	  ];
+	  //05 80 转职道具
+	  //weapon number before
+	  //1 银剑
+	  //9 奇迹剑
+	  //11 法尔西昂
+	  //数量255是无限的意思
+	  //魔抗%128(>128)才是永久的意思
+	  offsets.forEach(item => {
+	      const [suffix, value] = item;
+	      roles.forEach(it => {
+		  const [name, base] = it;
+		  const caption = `${name}--${suffix.join('--')}`
+		  const addr = (base + value).toString(16);
+		  this.addr(addr).desc(caption).byte().item();
+	      });
+	  });
+	  return this;
+      }
+  }
+
+
+  new CheatCode()
+      .append()
+      .join()
+      .find([12, 30, 30, 27])
+      .write('./cheatCode.CT');
+
+#+end_src

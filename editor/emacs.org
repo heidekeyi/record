@@ -1,0 +1,17 @@
+#+startup: content
+
+* install
+  https://mirrors.sjtug.sjtu.edu.cn/gnu/emacs/windows/emacs-27/emacs-27.2-x86_64.zip
+  1. https://mirrors.sjtug.sjtu.edu.cn: 上海交通大学
+  2. gnu: is directories
+  3. emacs : is directories
+  4. windows: system
+  5. emacs-27: version
+  6. emacs-27.2-x86_64.zip: package
+* config
+  C:\Users\12131\AppData\Roaming\.emacs.d\init.el
+  1. C:\Users\12131: is ~
+  2. AppData\Roaming\.emacs.d: is directories
+  3. init.el: config of emacs lisp(use git)
+
+

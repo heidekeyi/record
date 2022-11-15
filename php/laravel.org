@@ -1,0 +1,261 @@
+* composer
+  - 创建项目
+    - 6.x最新版
+    - 目录名称为 to
+    #+BEGIN_SRC shell
+      composer create-project --prefer-dist laravel/laravel to "6.*"
+    #+END_SRC
+  - 访问 403
+    - 设置虚拟主机
+    - 注释（也可以省略）: Options Indexes
+    #+BEGIN_SRC conf
+      <VirtualHost *:80>
+	ServerName www.to.cn
+	ErrorLog "${INSTALL_DIR}/www/logs/error.log"
+	CustomLog "${INSTALL_DIR}/www/logs/access.log" combined
+	DocumentRoot "${INSTALL_DIR}/www/to/public/"
+	<Directory "${INSTALL_DIR}/www/to/public/">
+	  #下面这句经测试使用laravel会影响访问（403）
+	  #所以注释掉
+	  #Options Indexes
+	  AllowOverride All
+	  Require all granted
+	</Directory>
+	DirectoryIndex index.php
+      </VirtualHost>
+    #+END_SRC
+
+
+* 项目结构
+  - app
+   当前应用相关的内容（很重要 90%），控制器(http)、中间件、服务提供者等
+  - config
+    配置文件，各种配置
+  - database
+    数据库相关的
+  - public
+    网站根目录，入口，一般不要修改（避免一些莫名其妙的情况）
+  - resources
+    资源 js css sass views
+  - routes
+    路由
+  - storage
+    存储，缓存，提升一点性能
+  - test
+    测试，修改源码需要修改，违背快速开发，就没有优势了，大型严谨的项目可能会需要
+  - vendor
+    laravel 核心，运行的依赖
+    - .env
+      配置文件，包含各种配置信息（如数据库连接配置）
+    - artisan
+      实例化应用， 也可用于shell cmd
+  - bootstrap
+    不是前端框架，名字相同纯属巧合
+
+* 路由
+  routes/web.php文件
+** verbs
+   最后一个匹配到的路由有效
+   #+BEGIN_SRC php
+     // <?php echo csrf_field(); ?>
+     // test.blade.php
+     <form method="post">
+	 <input type="submit" value="post提交"/>
+	 @csrf
+     </form>
+     <form method="post">
+	 <input type="submit" value="put提交"/>
+	 @method('put')
+	 @csrf
+     </form>
+     <form method="post">
+	 <input type="submit" value="delete提交"/>
+	 @method('delete')
+	 @csrf
+     </form>
+     <form method="post">
+	 <input type="submit" value="options提交"/>
+	 @method('options')
+     </form>
+
+     // web.php
+     Route::any('/t', $fnRoute);
+     Route::match(['put'], '/t', $fnRoute);
+     Route::options('/t', $fnRoute);
+     Route::get('/t', function (){
+	 return view('test');
+     });
+   #+END_SRC
+** 响应方式
+   - 闭包（匿名函数）
+     #+BEGIN_SRC php
+       Route::get('/', function () {
+	   // blade模板渲染
+	   return view('welcome');
+       });
+
+       Route::get('/hw', function () {
+	   // 返回字符串
+	   return 'hello world';
+       });
+     #+END_SRC
+   - 控制器方式
+     #+BEGIN_SRC php
+       Route::get('/show', 'Home\Show@index');
+     #+END_SRC
+     执行app\Http\Controllers\Home\Show.php文件中Show类的index方法
+** 关闭csrf
+   - 全局
+     1. app/Http/Kernel.php文件
+     2. Kernel类
+     3. $middlewareGroups属性
+     4. 注释数组中的\App\Http\Middleware\VerifyCsrfToken::class项
+   - 指定路由
+     1. app/Http/Middleware/VerifyCsrfToken.php文件
+     2. VerifyCsrfToken类
+     3. $except属性
+     4. 在数组中添加路由
+
+** 请求方式
+   - 路由文件
+     #+BEGIN_SRC php
+       $msg = function () {
+	   $method = app('request')->getMethod();
+	   $path = app('request')->url();
+	   return $path . '---' . $method;
+       };
+       Route::get('/v', $msg);
+       Route::post('/v', $msg);
+       Route::put('/v', $msg);
+       Route::delete('/v', $msg);
+       // 任意方式
+       Route::any('/o', $msg);
+       // 指定方式，只匹配给定的方式
+       Route::match(['get', 'post'], '/t', $msg);
+     #+END_SRC
+   - 请求文件（方便测式请求）
+     #+BEGIN_SRC php
+       namespace r;
+       class Curl
+       {
+	   private $handle;
+	   private $url;
+	   private $res;
+
+	   public function __construct($url)
+	   {
+	       $this->url = $url;
+	       $handle = curl_init();
+	       $this->handle = $handle;
+	       $this->res = '';
+	       curl_setopt_array($handle, [
+		   CURLOPT_URL => $url,
+		   CURLOPT_RETURNTRANSFER => true
+	       ]);
+	   }
+
+	   private function exec($method)
+	   {
+	       $handle = $this->handle;
+	       curl_setopt($handle, CURLOPT_CUSTOMREQUEST, $method);
+	       $this->res = curl_exec($handle);
+	       return $this;
+	   }
+
+	   public function __call($name, $arguments)
+	   {
+	       $this->exec($name);
+	       return $this;
+	   }
+
+	   public function print()
+	   {
+	       echo $this->res . PHP_EOL;
+	       return $this;
+	   }
+       }
+
+       $domain = 'http://www.to.cn';
+
+       (new Curl($domain . '/v'))
+	   ->get()->print()
+	   ->post()->print()
+	   ->put()->print()
+	   ->delete()->print();
+
+       (new Curl($domain . '/o'))
+	   ->get()->print()
+	   ->delete()->print();
+
+       (new Curl($domain . '/t'))
+	   ->post()->print()
+	   ->get()->print();
+     #+END_SRC
+** 参数
+   #+BEGIN_SRC php
+     //    /a/xx/b/xx
+     Route::get('/a/{aid}/b/{bid}', function ($aid, $bid) {
+	 return $aid . '---' . $bid;
+     });
+     //    /a/ and /a and /a/xx
+     Route::get('/a/{name?}', function ($name = 'admin') {
+	 return $name;
+     });
+     //    /b/\d+/\w+
+     Route::get('/b/{aid}/{bid}', function ($aid, $bid) {
+	 return $aid . '---' . $bid;
+     })->where(['aid' => '\d+', 'bid'=>'\w+']);
+   #+END_SRC
+* 控制器
+** 创建控制器
+   - 路径
+     App/Http/Controllers
+   - 方式
+     - 手动新建文件（文件名称和类名称要一致）
+     - shell cmd
+       #+BEGIN_SRC shell
+	 php artisan make:controller Test
+       #+END_SRC
+   - 例子
+     #+BEGIN_SRC php
+       namespace App\Http\Controllers;
+
+       use Illuminate\Http\Request;
+       use App\Models\T1;
+       class Test extends Controller
+       {
+	   public function index(T1 $db)
+	   {
+	       print_r($db->gg());
+	   }
+       }
+     #+END_SRC
+
+* 模型
+** 创建模型  
+   - 路径
+     App/Models
+   - 方式
+     - 手动新建文件（文件名称和类名称要一致）
+     - shell cmd
+       模型名称包含路径
+       #+BEGIN_SRC shell
+	 php artisan make:model Models/T
+       #+END_SRC
+   - 例子
+     #+BEGIN_SRC php
+       namespace App\Models;
+
+       use Illuminate\Database\Eloquent\Model;
+
+       class T1 extends Model
+       {
+	   protected $table = 't1';
+	   protected $primaryKey = 'id';
+
+	   public function gg()
+	   {
+	       return $this->get()->toArray();
+	   }
+       }
+     #+END_SRC

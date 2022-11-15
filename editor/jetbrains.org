@@ -1,0 +1,67 @@
+#+startup: content
+
+* version
+  2020.1.1
+* 共同的设置  
+** toolbar
+   view->appearance->navigation->toolbar
+** settings
+   click setting icon on toobar
+*** theme
+    appearance & behavior->theme->darcula
+*** keymap
+    1. keymap->emacs
+    2. search format, add C-c C-c for format file
+*** font
+    edit->font
+    - font: consolas
+    - size: 24
+* 类型参数显示和隐藏
+  setting->editor->inlay hints, select item then apply
+* 文件类型提示缺失
+  移除 setting->editor->file types中的提定文件* 添加abbr的流程
+  1. settings->editor->live template
+  2. 右侧的+和-对应添加和删除，左侧可以选择类型，上边可以设置补全快捷键
+  3. 点击+，填写对应的内容，选择相应的类型后确定，参考相似类型填写（组就是文件夹）
+* 调整以浏览器打开的提示
+  1. settings->tools->web browsers
+  2. 根据需要勾选，取消勾选可以禁用提示
+  3. 取消勾选for html files (disable build in preview)
+* terminal中使用gitbash
+  1. settings->tools->terminal
+  2. 在application settings中选择gitbash路径（默认：C:\Program Files\Git\bin\bash.exe）
+  3. 确认重启软件即可
+
+* 显示隐藏参数提示
+  1. settings->editor->inlay hints
+  2. 选择对应的语言勾选即可
+
+* 没有文件类型提示
+  以text文件处理为例（主要也是这个类型的问题）
+  1. settings->editor->file types
+  2. 上边窗口选text文件
+  3. 下边窗口移除对应的文件
+* clion
+** toolchains
+   1. 需要安装对应的工具
+   2. 备份中mingw安装到某个路径就可以了(实际就是解压,为了方便path给加上)
+   3. setting->build execution, deployment->toolchains
+   4. 点击加号添加(有visual studio, mingw ...etc)
+   6. 选mingw,选安装位置(一般情况就可以了)
+** 编译选项
+   添加并设置参数
+   1. setting->setting->build execution, deployment->cmake
+   2. 在profiles中点击+,选择某项添加
+   3. camke options输入(开启全部错误,把警告当错误)
+      #+begin_src text
+	-DCMAKE_C_FLAGS="-Wall -Wextra -pedantic -Werror"
+      #+end_src
+* phpstrom
+** php version
+   1. settings->languages & frameworks->php->composer
+   2. 保证synchronize ide settins with composer.json不勾选
+   3. settings->languages & frameworks->php
+   4. 在php language level 中选择对应版本，确定
+* clion乱码
+	1.settings->edit->file encodings, global encoding, project encoding, default encoding for properties files select UTF-8
+	2.Alt+Shift+Ctrl+/ (in console)->registry, run.processes.pty, editor.reader.mode not select

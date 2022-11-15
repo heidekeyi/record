@@ -1,0 +1,55 @@
+#+startup: content
+
+* env
+  windows 1909 + msys2-x86_64-20210725
+* init
+  1. download from https://www.msys2.org/
+  2. install with default setting
+* package
+  https://packages.msys2.org/queue
+** git
+   1. preparing local
+      #+begin_src shell
+	pacman -S git
+	git config --global user.name "heidekeyi"
+	git config --global user.email "1213173752@qq.com"
+	ssh-keygen -t rsa -C "1213173752@qq.com"
+	ssh -T git@github.com
+
+	#options
+	chmod 755 /home/12131/.ssh
+	chmod 644 /home/12131/.ssh/id_rsa /home/12131/.ssh/id_rsa.pub
+	chmod 644 /home/12131/.ssh/known_hosts
+      #+end_src
+   2. github account
+      1. login
+      2. setting(top right corner)
+      3. ssh key
+      4. copy /home/12131/.ssh/id_rsa.pub content then paste
+   3. use git by emacs eshell
+      copy /home/12131/.ssh to C:\Users\12131 (就是~, 登陆用户的家目录)
+** mingw
+   clion 2020.1 only supoored gdb version >7.x and < 8.3x, giving up mingw
+   1. preparing package
+      #+begin_src shell
+	pacman -S gcc make gdb
+      #+end_src
+   2. add system path(C:\msys64\usr\bin)
+   3. use by emacs eshell
+* command
+  pacman -arg package-name ...
+  |-----+--------------------------------|
+  | arg | explain                        |
+  |-----+--------------------------------|
+  | S   | install package                |
+  |-----+--------------------------------|
+  | Ss  | query package                  |
+  |-----+--------------------------------|
+  | R   | remove package                 |
+  |-----+--------------------------------|
+  | Rs  | remove and remove dependencies |
+  |-----+--------------------------------|
+  | h   | show command list              |
+  |-----+--------------------------------|
+* terminal style
+  referrence git bash (基本相同)

@@ -1,0 +1,297 @@
+* 单应用
+** 路由
+*** 初步
+#+BEGIN_SRC php
+  // 定义路由（./route/app.php）
+  use think\facade\Route;
+  Route::rule('index/:id', 'index/index');
+
+  // 处理请求（控制器处理：./app/controller/Index.php）
+  namespace app\controller;
+
+  use app\BaseController;
+  use think\facade\View;
+
+  class Index extends BaseController
+  {
+      public function index(int $id = 0)
+      {
+
+	  return 'index-index-id: ' . $id;
+      }
+  }
+
+  // 请求地址
+  http://www.to/index/123
+
+  // 返回结果
+  index-index-id: 123
+#+END_SRC
+*** 指定请求
+#+BEGIN_SRC php
+  // 仅响应 get post put 请求，其他500（请求不区分大小写）
+  Route::rule('index/:id', 'index/index', 'get|post|put');
+
+  // 使用快捷方法
+  Route::get('index/:id', 'index/index');
+  // post
+  // put
+  // delete
+  // patch
+
+  // * 任意请求
+  Route::any('index/:id', 'index/index');
+#+END_SRC
+*** 地址类型
++ index：静态地址
++ index/:id：静态+动态
++ :page/:id: 动态地址
+*** 可选变量
++ index/[:id] 等价 index/<id?>
++ index/:id 等价 index/<id>
+*** 完全匹配
++ index/:id$：index/[^/]+$
++ index/id$：index/id$
++ index/:id：index/[^/]+.*
+*** 方法
+一些例子具体看文档 路由->路由参数
+**** 单个方法
+Route::get('index', 'index/index')->...
++ completeMatch(false) 关闭全局完全匹配
++ append(['status' => 1, 'app_id' =>5]) 额外参数
++ name('str') 路由标识（别名：url生成路径时很适用）
++ pattern(['name' => '[\w|\-]+']) 指定参数name的规则
++ ext('html') 检测后缀
++ https() 检测是否https请求
+**** 批量设置参数
+#+BEGIN_SRC php
+  Route::get('new/:id', 'News/read')
+      ->option([
+	  'ext'   => 'html',
+	  'https' => true
+      ]);
+#+END_SRC
+**** 一些说明
++ 检测后缀：ext('html')=>html, ext('png|jpeg')->png|jpeg, ext() => ''
++ 动态参数：Route::get('new/:name$', 'News/read')->option('rule','admin');
++ 动态方法：Route::get('new/:name$', 'News/read')->rule('admin');
+
+*** 使用方式
++ 模板需要安装依赖：topthink/think-view
++ 推荐安装依赖：topthink/think-template topthink/think-helper
+#+BEGIN_SRC php
+  // 1 静态路由
+  Route::get('index', 'index/index');
+
+  // 2 动态路由
+  Route::get('hello/:name', 'index/:name/hello');
+
+  // 3 路由重定向
+  Route::redirect('test/:id', 'http://www.to/index/:id', 302);
+
+  // 4 路由到模板
+  // 路由：./route/app.php
+  Route::view('fetch', 'index/index');
+  // 模板参数
+  Route::view('fetch', 'index/index', ['data'=>['id'=>1, 'val'=>'name']]);
+  // 模板 ./view/index/index.html
+  <ul>
+      {foreach $data as $k=>$v}
+      <li>{$k}----{$v}</li>
+      {/foreach}
+  </ul>
+
+  // 5 直接响应输出
+  Route::get('hello/:name', response()
+      ->data('Hello,ThinkPHP')
+      ->code(200)
+      ->contentType('text/plain'));
+  // 禁止访问静态资源
+  Route::get('static', response()->code(404));
+
+  // 6 路由到闭包
+  Route::get('hello', function () {
+      return 'hello,world!';
+  });
+  // 使用参数
+  Route::get('hello', function () {
+      return 'hello,world!';
+  });
+  // 依赖注入
+  Route::rule('hello/:name', function (Request $request, $name) {
+      $method = $request->method();
+      return '[' . $method . '] Hello,' . $name;
+  });
+#+END_SRC
+*** 分组
+#+BEGIN_SRC php
+  // 使用 index/index 或者 index/hello 来访问
+  // 使用统一前缀
+  Route::group('index', function (){
+      Route::get('index', 'index/index');
+      Route::get('hello', 'index/hello');
+  });
+  // 效果同上，指定控制器
+  Route::group('index', function (){
+      Route::get('index', 'index');
+      Route::get('hello', 'hello');
+  })->prefix('index/');
+  // 嵌套，效果同上
+  Route::group('index', function () {
+      Route::group(function () {
+	  Route::get('index', 'index');
+	  Route::get('hello', 'hello');
+      });
+  })->prefix('index/');
+  // 使用参数
+  Route::group('index', function (){
+      Route::get(':index', 'index');
+      Route::get('hello', 'hello');
+  })->prefix('index/');
+
+  // 使用方法指定参数，类似单独定义的路由
+  Route::group('blog', function () {
+      Route::get(':id', 'read');
+      Route::post(':id', 'update');
+      Route::delete(':id', 'delete');
+  })->completeMatch()->prefix('blog/')->ext('html')->pattern(['id' => '\d+']);
+#+END_SRC
+*** 路由不存在
+#+BEGIN_SRC php
+  // 一般形式
+  Route::miss(function() {
+      return '404 Not Found!';
+  });
+  // 分组参数指定
+  Route::group('blog', function () {
+      Route::rule(':id', 'blog/read');
+      Route::rule(':name', 'blog/read');
+      Route::miss('blog/miss');
+  })->ext('html')
+    ->pattern(['id' => '\d+', 'name' => '\w+']);
+
+#+END_SRC
+*** 跨域
+#+BEGIN_SRC php
+  // 允许跨域
+  Route::get('new/:id', 'News/read')
+      ->ext('html')
+      ->allowCrossDomain();
+  // 设置header
+  Route::get('new/:id', 'News/read')
+      ->ext('html')
+      ->allowCrossDomain([
+	  'Access-Control-Allow-Origin'        => 'thinkphp.cn',
+	  'Access-Control-Allow-Credentials'   => 'true'
+      ]);
+#+END_SRC
+*** url生成
+#+BEGIN_SRC php
+  // 有路由标识（路由别名）符会优先使用路由标识符
+  // 绑定
+  Route::buildUrl('index/blog/read',  ['id'=>5])
+      ->suffix('shtml')
+      ->domain(true);
+  // 助手函数
+  url('index/blog/read', ['id'=>5])
+      ->suffix('html')
+      ->domain(true)
+      ->root('/index.php');
+
+#+END_SRC
+** 控制器
+#+BEGIN_SRC php
+  // 命令行创建控制器
+  php think make:controller Demo --plain
+  // 生成路径 ./app/controller/Demo.php
+  declare (strict_types = 1);
+
+  namespace app\controller;
+
+  class Demo
+  {
+      public function hello(){
+	  return 'demo world';
+      }
+  }
+  // 访问（使用pathinfo方式访问）
+  //http://www.to/demo/hello
+
+  // 输出方式
+  public function hello()
+  {
+      // 输出hello,world!
+      return 'hello,world!';
+  }
+    
+  public function json()
+  {
+      // 输出JSON
+      return json($data);
+  }
+    
+  public function read()
+  {
+      // 渲染默认模板输出，对应的模板路径下的index文件
+      return view();
+  }
+#+END_SRC
+** 请求
+*** 使用请求对象的方式
+#+BEGIN_SRC php
+  // 没有继承controller
+  namespace app\controller;
+  use think\Request;
+  public function __construct(Request $request)
+  {
+      $this->request = $request;
+  }    
+  // 继承controller可以直接使用
+  public function index()
+  {
+      return $this->request->param('name');
+  }  
+  // 方法注入
+  public function index(Request $request)
+  {
+      return $request->param('name');
+  }
+  // 静态调用
+  public function index()
+  {
+      return Request::param('name');
+  }    
+  // 助手函数
+  public function index()
+  {
+      return request()->param('name');
+  }
+#+END_SRC
+*** 获取请求信息
+很多参数，具体看手册 请求->请求信息
++ request()->header() 获取请求头
++ request()->url() 完整url
++ ->method() 请求类型
++ ->host() 访问的域名或IP
++ ->controller() 控制器名称
++ ->action() 操作名称
+*** 获取参数
++ has('id', 'get') 是否有id
++ param('id') 优先路由参数，推荐使用，系统已过滤，可直接安全使用
++ get('id'), post, put, delete, session, cookie, request, server, env, route, file
++ 路由参数不能通过get获取
++ get('id', 0) 默认值
++ Request::param('username','','strip_tags') 过滤
++ only(['id', 'name'=>''])获取部分参数，已过滤
++ Request::except(['id','name'], 'get') 其他get参数都获取
++ Request::get('id/d') 指定为数字（修饰符 s d b a f）
++ input('?get.id') 是否定义
++ input('get.id') 获取id
++ input('param.') 获取全部
++ input('param.id/d') 获取数字类型的参数id
+*** 请求类型
++ method() 获取请求类型
++ isPost() 判断是否为post类型（get, post, delete, pust）
+* 多应用
+** 路由
+** 控制器

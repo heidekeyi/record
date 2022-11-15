@@ -1,0 +1,100 @@
+* prepare
+** env
+   win10+git bash
+** download
+   地址：https://git-scm.com/ 或者找其他镜像提高下载速度（如github）
+** install
+   安装过程中取消gui选项（自己用不着，需要的可以使用）
+** beautify
+   - 调整窗口大小，窗口半透明
+   - settings
+     - 窗口右击，选options
+     - windows中设置窗口大小（可以计算当前窗口大小）
+     - keys中设置快捷键（尽量取消不使用的）
+     - text中设置字体consolas 三号
+b     - looks中theme选dracula, transparent选low, cursor选block
+     - 保存修改够的设置，重启生效
+
+
+* use settings
+** global settings
+*** set username and email
+    #+BEGIN_SRC shell
+      git config --global user.name "你的账号名称"
+      git config --global user.email "你的邮箱"
+    #+END_SRC
+*** create SSH key file
+    - init cmd
+      #+BEGIN_SRC shell
+	ssh-keygen -t rsa -C "你的邮箱"
+      #+END_SRC
+    - answer with enter all the time    
+*** attach key to github
+    1. copy id_rsa.pub content(string)
+    2. login github account
+    3. click portrait->Settings->SSH and GPG keys-> New SSH key
+    4. fill with string(id_rsa.pub), then confirm(perhaps password confirm)
+
+*** connect test
+    - cmd
+      #+BEGIN_SRC shell
+	ssh -T git@github.com
+      #+END_SRC
+    - suucess
+      #+BEGIN_SRC text
+	... You've successfully authenticated, but GitHub does not provide shell access
+      #+END_SRC
+    - error
+      #+BEGIN_SRC text
+	Permissions 0670 for '/home/12131/.ssh/id_rsa' are too open.
+	It is recommended that your private key files are NOT accessible by others.
+	This private key will be ignored.
+	Load key "/home/12131/.ssh/id_rsa": bad permissions
+	Permission denied (publickey).
+      #+END_SRC
+    - solve Permission denied error
+      #+BEGIN_SRC shell
+	chmod 755 ~/.ssh/
+	chmod 600 ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
+	chmod 644 ~/.ssh/known_hosts
+      #+END_SRC
+    - error
+      #+BEGIN_SRC text
+	ERROR: We're doing an SSH key audit.
+	Reason: unverified automatically (private key found in a public repository)
+	Please visit https://github.com/settings/keys/69813894
+	to approve this key so we know it's safe.
+
+	Fingerprint:
+	SHA256:PbzTbW3arvKFgfhKCoeQVDmyMM+uyh/bZGTpkvi+0/w
+
+	fatal: Could not read from remote repository.
+
+	Please make sure you have the correct access rights
+	and the repository exists.
+      #+END_SRC
+    - solve SSH key approve
+      1. copy id_rsa.pub content(string)
+      2. login github account
+      3. click portrait->Settings->SSH and GPG keys-> approve
+
+
+* add application
+  - D:\Software\package有备份，直接对应的程序拷贝即可
+  - 拷贝可执行程序到C:\Program Files\Git\usr\bin中（根据安装路径调整）
+** tree
+   - http://gnuwin32.sourceforge.net/packages/tree.htm 下载
+   - 拷贝可执行文件（tree.exe）
+** lua
+   - 参考 https://github.com/skywind3000/z.lua/issues/63
+   - 下载编译好的文件（讨论中有编译好的文件包）
+   - 拷贝可执行文件（lua.exe, luac.exe）
+** composer(php)
+   - composer.bat 同路径下创建composer文件
+   - 文件内容如下
+     #+BEGIN_SRC sh
+       #!/usr/bin/env sh
+
+       # php /path/to/composer.phar $*
+       php `dirname $0`/composer.phar $*
+     #+END_SRC     

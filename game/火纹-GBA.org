@@ -1,0 +1,212 @@
+* 各种属性
+  #+BEGIN_SRC js
+    // 222 S 1-2 枪 格拉迪乌斯
+    // 192 S 1-2 枪 罗文之枪
+    // 189 A 1-2 枪 锁链枪
+    // 227 S 1-2 剑 sp+5
+    // 201 D 1-2 剑 拉格尼尔
+    // 205 S 1-2 剑 法尔西昂
+    // 133 * 1-2 剑 封印之剑
+    // 191 S 1-2 剑 彼加尔德之剑
+    // 188 S 1-2 剑 艾克扎克斯
+    // 222 S 2 弓 lk+10
+    // 195 S 1-3 弓 准弓
+    // 132 S 2 弓 神将器 sp+5
+    // 52 D 2-3 长弓
+    // 190 A 1-2 斧 回旋斧
+    // 207 S 1-2 理 lk+5 神将器
+    // 209 S 1-2 理 mag+5 法拉之炎
+    // 62 S 1-2 理 sp+5 艾克斯迦利瓦
+    // 206 S 1-2 光 露丝
+    // 208 S 1-2 光 def-mag+5 神将器
+    // 215 S 1-2 光 def+5 圣书
+    // 140 S 1-2 光 def-phy+5 伊瓦尔迪
+    // 204 S 1-2 暗 艾雷修基加尔
+    // 200 S 1-2 暗 mag+5 神将器
+    // 74 S 1-2 暗 sk+5
+    // 145 杖 拉特娜 全体
+    // 231、124 防暴击护符
+    // 230、113 禁飞行特效
+    // 183 修娜果实
+    // 153 烈火之章 转职 艾利乌德
+    // 152 封印之章 转职 罗伊
+    // 151 霸者之证 转职 海贼、盗贼、山贼
+    // 100-104 英雄、骑士、弓箭、天空、法师转职道具
+    // 136 一转（LV10）
+    // 138 转职回到开始（没转之前）
+    // 112 火把
+    // 86 D 松明之杖 一系列杖都在附近
+
+    const rel = {
+	chp: 1,
+	mhp: 0,
+	hit: 2,
+	mag: 53,
+	sk: 3,
+	sp: 4,
+	lk: 7,
+	hf: 5,//def hit
+	mf: 6,//def mag
+	per: 0x03AB25B2 - 0x03AB256A, //??,
+	level: -10,
+	exp: -9,
+	phy: 8,
+	move: 11,
+	w1t: 12,
+	w1n: 13,
+	bag: 59838
+    };
+
+
+    class Fire {
+	constructor(config, base_addr) {
+	    this.config = config;
+	    this.clear();
+	    if (typeof base_addr === 'string') {
+		base_addr = +`0x${base_addr}`;
+	    }
+	    this.base_addr = base_addr;
+	}
+
+	toSearchString(arr_property_str, keys = []) {
+	    const pos = keys.map(it => this.config[it]);
+	    const arr = arr_property_str.map(it => it.split(' '))
+		.map(item => item.map(it => (+it).toString(16)))
+		.map((item) => {
+		    const res = new Array(item.length);
+		    pos.forEach((it, ix) => {
+			if(it < item.length){
+			    res[it] = item[ix];
+			}
+		    });
+		    return res;
+		})
+		.map(it => it.join(' '));
+	    arr.forEach(it => console.log(it));
+	    this.search_strings = arr;
+	    return this;
+	}
+
+	createWithGroup(keys = [], num = 1) {
+	    const conf = this.config;
+	    const base = this.base_addr;
+	    const per = conf.per;
+	    for (let i = 0; i < num; ++i) {
+		const tmp = base + per * i;
+		keys.forEach(it => {
+		    const addr = tmp + conf[it];
+		    const desc = `${i + 1}--${it}`;
+		    this.appendRolesData(addr, desc);
+		});
+	    }
+	    return this;
+	}
+
+	createWithProperty(keys = [], num = 1) {
+	    const conf = this.config;
+	    const base = this.base_addr;
+	    const per = conf.per;
+	    keys.forEach(it => {
+		for (let i = 0; i < num; ++i) {
+		    const addr = base + per * i + conf[it];
+		    const desc = `${i + 1}--${it}`;
+		    this.appendRolesData(addr, desc);
+		}
+	    });
+	    return this;
+	}
+
+	createBag(num = 90) {
+	    const beg = this.base_addr + this.config.bag;
+	    for (let i = 0; i < num; ++i) {
+		this.appendCheatItem(beg + i * 2, `${i + 1}--wap`)
+	    }
+	    for (let i = 0; i < num; ++i) {
+		this.appendCheatItem(beg + i * 2 + 1, `${i + 1}--num`)
+	    }
+	    return this;
+	}
+
+	appendRolesData(addr, desc) {
+	    this.role_data.push({addr, desc});
+	    return this;
+	}
+
+	appendCheatItem(addr, desc) {
+	    const list_data = this.cheat_items;
+	    const it = `
+	<CheatEntry>
+	  <ID>${list_data.length + 1}</ID>
+	  <Description>${desc}</Description>
+	  <VariableType>Byte</VariableType>
+	  <Address>${(+addr).toString(16)}</Address>
+	</CheatEntry>`;
+	    list_data.push(it);
+	    return this;
+	}
+
+	joinCheatFile(filter) {
+	    let list = this.role_data;
+	    if (typeof filter === 'function') {
+		list = list.map(filter);
+	    }
+	    list.map(({addr, desc}) => this.appendCheatItem(addr, desc))
+	    // 第一行不能为空
+	    this.cheat_file = `<?xml version="1.0" encoding="utf-8"?>
+    <CheatTable CheatEngineTableVersion="29">
+      <CheatEntries>${this.cheat_items.join('')}
+      </CheatEntries>
+      <UserdefinedSymbols/>
+      <Comments>关于表格信息:
+    </Comments>
+    </CheatTable>
+    `;
+	    return this;
+	}
+
+	writeFile(pathname = './cheat.CT') {
+	    const err = require('fs').writeFileSync(pathname, this.cheat_file);
+	    const msg = err ? `err: ${err}` : '^__^';
+	    console.log(msg);
+	    return this;
+	}
+
+	clear() {
+	    this.cheat_file = '';
+	    this.cheat_items = [];
+	    this.role_data = [];
+	    return this;
+	}
+    }
+
+    const num = 6;
+    const keys = ['chp', 'mhp', 'hit', 'mag', 'sk', 'sp', 'lk', 'hf', 'mf'];
+    // 2个结果第1个2结尾
+    new Fire(rel,
+	'089AA5F2',
+    ).toSearchString([
+	'18 18 1 7 2 3 6 4 5',
+    ], keys)
+	// 开始的时候
+	// .createWithGroup(keys.filter(it => it !== 'chp' && it !== 'mhp'), num)
+	// .createWithProperty(['move', 'phy', 'mhp'], num)
+	// .createWithProperty(['level', 'exp'], num)
+	// .createWithProperty(['w1n', 'chp'], num)
+	// .joinCheatFile()
+	// .writeFile()
+	// 正常
+	.clear()
+	.createWithProperty(['chp', 'w1n', 'level', 'exp'], num)
+	.joinCheatFile()
+	.writeFile()
+	// 新增
+	.clear()
+	.createWithGroup([...keys, 'move', 'phy', 'level'], num)
+	.joinCheatFile()
+	.writeFile()
+	// 运输队
+	.clear()
+	.createBag(100)
+	.joinCheatFile()
+    // .writeFile()
+  #+END_SRC

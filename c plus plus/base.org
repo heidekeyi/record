@@ -1,0 +1,273 @@
+#+startup: content
+
+* namespace
+  同名自动合并
+** 基本用法
+   #+begin_src c++
+     // php.h
+     namespace PHP {
+	 const char *name();
+     }
+     // java.h
+     namespace Java {
+	 const char *name();
+     }
+     // php.cpp
+     namespace PHP {
+	 const char *name() {
+	     return "PHP";
+	 }
+     }
+
+     // java.cpp
+     const char *Java::name() {
+	 return "Java";
+     }
+
+     // main.cpp
+     int main() {
+	 PHP::name();
+	 Java::name();
+	 return 0;
+     }
+   #+end_src
+** 使用方式
+   #+begin_src c++
+     // main.cpp
+     #include <iostream>
+
+     namespace log {
+	 void show(const char *pathname, const char *buffer, size_t size) {
+	     using namespace std;
+	     cout << pathname << buffer << size << endl;
+	 }
+
+	 void read(const char *pathname, char *buffer, size_t size) {
+	     show(pathname, buffer, size);
+	 }
+
+	 void write(const char *pathname, char *buffer, size_t size) {
+	     show(pathname, buffer, size);
+	 }
+
+	 void doing() {
+
+	 }
+     }
+
+     int main() {
+	 const size_t size{128};
+	 char buffer[size]{"key=value"};
+	 const char *pathname = "./logging.log";
+     //    方式1
+	 log::show(pathname, buffer, size);
+     //    方式2
+	 using log::read, log::write;
+	 read(pathname, buffer, size);
+	 write(pathname, buffer, size);
+     //    方式3
+	 using namespace log;
+	 doing();
+	 return 0;
+     }
+   #+end_src
+** 嵌套
+   #+begin_src c++
+     // main.cpp
+     #include <iostream>
+
+     namespace log {
+	 void show(const char *pathname, const char *buffer, size_t size) {
+	     using namespace std;
+	     cout << pathname << buffer << size << endl;
+	 }
+     // 嵌套
+	 namespace stream {
+	     class Stream {
+	     public:
+		 Stream &read() {
+		     show(pathname, buffer, size);
+		     return *this;
+		 }
+
+		 Stream &write() {
+		     show(pathname, buffer, size);
+		     return *this;
+		 }
+
+	     private:
+		 const char *pathname{"./logging.log"};
+		 const char *buffer{"key=value"};
+		 size_t size{128};
+	     };
+	 }
+     }
+
+     int main() {
+	 using log::stream::Stream, log::show;
+	 show("", "", 0);
+	 log::stream::Stream os;
+	 os.read().write();
+	 return 0;
+     }
+   #+end_src
+
+* literal
+** integer
+   整数 17
+   - 10: 17
+   -  8: 021
+   - 16: 0x11
+   -  2: 0b00010001
+** char
+   - char: 'a'
+   - character array: "this is a problem"
+** float
+   浮点数 3.14
+   - float: 3.14f
+   - double: 3.14
+* enum
+  #+begin_src c++
+    #include <iostream>
+
+    // normal
+    enum Color {
+	red = 10,
+	blue = 100
+    };
+
+    // strong
+    enum class Animal {
+	Cat,
+	Dog
+    };
+
+    // using custom
+    enum class Sharp : unsigned int {
+	point = 1,
+	rect = 10,
+	square = 100
+    };
+
+    int main() {
+	using namespace std;
+	int color = red;
+	Animal animal = Animal::Cat;
+	Sharp sharp = Sharp::point;
+	if (-1 == color) {
+	    cout << "-1 == color" << endl;
+	}
+	if (Sharp::rect == sharp) {
+	    cout << "sharp == Sharp::rect" << endl;
+	}
+	if (Animal::Cat == animal) {
+	    cout << "sharp == Sharp::rect" << endl;
+	}
+	return 0;
+    }
+  #+end_src
+* array
+  #+begin_src c++
+    #include <array>
+    #include <vector>
+
+    int main() {
+	using std::array, std::vector;
+    //    c style
+	int cArr[]{1, 2, 11};
+    //    static(fix size)
+	array<int, 2> sArr{1, 17};
+    //    dynamic(proper size)
+	vector<int> vec{2, 20};
+	return 0;
+    }
+  #+end_src
+* structured bindings
+  #+begin_src c++
+    #include <array>
+
+    struct Student {
+	int id{0};
+	char *name{nullptr};
+	char *classes{nullptr};
+    };
+
+    int main() {
+	Student student;
+	auto[id, name, classes]{student};
+	using std::array;
+	array<int, 2> values{2, 22};
+	auto[first, second]{values};
+	return 0;
+    }
+  #+end_src
+* loop
+  - while
+  - do/while
+  - for
+  - range-based for loop
+    #+begin_src c++
+      #include <iostream>
+      #include <array>
+
+      int main() {
+	  using std::array, std::cout, std::endl;
+	  array<int, 2> values{2, 22};
+	  for (auto it : values) {
+	      cout << it << endl;
+	  }
+	  return 0;
+      }
+    #+end_src
+* initializer_list
+  #+begin_src c++
+    #include <iostream>
+    #include <initializer_list>
+
+    using namespace std;
+
+    void show(initializer_list<int> values) {
+	for (auto it : values) {
+	    cout << it << endl;
+	}
+    }
+
+    int main() {
+	show({1, 2, 6, 10});
+	return 0;
+    }
+  #+end_src
+* string
+  #+begin_src c++
+    #include <iostream>
+
+    using namespace std;
+
+    int main() {
+	const char *str = "const char *str=\"hello world!\"";
+	cout << str << endl;
+	str = R"(const char *msg = "const char *str=\"hello world!\"";)";
+	cout << str << endl;
+	str = R"(
+    Hello
+    World
+    !)";
+	cout << str << endl;
+	str = R"&( ")"" )&";
+	cout << str << endl;
+	str = R"--( ")"" )--";
+	cout << str << endl;
+	return 0;
+    }
+  #+end_src
+  #+begin_src text
+    const char *str="hello world!"
+    const char *msg = "const char *str=\"hello world!\"";
+
+    Hello
+    World
+    !
+     ")""
+     ")""
+  #+end_src
+  

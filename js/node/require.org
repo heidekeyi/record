@@ -1,0 +1,265 @@
+#+LATEX_HEADER: \usepackage{ctex}
+
+* node 版本
+#+BEGIN_SRC shell
+  D:\demo\src>node -v
+#+END_SRC
+#+BEGIN_SRC shell
+  v12.3.1
+#+END_SRC
+
+
+* 全局对象
+** global
+#+BEGIN_SRC javascript
+  console.log(global);
+#+END_SRC
+#+BEGIN_SRC shell
+  Object [global] {
+    global: [Circular],
+    clearInterval: [Function: clearInterval],
+    clearTimeout: [Function: clearTimeout],
+    setInterval: [Function: setInterval],
+    setTimeout: [Function: setTimeout] { [Symbol(util.promisify.custom)]: [Function] },
+    queueMicrotask: [Function: queueMicrotask],
+    clearImmediate: [Function: clearImmediate],
+    setImmediate: [Function: setImmediate] {
+      [Symbol(util.promisify.custom)]: [Function]
+    }
+  }
+#+END_SRC
+
+** global下的属性（例子如下）
+#+BEGIN_SRC javascript
+  console.log(global.console === console);
+  console.log(global.process === process);
+  console.log(global.Buffer === Buffer);
+#+END_SRC
+#+BEGIN_SRC shell
+  true
+  true
+  true
+#+END_SRC
+
+** 模块封装函数的变量
+*** 函数（当前模块包装的函数）
+#+BEGIN_SRC javascript
+  console.log(arguments.callee + '');
+#+END_SRC
+#+BEGIN_SRC shell
+  function (exports, require, module, __filename, __dirname) {
+  console.log(arguments.callee + '');
+  }
+#+END_SRC
+
+*** 变量
+#+BEGIN_SRC javascript
+  console.log(require + ''); //导入函数
+  console.log(module); //模块对象
+  console.log(exports === this, this);
+  console.log(exports === module.exports, exports);
+  console.log(__dirname === module.path, __dirname);
+  console.log(__filename === module.filename, __filename);
+#+END_SRC
+#+BEGIN_SRC shell
+  function require(path) {
+      return mod.require(path);
+    }
+  Module {
+    id: '.',
+    path: 'D:\\demo\\src',
+    exports: {},
+    parent: null,
+    filename: 'D:\\demo\\src\\demo.js',
+    loaded: false,
+    children: [],
+    paths: [
+      'D:\\demo\\src\\node_modules',
+      'D:\\demo\\node_modules',
+      'D:\\node_modules'
+    ]
+  }
+  true {}
+  true {}
+  true D:\demo\src
+  true D:\demo\src\demo.js
+#+END_SRC
+
+
+* 上下文环境
+- 全局上下文（web）
+- 模块上下文
+- 函数上下文
+
+
+* 代码执行顺序
+** 同步代码优先执行
+#+BEGIN_SRC javascript
+  setTimeout(function () {
+      console.log('定时器的任务代码执行了');
+  }, 0);
+  console.log('只是个打酱油的');
+#+END_SRC
+#+BEGIN_SRC shell
+  只是个打酱油的
+  定时器的任务代码执行了
+#+END_SRC
+
+** 综合优先级
+*** Promise构造函数是同步执行的
+*** Promise状态改变回调代码执行顺序优先定时器
+*** 定时器的时间先后执行（可以会远大于设定的时间）
+#+BEGIN_SRC javascript
+  const beg = new Date().getTime();
+  setTimeout(function () {
+      console.log('1 task finish');
+  }, 1);
+
+  new Promise((resolve) => {
+      setTimeout(function () {
+	  resolve('2 task finish');
+      }, 2);
+  }).then((res) => {
+      console.log(res);
+  });
+
+  new Promise((resolve) => {
+      setTimeout(function () {
+	  resolve('3 task finish');
+      }, 3);
+  }).then((res) => {
+      console.log(res);
+  });
+
+  new Promise((resolve) => {
+      resolve('Promise 优先定时器');
+      console.log("promise constructor");
+  }).then((res) => {
+      console.log(res);
+  });
+
+
+  setTimeout(function () {
+      console.log('4 task finish');
+  }, 0);
+
+  let a = 1000, b= 0;
+  for(let i = 0; i < 2000000000; ++i){
+      b = a * a + i;
+  }
+
+  const end = new Date().getTime();
+  console.log(end - beg);
+#+END_SRC
+#+BEGIN_SRC shell
+  promise constructor
+  1923
+  Promise 优先定时器
+  1 task finish
+  4 task finish
+  2 task finish
+  3 task finish
+#+END_SRC
+
+
+* 不带扩展名文件优先导入顺序
+** hierarchy
+#+BEGIN_SRC shell
+  .
+  ├── a.js
+  ├── a.json
+  ├── b.json
+  └── demo.js
+#+END_SRC
+
+** ./
+*** a.js
+#+BEGIN_SRC javascript
+  module.exports = "js文件优先";
+#+END_SRC
+
+*** a.json
+#+BEGIN_SRC javascript
+  {
+    "string" : "json文件优先"
+  }
+#+END_SRC
+
+*** b.json
+#+BEGIN_SRC javascript
+  {
+    "string" : "js文件不存在，json也可以"
+  }
+#+END_SRC
+
+*** demo.js
+#+BEGIN_SRC javascript
+  console.log(require('./a'));
+  console.log(require('./b'));
+#+END_SRC
+
+** result
+#+BEGIN_SRC shell
+  js文件优先
+  { string: 'js文件不存在，json也可以' }
+#+END_SRC
+
+
+* 不指定文件的目录入口文件导入次序
+** hierarchy
+#+BEGIN_SRC shell
+  .
+  ├── a
+  │   ├── index.js
+  │   ├── m.js
+  │   └── package.json
+  ├── b
+  │   ├── index.js
+  │   ├── m.js
+  │   └── package.json
+  ├── c
+  │   └── index.js
+  └── demo.js
+#+END_SRC
+
+** dir
+*** ./a
+**** index.js
+#+BEGIN_SRC javascript
+  module.exports = "index.js文件优先导入";
+#+END_SRC
+**** package.json
+#+BEGIN_SRC javascript
+  {
+    "name": "a",
+    "version": "1.0.0",
+    "main" : "./m.js"
+  }
+#+END_SRC
+**** m.js
+#+BEGIN_SRC javascript
+  module.exports = "package.json 中main属性指定的文件优先导入";
+#+END_SRC
+
+*** ./b
+- 和./a目录一样，只有package.json不同
+#+BEGIN_SRC javascript
+  {
+    "name": "a",
+    "version": "1.0.0"
+  }
+#+END_SRC
+
+*** ./demo.js
+#+BEGIN_SRC javascript
+  console.log(require('./a'));
+  console.log(require('./b'));
+  console.log(require('./c'));
+#+END_SRC
+
+** result
+#+BEGIN_SRC shell
+  package.json 中main属性指定的文件优先导入
+  index.js文件优先导入
+  没有package.json文件，index.js文件也可以
+#+END_SRC

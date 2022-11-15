@@ -1,0 +1,998 @@
+#+LATEX_HEADER: \usepackage{ctex}
+
+* 搭建环境
+** wampserver
+1. 到 [[https://sourceforge.net/projects/wampserver/files/][下载地址 ]]选择版本下载（目前最新 3.2.0，推荐）
+2. 从 [[http://www.zdfans.com/search.asp?keyword=%25E8%25BF%2590%25E8%25A1%258C%25E5%25BA%2593][微软常用运行库合集]] 中选择一个下载，默认安装
+2. 安装 wampserver，一路默认
+3. 完成后启动
+** 编辑器 PhpStorm 2019.3
++ keymap: emacs
++ Terminal: M + F12
+** 连接数据库
++ 使用 PhpStorm Terminal 连接登录（其他终端也可以），默认安装不需要密码
++ 为了方便使用，添加环境变量（mysql.exe 所在路径）
+#+BEGIN_SRC shell
+  C:\wamp64\www>mysql -h127.0.0.1 -uroot -p
+  Enter password:
+  Welcome to the MariaDB monitor.  Commands end with ; or \g.
+  Your MariaDB connection id is 46
+  Server version: 10.4.10-MariaDB mariadb.org binary distribution
+
+  Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+  Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+  MariaDB [(none)]>
+#+END_SRC
++ 格式：mysql -h[IP] -u用户名 -p[密码]
++ 退出：exit
+
+* 数据库操作
+** 注释
+#+BEGIN_SRC sql
+  MariaDB [db1]> -- 单行注释（-- 之后有空格）
+  MariaDB [db1]> /*
+     /*>  这里是多行注释
+     /*>  这里是多行注释
+     /*>  这里是多行注释
+     /*>  */
+  MariaDB [db1]>
+#+END_SRC
+** 显示字符集
+#+BEGIN_SRC php
+  MariaDB [(none)]> show charset;
+  +----------+-----------------------------+---------------------+--------+
+  | Charset  | Description                 | Default collation   | Maxlen |
+  +----------+-----------------------------+---------------------+--------+
+  | big5     | Big5 Traditional Chinese    | big5_chinese_ci     |      2 |
+  | dec8     | DEC West European           | dec8_swedish_ci     |      1 |
+  | cp850    | DOS West European           | cp850_general_ci    |      1 |
+  | hp8      | HP West European            | hp8_english_ci      |      1 |
+  ......
+  | gbk      | GBK Simplified Chinese      | gbk_chinese_ci      |      2 |
+  | latin5   | ISO 8859-9 Turkish          | latin5_turkish_ci   |      1 |
+  | armscii8 | ARMSCII-8 Armenian          | armscii8_general_ci |      1 |
+  | utf8     | UTF-8 Unicode               | utf8_general_ci     |      3 |
+  ......
+  | utf32    | UTF-32 Unicode              | utf32_general_ci    |      4 |
+  | binary   | Binary pseudo charset       | binary              |      1 |
+  | geostd8  | GEOSTD8 Georgian            | geostd8_general_ci  |      1 |
+  | cp932    | SJIS for Windows Japanese   | cp932_japanese_ci   |      2 |
+  | eucjpms  | UJIS for Windows Japanese   | eucjpms_japanese_ci |      3 |
+  +----------+-----------------------------+---------------------+--------+
+#+END_SRC
+** 指定使用的字符集
+推荐是用 utf8（常用的还有 gbk）
+#+BEGIN_SRC sql
+  MariaDB [(none)]> set names utf8;
+#+END_SRC
+** 显示校验规则（排序规则）
+#+BEGIN_SRC sql
+  MariaDB [(none)]> show collation;
+  +------------------------------+----------+------+---------+----------+---------+
+  | Collation                    | Charset  | Id   | Default | Compiled | Sortlen |
+  +------------------------------+----------+------+---------+----------+---------+
+  | big5_chinese_ci              | big5     |    1 | Yes     | Yes      |       1 |
+  | big5_bin                     | big5     |   84 |         | Yes      |       1 |
+
+  ......
+  | armscii8_nopad_bin           | armscii8 | 1088 |         | Yes      |       1 |
+  | utf8_general_ci              | utf8     |   33 | Yes     | Yes      |       1 |
+  | utf8_bin                     | utf8     |   83 |         | Yes      |       1 |
+  | utf8_unicode_ci              | utf8     |  192 |         | Yes      |       8 |
+  ......
+  | eucjpms_japanese_nopad_ci    | eucjpms  | 1121 |         | Yes      |       1 |
+  | eucjpms_nopad_bin            | eucjpms  | 1122 |         | Yes      |       1 |
+  +------------------------------+----------+------+---------+----------+---------+
+#+END_SRC
+** 查看数据库引擎
+#+BEGIN_SRC sql
+  MariaDB [(none)]> show engines;
+  +--------------------+---------+-------------------------------------------------------------------------------------------------+--------------+------+------------+
+  | Engine             | Support | Comment                                                                                         | Transactions | XA   | Savepoints |
+  +--------------------+---------+-------------------------------------------------------------------------------------------------+--------------+------+------------+
+  | CSV                | YES     | Stores tables as CSV files                                                                      | NO           | NO   | NO         |
+  | MRG_MyISAM         | YES     | Collection of identical MyISAM tables                                                           | NO           | NO   | NO         |
+  | MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables                                       | NO           | NO   | NO         |
+  | Aria               | YES     | Crash-safe tables with MyISAM heritage. Used for internal temporary tables and privilege tables | NO           | NO   | NO         |
+  | MyISAM             | DEFAULT | Non-transactional engine with good performance and small data footprint                         | NO           | NO   | NO         |
+  | SEQUENCE           | YES     | Generated tables filled with sequential values                                                  | YES          | NO   | YES        |
+  | InnoDB             | YES     | Supports transactions, row-level locking, foreign keys and encryption for tables                | YES          | YES  | YES        |
+  | PERFORMANCE_SCHEMA | YES     | Performance Schema                                                                              | NO           | NO   | NO         |
+  +--------------------+---------+-------------------------------------------------------------------------------------------------+--------------+------+------------+
+#+END_SRC
+** 显示数据库
+#+BEGIN_SRC sql
+  MariaDB [(none)]> show databases;
+  +--------------------+
+  | Database           |
+  +--------------------+
+  | information_schema |
+  | mysql              |
+  | performance_schema |
+  | test               |
+  +--------------------+
+#+END_SRC
+
+** 创建数据库
+#+BEGIN_SRC sql
+  -- 一般格式
+  -- create database 'db_name' [charset 'charset_name'] [collate 'collate_name'];
+  -- db_name：数据库名称
+  -- charset_name: 字符串名称，一般用utf8（show charset）
+  -- collate_name一般都使用默认值（show collation）
+
+  MariaDB [(none)]> create database db1 charset utf8;
+  MariaDB [(none)]> show databases ;
+  +--------------------+
+  | Database           |
+  +--------------------+
+  | db1                |
+  | information_schema |
+  | mysql              |
+  | performance_schema |
+  | test               |
+  +--------------------+
+
+  MariaDB [(none)]> create database db2;
+  MariaDB [(none)]> show databases ;
+  +--------------------+
+  | Database           |
+  +--------------------+
+  | db1                |
+  | db2                |
+  | information_schema |
+  | mysql              |
+  | performance_schema |
+  | test               |
+  +--------------------+
+#+END_SRC
+** 显示数据库创建语句
+#+BEGIN_SRC sql
+  MariaDB [(none)]> show create database db1;
+  +----------+--------------------------------------------------------------+
+  | Database | Create Database                                              |
+  +----------+--------------------------------------------------------------+
+  | db1      | CREATE DATABASE `db1` /*!40100 DEFAULT CHARACTER SET utf8 */ |
+  +----------+--------------------------------------------------------------+
+
+  MariaDB [(none)]> show create database db2;
+  +----------+----------------------------------------------------------------+
+  | Database | Create Database                                                |
+  +----------+----------------------------------------------------------------+
+  | db2      | CREATE DATABASE `db2` /*!40100 DEFAULT CHARACTER SET latin1 */ |
+  +----------+----------------------------------------------------------------+
+#+END_SRC
+** 修改数据库
+#+BEGIN_SRC sql
+  MariaDB [(none)]> alter database db2 charset gbk;
+  MariaDB [(none)]> show create database db2;
+  +----------+-------------------------------------------------------------+
+  | Database | Create Database                                             |
+  +----------+-------------------------------------------------------------+
+  | db2      | CREATE DATABASE `db2` /*!40100 DEFAULT CHARACTER SET gbk */ |
+  +----------+-------------------------------------------------------------+
+#+END_SRC
+** 删除数据库
+#+BEGIN_SRC sql
+  MariaDB [(none)]> drop database db2;
+  MariaDB [(none)]> show databases ;
+  +--------------------+
+  | Database           |
+  +--------------------+
+  | db1                |
+  | information_schema |
+  | mysql              |
+  | performance_schema |
+  | test               |
+  +--------------------+
+#+END_SRC
+** 指定使用某个数据库
+#+BEGIN_SRC sql
+  MariaDB [(none)]> use db1;
+  Database changed
+  MariaDB [db1]>
+#+END_SRC
+
+* 表操作
+** 显示表
+#+BEGIN_SRC sql
+  MariaDB [db1]> show tables;
+  Empty set (0.001 sec)
+#+END_SRC
+** 创建表
+字段类似表头
+#+BEGIN_SRC sql
+  -- create table 'table_name' ('field'[,...]) [charset='charset_name'] [engine='engine_name'];
+  -- table_name: 表名称
+  -- field: 字段（比较复杂单独整理）
+  -- charset_name: 字符集名称（show charset）
+  -- engine_name: 存储引擎（show engines）
+  MariaDB [db1]> create table tb1 (id int) charset = utf8 engine = InnoDB;
+  MariaDB [db1]> create table tb2 (id int);
+
+  MariaDB [db1]> show tables;
+  +---------------+
+  | Tables_in_db1 |
+  +---------------+
+  | tb1           |
+  | tb2           |
+  +---------------+
+#+END_SRC
+*** 字段
+  create table 'table_name' ('field'[,...]) charset = utf8 engine = InnoDB;
+  table_name: 表名称
+  field：字段名称 数据类型 ['字段属性', ...]
+**** 数据类型
+***** 整数
+  #+ATTR_HTML: :border 1 :rules all :frame border
+  |----------+---------+----------+----------+-----+--------|
+  | 类型     | tinyint | smallint | midumint | int | bigint |
+  |----------+---------+----------+----------+-----+--------|
+  |          | <c>     | <c>      | <c>      | <c> | <c>    |
+  |----------+---------+----------+----------+-----+--------|
+  | 字节大小 | 1       | 2        | 3        | 4   | 8      |
+  |----------+---------+----------+----------+-----+--------|
+  #+BEGIN_SRC sql
+    MariaDB [db1]> create table t (t tinyint, s smallint unsigned, m mediumint unsigned, i int, b bigint);
+    MariaDB [db1]> select * from t;
+    +------+------+------+------+------+
+    | t    | s    | m    | i    | b    |
+    +------+------+------+------+------+
+    |    1 |    2 |    3 |    4 |    5 |
+    +------+------+------+------+------+
+
+    -- tityint 超过一个字节
+    MariaDB [db1]> insert into t values (512, 2, 3, 4, 5);
+    ERROR 1264 (22003): Out of range value for column 't' at row 1
+    -- 声明是无符号数确使用有符号数
+    MariaDB [db1]> insert into t values (1, -2, 3, 4, 5);
+    ERROR 1264 (22003): Out of range value for column 's' at row 1
+  #+END_SRC
+***** 小数
+  #+ATTR_HTML: :border 1 :rules all :frame border
+  |----------+--------------+--------------+---------------------------------|
+  | 类型     | 单精度浮点数 | 双精度浮点数 | 定点小数                        |
+  |----------+--------------+--------------+---------------------------------|
+  |          | <c>          | <c>          | <c>                             |
+  |----------+--------------+--------------+---------------------------------|
+  | 字节大小 | 4            | 8            |                                 |
+  |----------+--------------+--------------+---------------------------------|
+  | 有效位   | 7（内定）    | 17（内定）   | 65（max，人为指定，是精确小数） |
+  |----------+--------------+--------------+---------------------------------|
+  #+TBLFM: 
+  #+BEGIN_SRC sql
+    MariaDB [db1]> drop table t;
+    MariaDB [db1]> create table t (f float unsigned, d double, e decimal(16, 3));
+    MariaDB [db1]> insert into t values (1.1212121, 1.1111212121, 123.12311);
+    MariaDB [db1]> insert into t values (1100000011, 222222222, 200.16655111);
+    MariaDB [db1]> select * from t;
+    +---------+--------------+---------+
+    | f       | d            | e       |
+    +---------+--------------+---------+
+    | 1.12121 | 1.1111212121 | 123.123 |
+    | 111.667 |    222222222 | 200.167 |
+    +---------+--------------+---------+
+    -- 小数精度不足就会四舍五入
+    -- float 中有效位不足，精度缺失
+    -- decimal 中小数只保留指定的位数
+  #+END_SRC
+***** 日期时间
+  #+ATTR_HTML: :border 1 :rules all :frame border
+  |------+------+------------+----------+---------------------+------------------------------|
+  | 类型 | year | date       | time     | datetime            | timestamp                    |
+  |------+------+------------+----------+---------------------+------------------------------|
+  |      | <c>  | <c>        | <c>      | <c>                 | <c>                          |
+  |------+------+------------+----------+---------------------+------------------------------|
+  | 格式 | 0000 | 0000-00-00 | 00:00:00 | 0000-00-00 00:00:00 |                              |
+  |------+------+------------+----------+---------------------+------------------------------|
+  | 特性 |      |            |          |                     | 自动获取，修改数据时自动更新 |
+  |------+------+------------+----------+---------------------+------------------------------|
+  | 场景 |      |            |          | 创建                | 修改                         |
+  |------+------+------------+----------+---------------------+------------------------------|
+  起始时间是：1970-0-0 0:0:0，设定的时间不能再这个之前
+  #+BEGIN_SRC sql
+    MariaDB [db1]> drop table t;
+    MariaDB [db1]> create table t (y year, d date, t time, dt datetime, s timestamp);
+    MariaDB [db1]> insert into t values ('2000', '1990-1-1', '12:12:12', '1999-9-9 9:9:9', null);
+    MariaDB [db1]> select * from t;
+    +------+------------+----------+---------------------+---------------------+
+    | y    | d          | t        | dt                  | s                   |
+    +------+------------+----------+---------------------+---------------------+
+    | 2000 | 1990-01-01 | 12:12:12 | 1999-09-09 09:09:09 | 2019-12-29 21:36:58 |
+    +------+------------+----------+---------------------+---------------------+
+
+    -- 使用now()函数
+    MariaDB [db1]> insert into t (dt) values (now());
+    MariaDB [db1]> select * from t;
+    +------+------------+----------+---------------------+---------------------+
+    | y    | d          | t        | dt                  | s                   |
+    +------+------------+----------+---------------------+---------------------+
+    | 2000 | 1990-01-01 | 12:12:12 | 1999-09-09 09:09:09 | 2019-12-29 21:36:58 |
+    | NULL | NULL       | NULL     | 2019-12-29 21:39:17 | 2019-12-29 21:39:17 |
+    +------+------------+----------+---------------------+---------------------+
+
+    -- 修改了第二条数据
+    -- datetime 类型不变，timestamp 自动更新了
+    MariaDB [db1]> update t set y = '2008' where d is null;
+    MariaDB [db1]> select * from t;
+    +------+------------+----------+---------------------+---------------------+
+    | y    | d          | t        | dt                  | s                   |
+    +------+------------+----------+---------------------+---------------------+
+    | 2000 | 1990-01-01 | 12:12:12 | 1999-09-09 09:09:09 | 2019-12-29 21:36:58 |
+    | 2008 | NULL       | NULL     | 2019-12-29 21:39:17 | 2019-12-29 21:40:46 |
+    +------+------------+----------+---------------------+---------------------+
+  #+END_SRC
+***** 字符串
+  #+ATTR_HTML: :border 1 :rules all :frame border
+  |----------------+----------------------+----------------------------------+--------------+------------+----------|
+  | 类型           | char                 | varchar                          | text         | mediumtext | longtext |
+  |----------------+----------------------+----------------------------------+--------------+------------+----------|
+  |                | <c>                  | <c>                              | <c>          | <c>        | <c>      |
+  |----------------+----------------------+----------------------------------+--------------+------------+----------|
+  | 长度           | 固定长度（速度最快） | 实际长度小于设定长度则为实际长度 | 不能设置长度 | 同 text    | 同 text  |
+  |----------------+----------------------+----------------------------------+--------------+------------+----------|
+  | 大小           | 255                  | 65532                            | 65535        | 1600万左右 | 40亿左右 |
+  |----------------+----------------------+----------------------------------+--------------+------------+----------|
+  | 是否保存在行中 | 是                   | 是                               | 否           | 否         | 否       |
+  |----------------+----------------------+----------------------------------+--------------+------------+----------|
+  + char/varchar 中长度指的是字符个数（但是总字节数不能超）
+  + 每个汉字占用字节数：gbk->2 utf8->3
+  + 表中每行最大字节数为65535
+  #+BEGIN_SRC sql
+    MariaDB [db1]> drop table t;
+    MariaDB [db1]> create table t (c char(8), v varchar(8), t text, mt mediumtext, lt longtext);
+    MariaDB [db1]> insert into t (c, v, t, mt, lt) values ('大家好，欢迎大家', '你们也好', '文章','内容','太大了');
+    MariaDB [db1]> select * from t;
+    +------------------+----------+------+------+--------+
+    | c                | v        | t    | mt   | lt     |
+    +------------------+----------+------+------+--------+
+    | 大家好，欢迎大家 | 你们也好 | 文章 | 内容 | 太大了 |
+    +------------------+----------+------+------+--------+
+  #+END_SRC
+***** 多选/单选
+  字符串中的空白字符也是有效字符，使用多个组合应该加空格
+  #+ATTR_HTML: :border 1 :rules all :frame border
+  |--------------+---------------+----------------|
+  | 名称         | enum          | set            |
+  |--------------+---------------+----------------|
+  |              | <c>           | <c>            |
+  |--------------+---------------+----------------|
+  | 作用         | 单选          | 多选           |
+  |--------------+---------------+----------------|
+  | 数字索引规律 | 1 2 3 4 5 ... | 1 2 4 8 16 ... |
+  |--------------+---------------+----------------|
+  | 最大项       | 65535         | 64             |
+  |--------------+---------------+----------------|
+  set 可以使用组合索引，有 2^64 种组合
+  #+BEGIN_SRC sql
+    MariaDB [db1]> create table t3 (
+	->     birth_year enum('1990', '2000', '2010', '2020'),
+	->     sports set('basketball', 'football', 'baseball', 'badminton', 'volleyball')
+	-> ) charset=utf8 engine = InnoDB;
+    MariaDB [db1]> desc t3;
+    +------------+------------------------------------------------------------------+------+-----+---------+-------+
+    | Field      | Type                                                             | Null | Key | Default | Extra |
+    +------------+------------------------------------------------------------------+------+-----+---------+-------+
+    | birth_year | enum('1990','2000','2010','2020')                                | YES  |     | NULL    |       |
+    | sports     | set('basketball','football','baseball','badminton','volleyball') | YES  |     | NULL    |       |
+    +------------+------------------------------------------------------------------+------+-----+---------+-------+
+
+    MariaDB [db1]> insert into t3 values ('1990', 'football,badminton');
+    Query OK, 1 row affected (0.008 sec)
+
+    -- 添加一条数据
+    MariaDB [db1]> select * from t3;
+    +------------+--------------------+
+    | birth_year | sports             |
+    +------------+--------------------+
+    | 1990       | football,badminton |
+    +------------+--------------------+
+
+    -- 使用数字代替字符串
+    -- enum 1 2 3 4 5 ...
+    -- set 1 2 4 8 ... （可以组合使用）
+    MariaDB [db1]> insert into t3 values (2, 5);
+    MariaDB [db1]> select * from t3;
+    +------------+---------------------+
+    | birth_year | sports              |
+    +------------+---------------------+
+    | 1990       | football,badminton  |
+    | 2000       | basketball,baseball |
+    +------------+---------------------+
+
+    -- 使用的数字超出定义值报错
+    MariaDB [db1]> insert into t3 values (2, 32);
+    ERROR 1265 (01000): Data truncated for column 'sports' at row 1
+  #+END_SRC
+
+**** 字段属性
+  #+ATTR_HTML: :border 1 :rules all :frame border
+  |----------------------+----------------+-----------------------------+--------------+---------+-----------------+--------------|
+  | property             | primary key    | auto_increment              | unique key   | default | null            | comment      |
+  |----------------------+----------------+-----------------------------+--------------+---------+-----------------+--------------|
+  |                      | <c>            | <c>                         | <c>          | <c>     | <c>             | <c>          |
+  |----------------------+----------------+-----------------------------+--------------+---------+-----------------+--------------|
+  | 含义                 | 主键           | 自增长                      | 唯一键       | 默认值  | 是否为空        | 说明性内容   |
+  |----------------------+----------------+-----------------------------+--------------+---------+-----------------+--------------|
+  | 值                   |                |                             |              |         | not null / null |              |
+  |----------------------+----------------+-----------------------------+--------------+---------+-----------------+--------------|
+  | 使用特性             | 一般用在 ID 上 | 默认每次加1，一般用在 ID 上 | 作为约束条件 |         |                 | 一般放在最后 |
+  | 表字段中最大使用次数 | 1              | 1                           | 多次         |         |                 |              |
+  | 是否可以为空         | 否             |                             | 是           |         |                 |              |
+  | 数据是否可以重复     | 否             |                             | 否           |         |                 |              |
+  |----------------------+----------------+-----------------------------+--------------+---------+-----------------+--------------|
+  使用所有的属性
+  #+BEGIN_SRC sql
+    MariaDB [db1]> drop table t;
+    MariaDB [db1]> create table t (
+	-> id int primary key auto_increment,
+	-> name char(32) not null unique key,
+	-> age tinyint unsigned not null comment '人的年纪',
+	-> fav enum('ball', 'swimming') not null default 'ball' comment '爱好'
+	-> );
+    MariaDB [db1]> insert into t (name, age) values ('alex', 110);
+    MariaDB [db1]> select * from t;
+    +----+------+-----+------+
+    | id | name | age | fav  |
+    +----+------+-----+------+
+    |  1 | alex | 110 | ball |
+    +----+------+-----+------+
+    MariaDB [db1]> desc t;
+    +-------+-------------------------+------+-----+---------+----------------+
+    | Field | Type                    | Null | Key | Default | Extra          |
+    +-------+-------------------------+------+-----+---------+----------------+
+    | id    | int(11)                 | NO   | PRI | NULL    | auto_increment |
+    | name  | char(32)                | NO   | UNI | NULL    |                |
+    | age   | tinyint(3) unsigned     | NO   |     | NULL    |                |
+    | fav   | enum('ball','swimming') | NO   |     | ball    |                |
+    +-------+-------------------------+------+-----+---------+----------------+
+  #+END_SRC
+  主键的其他声明方式
+  #+BEGIN_SRC sql
+    -- 额外声明主键
+    MariaDB [db1]> create table t1 (
+	-> id int auto_increment,
+	-> name char(32),
+	-> primary key(id)
+	-> );
+    MariaDB [db1]> desc t1;
+    +-------+----------+------+-----+---------+----------------+
+    | Field | Type     | Null | Key | Default | Extra          |
+    +-------+----------+------+-----+---------+----------------+
+    | id    | int(11)  | NO   | PRI | NULL    | auto_increment |
+    | name  | char(32) | YES  |     | NULL    |                |
+    +-------+----------+------+-----+---------+----------------+
+
+    -- 使用联合主键
+    MariaDB [db1]> drop table t1;
+    MariaDB [db1]> create table t1 (
+	-> title char(32),
+	-> author char(32),
+	-> primary key(title, author)
+	-> );
+    MariaDB [db1]> desc t1;
+    +--------+----------+------+-----+---------+-------+
+    | Field  | Type     | Null | Key | Default | Extra |
+    +--------+----------+------+-----+---------+-------+
+    | title  | char(32) | NO   | PRI | NULL    |       |
+    | author | char(32) | NO   | PRI | NULL    |       |
+    +--------+----------+------+-----+---------+-------+
+  #+END_SRC
+** 显示表结构
+#+BEGIN_SRC sql
+  MariaDB [db1]> desc tb2;
+  +-------+---------+------+-----+---------+-------+
+  | Field | Type    | Null | Key | Default | Extra |
+  +-------+---------+------+-----+---------+-------+
+  | id    | int(11) | YES  |     | NULL    |       |
+  +-------+---------+------+-----+---------+-------+
+  -- Field: 字段名称
+  -- Type: 字段类型（比较复杂单独整理）
+  -- Null: 是否为空
+  -- Key: 索引（键）
+  -- Default: 默认值
+  -- Extra: 附加
+#+END_SRC
+#+ATTR_HTML: :border 1 :rules all :frame border
+|------+-------+----------+--------------+------------+---------+-------|
+| 项   | Field | Type     | Null         | Key        | Default | Extra |
+|------+-------+----------+--------------+------------+---------+-------|
+|      | <c>   | <c>      | <c>          | <c>        | <c>     | <c>   |
+|------+-------+----------+--------------+------------+---------+-------|
+| 含义 | 名称  | 数据类型 | 是否可以为空 | 索引（键） | 默认值  | 附加  |
+|------+-------+----------+--------------+------------+---------+-------|
+** 显示创建表的语句
+#+BEGIN_SRC sql
+  MariaDB [db1]> show create table tb1;
+  +-------+---------------------------------------------------------------------------------------+
+  | Table | Create Table										|
+  +-------+---------------------------------------------------------------------------------------+
+  | tb1   | CREATE TABLE `tb1` (`id` int(11) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8	|
+  +-------+---------------------------------------------------------------------------------------+
+
+  MariaDB [db1]> show create table tb2;
+  +-------+---------------------------------------------------------------------------------------+
+  | Table | Create Table									        |
+  +-------+---------------------------------------------------------------------------------------+
+  | tb2   | CREATE TABLE `tb2` (`id` int(11) DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=utf8	|
+  +-------+---------------------------------------------------------------------------------------+
+  -- 默认字符集和数据库使用的一样
+  -- 默认的存储引擎是 MyISAM
+#+END_SRC
+** 重命名表
+#+BEGIN_SRC sql
+  MariaDB [db1]> alter table tb2 rename rubbish;
+  MariaDB [db1]> show tables;
+  +---------------+
+  | Tables_in_db1 |
+  +---------------+
+  | rubbish       |
+  | tb1           |
+  +---------------+
+#+END_SRC
+** 删除表
+#+BEGIN_SRC sql
+  MariaDB [db1]> drop table rubbish;
+  MariaDB [db1]> show tables;
+  +---------------+
+  | Tables_in_db1 |
+  +---------------+
+  | tb1           |
+  +---------------+
+#+END_SRC
+** 修改字段
+*** 增加
+#+BEGIN_SRC sql
+  MariaDB [db1]> alter table tb1 add ext varchar(32);
+  MariaDB [db1]> desc tb1;
+  +-------+-------------+------+-----+---------+-------+
+  | Field | Type        | Null | Key | Default | Extra |
+  +-------+-------------+------+-----+---------+-------+
+  | id    | int(11)     | YES  |     | NULL    |       |
+  | ext   | varchar(32) | YES  |     | NULL    |       |
+  +-------+-------------+------+-----+---------+-------+
+
+  -- 在前面添加
+  MariaDB [db1]> alter table tb1 add name char(8) first;
+  MariaDB [db1]> desc tb1;
+  +-------+-------------+------+-----+---------+-------+
+  | Field | Type        | Null | Key | Default | Extra |
+  +-------+-------------+------+-----+---------+-------+
+  | name  | char(8)     | YES  |     | NULL    |       |
+  | id    | int(11)     | YES  |     | NULL    |       |
+  | ext   | varchar(32) | YES  |     | NULL    |       |
+  +-------+-------------+------+-----+---------+-------+
+
+  -- 在指定字段后面添加
+  MariaDB [db1]> alter table tb1 add age int after id;
+  MariaDB [db1]> desc tb1;
+  +-------+-------------+------+-----+---------+-------+
+  | Field | Type        | Null | Key | Default | Extra |
+  +-------+-------------+------+-----+---------+-------+
+  | name  | char(8)     | YES  |     | NULL    |       |
+  | id    | int(11)     | YES  |     | NULL    |       |
+  | age   | int(11)     | YES  |     | NULL    |       |
+  | ext   | varchar(32) | YES  |     | NULL    |       |
+  +-------+-------------+------+-----+---------+-------+
+#+END_SRC
+*** 修改属性
+#+BEGIN_SRC sql
+  MariaDB [db1]> desc tb1;
+  +-------+---------+------+-----+---------+-------+
+  | Field | Type    | Null | Key | Default | Extra |
+  +-------+---------+------+-----+---------+-------+
+  | name  | char(8) | YES  |     | NULL    |       |
+  | id    | int(11) | YES  |     | NULL    |       |
+  | age   | int(11) | YES  |     | NULL    |       |
+  | ext   | text    | YES  |     | NULL    |       |
+  +-------+---------+------+-----+---------+-------+
+
+  -- 和创建时一样指定字段的属性
+  MariaDB [db1]> alter table tb1 modify id int primary key auto_increment;
+  MariaDB [db1]> desc tb1;
+  +-------+---------+------+-----+---------+----------------+
+  | Field | Type    | Null | Key | Default | Extra          |
+  +-------+---------+------+-----+---------+----------------+
+  | name  | char(8) | YES  |     | NULL    |                |
+  | id    | int(11) | NO   | PRI | NULL    | auto_increment |
+  | age   | int(11) | YES  |     | NULL    |                |
+  | ext   | text    | YES  |     | NULL    |                |
+  +-------+---------+------+-----+---------+----------------+
+#+END_SRC
+*** 替换
+#+BEGIN_SRC sql
+  MariaDB [db1]> alter table tb1 change ext ext_name char(128);
+  MariaDB [db1]> desc tb1;
+  +----------+-----------+------+-----+---------+----------------+
+  | Field    | Type      | Null | Key | Default | Extra          |
+  +----------+-----------+------+-----+---------+----------------+
+  | name     | char(8)   | YES  |     | NULL    |                |
+  | id       | int(11)   | NO   | PRI | NULL    | auto_increment |
+  | age      | int(11)   | YES  |     | NULL    |                |
+  | ext_name | char(128) | YES  |     | NULL    |                |
+  +----------+-----------+------+-----+---------+----------------+
+#+END_SRC
+*** 删除
+#+BEGIN_SRC sql
+  MariaDB [db1]> alter table tb1 drop name;
+  MariaDB [db1]> alter table tb1 drop ext_name;
+  MariaDB [db1]> desc tb1;
+  +-------+---------+------+-----+---------+----------------+
+  | Field | Type    | Null | Key | Default | Extra          |
+  +-------+---------+------+-----+---------+----------------+
+  | id    | int(11) | NO   | PRI | NULL    | auto_increment |
+  | age   | int(11) | YES  |     | NULL    |                |
+  +-------+---------+------+-----+---------+----------------+
+#+END_SRC
+
+* 数据操作
+这里都是一些简单的基本操作
+** 查询
+#+BEGIN_SRC sql
+  -- 查找是重点和难点单独整理
+  MariaDB [db1]> select * from tb1;
+#+END_SRC
+** 添加
+*** 基本插入
+#+BEGIN_SRC sql
+  MariaDB [db1]> desc tb1;
+  +-------+---------+------+-----+---------+----------------+
+  | Field | Type    | Null | Key | Default | Extra          |
+  +-------+---------+------+-----+---------+----------------+
+  | id    | int(11) | NO   | PRI | NULL    | auto_increment |
+  | age   | int(11) | YES  |     | NULL    |                |
+  +-------+---------+------+-----+---------+----------------+
+
+  -- 插入数据
+  MariaDB [db1]> insert into tb1 (age) values (100);
+  MariaDB [db1]> select * from tb1;
+  +----+------+
+  | id | age  |
+  +----+------+
+  |  1 |  100 |
+  +----+------+
+
+  -- 简写方式插入数据
+  MariaDB [db1]> insert into tb1 values (null, 11);
+  MariaDB [db1]> select * from tb1;
+  +----+------+
+  | id | age  |
+  +----+------+
+  |  1 |  100 |
+  |  2 |   11 |
+  +----+------+
+#+END_SRC
+*** 高级插入
+生成新表可以用来做数据迁移
+#+BEGIN_SRC sql
+  -- 创建表
+  create table tb1 (
+      id int auto_increment primary key ,
+      name char(8),
+      salary double
+		   ) charset = 'utf8' engine = InnoDB;
+  insert into tb1 (name, salary) values ('a', 97), ('b', 98), ('c', 99);
+#+END_SRC
+**** 多条插入
+#+BEGIN_SRC sql
+  MariaDB [db1]> insert into tb1 (name, salary) values ('a', 97), ('b', 98), ('c', 99);
+  MariaDB [db1]> select * from tb1;
+  +----+------+--------+
+  | id | name | salary |
+  +----+------+--------+
+  |  1 | a    |     97 |
+  |  2 | b    |     98 |
+  |  3 | c    |     99 |
+  +----+------+--------+
+#+END_SRC
+**** 使用数据集合插入
+插入的数据类型要一样（转换也可以）
+#+BEGIN_SRC sql
+  -- 使用固定的数据集合
+  MariaDB [db1]> insert into tb1 (name, salary) select '李四', 1550;
+  MariaDB [db1]> select * from tb1;
+  +----+------+--------+
+  | id | name | salary |
+  +----+------+--------+
+  |  1 | a    |     97 |
+  |  2 | b    |     98 |
+  |  3 | c    |     99 |
+  |  4 | 李四 |   1550 |
+  +----+------+--------+
+  -- 使用的查询到的数据集合
+  MariaDB [db1]> select name, salary from student order by salary limit 3;
+  +---------+---------+
+  | name    | salary  |
+  +---------+---------+
+  | 学生103 | 2294.25 |
+  | 学生94  | 2520.75 |
+  | 学生197 | 3414.75 |
+  +---------+---------+
+  MariaDB [db1]> insert into tb1 (name, salary)
+      -> select name, salary from student order by salary limit 3;
+  MariaDB [db1]> select * from tb1;
+  +----+---------+---------+
+  | id | name    | salary  |
+  +----+---------+---------+
+  |  1 | a       |      97 |
+  |  2 | b       |      98 |
+  |  3 | c       |      99 |
+  |  4 | 李四    |    1550 |
+  |  5 | 学生103 | 2294.25 |
+  |  6 | 学生94  | 2520.75 |
+  |  7 | 学生197 | 3414.75 |
+  +----+---------+---------+
+#+END_SRC
+**** set 的形式
+一次只能插入一条
+#+BEGIN_SRC sql
+  MariaDB [db1]> insert into tb1 set name = 'start', salary = 100;
+  MariaDB [db1]> delete from tb1 where id < 6;
+  MariaDB [db1]> select * from tb1;
+  +----+---------+---------+
+  | id | name    | salary  |
+  +----+---------+---------+
+  |  6 | 学生94  | 2520.75 |
+  |  7 | 学生197 | 3414.75 |
+  |  8 | start   |     100 |
+  +----+---------+---------+
+#+END_SRC
+**** 蠕虫复制
+***** 从其他表中复制
+#+BEGIN_SRC sql
+  MariaDB [db1]> insert into tb1 (name, salary)
+      -> select name, salary from student;
+  Query OK, 220 rows affected (0.006 sec)
+  Records: 220  Duplicates: 0  Warnings: 0
+
+  MariaDB [db1]> select count(*) from tb1;
+  +----------+
+  | count(*) |
+  +----------+
+  |      223 |
+  +----------+
+#+END_SRC
+***** 复制表中的数据
+指数级增长，轻松产生大量数据可以进行性能测试，压力测试
+#+BEGIN_SRC sql
+  MariaDB [db1]> insert into tb1 (name, salary)
+      -> select name, salary from tb1;
+  Query OK, 223 rows affected (0.010 sec)
+  Records: 223  Duplicates: 0  Warnings: 0
+
+  MariaDB [db1]> select count(*) from tb1;
+  +----------+
+  | count(*) |
+  +----------+
+  |      446 |
+  +----------+
+
+  MariaDB [db1]> insert into tb1 (name, salary)
+      -> select name, salary from tb1;
+  Query OK, 446 rows affected (0.007 sec)
+  Records: 446  Duplicates: 0  Warnings: 0
+
+  MariaDB [db1]> select count(*) from tb1;
+  +----------+
+  | count(*) |
+  +----------+
+  |      892 |
+  +----------+
+#+END_SRC
+**** 主键冲突
+插入的数据主键重复
+***** 忽略
++ 不冲突就插入数据
++ 冲突终止插入，数据不变，正常结束
+#+BEGIN_SRC sql
+  MariaDB [db1]> delete from tb1 where id < 960;
+  MariaDB [db1]> select * from tb1;
+  +-----+---------+-----------+
+  | id  | name    | salary    |
+  +-----+---------+-----------+
+  | 960 | 学生216 |     83976 |
+  | 961 | 学生217 |  70428.75 |
+  | 962 | 学生218 |     67209 |
+  | 963 | 学生219 |   4370.25 |
+  | 964 | 学生220 | 107636.25 |
+  +-----+---------+-----------+
+
+  MariaDB [db1]> insert ignore into tb1 (id, name, salary) values (960, 'start', 110);
+  MariaDB [db1]> select * from tb1 limit 1;
+  +-----+---------+--------+
+  | id  | name    | salary |
+  +-----+---------+--------+
+  | 960 | 学生216 |  83976 |
+  +-----+---------+--------+
+#+END_SRC
+***** 替换
++ 不冲突就插入数据，可以替换相当于 insert 插入新数据
++ 冲突用全新的数据替换旧数据
+#+BEGIN_SRC sql
+  MariaDB [db1]> replace into tb1 (id, name) values (960, 'start');
+  Query OK, 2 rows affected (0.008 sec)
+  MariaDB [db1]> select * from tb1 limit 1;
+  +-----+-------+--------+
+  | id  | name  | salary |
+  +-----+-------+--------+
+  | 960 | start |   NULL |
+  +-----+-------+--------+
+#+END_SRC
+***** 更新
++ 不冲突就插入数据
++ 冲突就更新指定字段的数据
+#+BEGIN_SRC sql
+  MariaDB [db1]> insert into tb1 (id, name, salary)
+      -> values (960, 'start', 1000)
+      -> on duplicate key update salary = 1000;
+  Query OK, 2 rows affected (0.006 sec)
+
+  MariaDB [db1]> select * from tb1 limit 1;
+  +-----+-------+--------+
+  | id  | name  | salary |
+  +-----+-------+--------+
+  | 960 | start |   1000 |
+  +-----+-------+--------+
+#+END_SRC
+** 更新
+*** 基本更新
+#+BEGIN_SRC sql
+  MariaDB [db1]> update tb1 set age = 55 where id = 1;
+  MariaDB [db1]> select * from tb1;
+  +----+------+
+  | id | age  |
+  +----+------+
+  |  1 |   55 |
+  |  2 |   11 |
+  +----+------+
+#+END_SRC
+*** 高级更新
+更新前n条数据
+#+BEGIN_SRC sql
+  MariaDB [db1]> insert into tb1 (name, salary)
+      -> values ('a', 99), ('aa', 200), ('aaa', 300), ('b', 50), ('bb', 150);
+  Query OK, 5 rows affected (0.005 sec)
+  Records: 5  Duplicates: 0  Warnings: 0
+  MariaDB [db1]> select * from tb1;
+  +----+------+--------+
+  | id | name | salary |
+  +----+------+--------+
+  |  2 | aaa  |     12 |
+  |  3 | a    |     99 |
+  |  4 | aa   |    200 |
+  |  5 | aaa  |    300 |
+  |  6 | b    |     50 |
+  |  7 | bb   |    150 |
+  +----+------+--------+
+
+  MariaDB [db1]> update tb1 set salary = 11 order by salary limit 3;
+  Query OK, 3 rows affected (0.003 sec)
+  Rows matched: 3  Changed: 3  Warnings: 0
+  MariaDB [db1]> select * from tb1;
+  +----+------+--------+
+  | id | name | salary |
+  +----+------+--------+
+  |  2 | aaa  |     11 |
+  |  3 | a    |     11 |
+  |  4 | aa   |    200 |
+  |  5 | aaa  |    300 |
+  |  6 | b    |     11 |
+  |  7 | bb   |    150 |
+  +----+------+--------+
+#+END_SRC
+** 删除
+*** 基本删除
+#+BEGIN_SRC sql
+  MariaDB [db1]> delete from tb1 where id = 2;
+  MariaDB [db1]> select * from tb1;
+  +----+------+
+  | id | age  |
+  +----+------+
+  |  1 |   55 |
+  +----+------+
+#+END_SRC
+*** 高级删除
+**** 删除前面 n 条数据
+#+BEGIN_SRC sql
+  -- 原始数据
+  MariaDB [db1]> select * from tb1;
+  +-----+---------+-----------+
+  | id  | name    | salary    |
+  +-----+---------+-----------+
+  | 960 | start   |      1000 |
+  | 961 | 学生217 |  70428.75 |
+  | 962 | 学生218 |     67209 |
+  | 963 | 学生219 |   4370.25 |
+  | 964 | 学生220 | 107636.25 |
+  +-----+---------+-----------+
+
+  -- 排序后删除3条数据
+  MariaDB [db1]> delete from tb1 order by salary limit 3;
+  Query OK, 3 rows affected (0.004 sec)
+  MariaDB [db1]> select * from tb1;
+  +-----+---------+-----------+
+  | id  | name    | salary    |
+  +-----+---------+-----------+
+  | 961 | 学生217 |  70428.75 |
+  | 964 | 学生220 | 107636.25 |
+  +-----+---------+-----------+
+#+END_SRC
+**** 清空表
++ truncate 方式会将表还原到初始状态（刚建表时的状态）
++ delete 方式就是简单的删除数据
+#+BEGIN_SRC sql
+  -- id 还原成最开始的 1
+  MariaDB [db1]> truncate tb1;
+  MariaDB [db1]> select * from tb1;
+  Empty set (0.000 sec)
+  MariaDB [db1]> insert into tb1 (name, salary) values ('a', 1);
+  MariaDB [db1]> select * from tb1;
+  +----+------+--------+
+  | id | name | salary |
+  +----+------+--------+
+  |  1 | a    |      1 |
+  +----+------+--------+
+
+  -- id 接着增加，没有还原
+  MariaDB [db1]> delete from tb1;
+  MariaDB [db1]> select * from tb1;
+  MariaDB [db1]> insert into tb1 (name, salary) values ('aaa', 12);
+  MariaDB [db1]> select * from tb1;
+  +----+------+--------+
+  | id | name | salary |
+  +----+------+--------+
+  |  2 | aaa  |     12 |
+  +----+------+--------+
+#+END_SRC
+* 数据库选型例子
++ 年龄：tinyint，整型足够大
++ 薪水；double | decimal 精度要保证
++ 中国人口: int 整型足够大
++ 文章发表日期：datetime 记录日期
++ 文章修改日期：timestamp 记录修改时间
+* 备份恢复
+** 备份数据库
+#+BEGIN_SRC shell
+  C:\wamp64\www>mysqldump -hlocalhost -uroot -p db1 > ./db1.sql
+#+END_SRC
+** 备份表
+#+BEGIN_SRC sql
+  C:\wamp64\www>mysqldump -hlocalhost -uroot -p db1 programmer > ./programmer.sql
+#+END_SRC
+** 恢复
+需要先创建数据库
+*** 命令行恢复
+只能恢复数据库（很局限）
+#+BEGIN_SRC shell
+  # 必须先创建库
+  # 恢复库
+  C:\wamp64\www>mysql -hlocalhost -uroot -p db1 < ./db1.sql
+#+END_SRC
+*** SQL 客户端恢复
+#+BEGIN_SRC sql
+  -- 准备环境
+  MariaDB [(none)]> drop database db1;
+  MariaDB [(none)]> create database db1 charset utf8;
+
+  -- 恢复表
+  MariaDB [db1]> source ./programmer.sql
+
+  -- 删除刚恢复的表测试恢复库
+  MariaDB [db1]> drop table programmer;
+
+  -- 恢复库
+  MariaDB [db1]> source ./db1.sql
+  MariaDB [db1]> show tables;
+  +---------------+
+  | Tables_in_db1 |
+  +---------------+
+  | addr          |
+  | department    |
+  | employee      |
+  | programmer    |
+  | shopping      |
+  | student       |
+  +---------------+
+#+END_SRC

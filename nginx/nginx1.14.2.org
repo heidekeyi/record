@@ -1,0 +1,58 @@
+
+#+startup: content
+
+* env
+  install gcc gcc-c++ make ... etc
+* dependencies
+  #+begin_src shell
+    dnf install pcre-devel zlib-devel openssl-devel -y
+  #+end_src
+  - pcre: 正则
+  - zlib: 压缩
+  - openssl: 加密
+* running
+  [root@localhost nginx-1.14.2]#  
+  1. install wget
+     use to download
+     #+begin_src shell
+       dnf install -y wget
+     #+end_src
+  2. download
+     #+begin_src shell
+       wget http://nginx.org/download/nginx-1.14.2.tar.gz
+     #+end_src
+  3. extract
+     #+begin_src shell
+       tar -zxvf nginx-1.14.2.tar.gz
+     #+end_src
+  4. install
+     #+begin_src shell
+       cd nginx-1.14.2
+       ./configure
+       make install
+     #+end_src
+  5. run
+     #+begin_src shell
+       /usr/local/nginx/sbin/nginx 
+     #+end_src
+  6. enable port of http
+     #+begin_src shell
+       firewall-cmd --permanent --zone=public --add-service=http
+       firewall-cmd --reload
+     #+end_src
+  7. open brower, access 192.168.1.9(ip)
+
+* kill
+  #+begin_src shell
+    [root@localhost nginx-1.14.2]# ps -ef | grep nginx
+    root        8235       1  0 23:14 ?        00:00:00 nginx: master process /usr/local/nginx/sbin/nginx
+    nobody      8236    8235  0 23:14 ?        00:00:00 nginx: worker process
+    root        8272    1607  0 23:32 pts/0    00:00:00 grep --color=auto nginx
+    [root@localhost nginx-1.14.2]# kill -9 8235
+    [root@localhost nginx-1.14.2]# ps -ef | grep nginx
+    nobody      8236       1  0 23:14 ?        00:00:00 nginx: worker process
+    root        8274    1607  0 23:33 pts/0    00:00:00 grep --color=auto nginx
+    [root@localhost nginx-1.14.2]# kill -9 8236
+    [root@localhost nginx-1.14.2]# ps -ef | grep nginx
+    root        8277    1607  0 23:33 pts/0    00:00:00 grep --color=auto nginx
+  #+end_src

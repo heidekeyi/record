@@ -1,0 +1,1406 @@
+* 基本运行环境（环境参考 react)
+** 添加 package.json
+#+BEGIN_SRC js
+  {
+    "name": "my-webpack",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "devDependencies": {
+      "@babel/core": "^7.7.4",
+      "@babel/preset-env": "^7.7.4",
+      "@babel/preset-react": "^7.7.4",
+      "babel-loader": "^8.0.6",
+      "webpack": "^4.41.2",
+      "webpack-cli": "^3.3.10"
+    },
+    "dependencies": {
+      "react": "^16.12.0",
+      "react-dom": "^16.12.0"
+    }
+  }
+
+#+END_SRC
+#+BEGIN_SRC shell
+  yarn init -y
+#+END_SRC
+** 安装基础包
+#+BEGIN_SRC shell
+  yarn add react react-dom
+  yarn add babel-loader @babel/core @babel/preset-env @babel/preset-react -D
+#+END_SRC
+** 添加 index.html
+#+BEGIN_SRC html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+  <div id="app"></div>
+  <script type="text/javascript" src="dist/bundle.js"></script>
+  </body>
+  </html>
+#+END_SRC
+** 添加 webpack.config.js 文件
+webpack 打包的配置文件
+#+BEGIN_SRC js
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  use : {
+		      loader : 'babel-loader',
+		      options : {
+			  presets : ['@babel/preset-react']
+		      }
+		  }
+	      },
+	  ]
+      }
+
+  };
+#+END_SRC
+** 添加 src 文件夹, 并添加文件 ./src/index.js
+#+BEGIN_SRC js
+  import React from 'react';
+  import {render} from 'react-dom';
+  import {App} from "./App";
+
+  render(
+      <App/>,
+      window.document.querySelector('#app')
+  );
+#+END_SRC
+** 添加文件 ./src/App.js
+#+BEGIN_SRC js
+  import React from 'react';
+
+  class App extends React.Component {
+      constructor() {
+	  super();
+      }
+
+      render() {
+	  return (
+	      <h1>hello world</h1>
+	  );
+      }
+  }
+
+  export {
+      App
+  }
+#+END_SRC
+** 执行打包命令
+#+BEGIN_SRC shell
+  npx webpack
+#+END_SRC
+* 参考目录
+#+BEGIN_SRC shell
+  config 配置文件
+  public 不打包的静态资源
+  src/assets 伴随一起打包的静态资源
+  src/components 开发组件
+  src/pages 页面
+  src/store 存放如 redux 的数据
+#+END_SRC
+* 关联调试代码的位置信息
+开启一些特性，上线要关闭
+#+BEGIN_SRC js
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool : 'source-map',
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  use : {
+		      loader : 'babel-loader',
+		      options : {
+			  presets : ['@babel/preset-react']
+		      }
+		  }
+	      },
+	  ]
+      }
+
+  };
+#+END_SRC
+* 处理 css 文件
+如：import './App.css';
+** 安装包
+#+BEGIN_SRC shell
+  yarn add style-loader css-loader -D
+#+END_SRC
+** 配置 webpack.config.js
+#+BEGIN_SRC js
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  use: {
+		      loader: 'babel-loader',
+		      options: {
+			  presets: ['@babel/preset-react']
+		      }
+		  }
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader'
+		  ]
+	      }
+	  ]
+      }
+
+  };
+#+END_SRC
+
+* 处理图片
+一般小于8k就会直接转base64，超出就复制文件
+** 安装包
+#+BEGIN_SRC shell
+  yarn add url-loader file-loader -D
+#+END_SRC
+** 配置 webpack.config.js
+#+BEGIN_SRC js
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  use: {
+		      loader: 'babel-loader',
+		      options: {
+			  presets: ['@babel/preset-react']
+		      }
+		  }
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader'
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      }
+	  ]
+      }
+
+  };
+#+END_SRC
+** 使用方式
+背景和导入文件的方式
+*** 直接使用文件的形式
+#+BEGIN_SRC js
+  import React from 'react';
+  import './App.css';
+  class App extends React.Component {
+      constructor() {
+	  super();
+	  this.src = require('./assets/images/i1.jpg');
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <div className={'bg'}></div>
+		  <h1 className={'f1'}>hello world</h1>
+		  <h1 className={'s2'}>hello world</h1>
+		  <img className={'img'} src={this.src.default}/>
+	      </div>
+	  );
+      }
+  }
+
+  export {
+      App
+  }
+#+END_SRC
+*** css 方式
+#+BEGIN_SRC css
+  .bg{
+      width: 256px;
+      height: 163px;
+      background: url("assets/images/i1.jpg");
+  }
+#+END_SRC
+
+* 处理字体
+以 iconfont 为例
+** 安装包
+#+BEGIN_SRC shell
+  yarn add url-loader file-loader -D
+#+END_SRC
+** 配置 webpack.config.js
+#+BEGIN_SRC js
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  use: {
+		      loader: 'babel-loader',
+		      options: {
+			  presets: ['@babel/preset-react']
+		      }
+		  }
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader'
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test : /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use : {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      }
+
+	  ]
+      }
+
+  };
+#+END_SRC
+** 使用例子
+*** 导入样式
+#+BEGIN_SRC js
+  import './assets/fonts/iconfont.css';
+#+END_SRC
+*** 添加字体类和对应的图标类名称
+#+BEGIN_SRC html
+  <i className='iconfont icon-gift'/>
+#+END_SRC
+
+* 处理 less 文件
+** 安装包
+#+BEGIN_SRC shell
+  yarn add less less-loader -D
+#+END_SRC
+** 配置 webpack.config.js
+#+BEGIN_SRC js
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  use: {
+		      loader: 'babel-loader',
+		      options: {
+			  presets: ['@babel/preset-react']
+		      }
+		  }
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader'
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test : /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use : {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test : /\.less$/i,
+		  use :[
+		      'style-loader',
+		      'css-loader',
+		      'less-loader'
+		  ]
+	      }
+	  ]
+      }
+
+  };
+#+END_SRC
+
+* style 代码检查工具
+好坏参半，看情况使用（有不少蛋疼的要求要遵守）
+** 安装包
+#+BEGIN_SRC shell
+  yarn add stylelint stylelint-config-standard stylelint-webpack-plugin -D
+#+END_SRC
+** 配置 package.json
+#+BEGIN_SRC js
+  {
+    "name": "my-webpack",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "devDependencies": {
+      "@babel/core": "^7.7.4",
+      "@babel/preset-env": "^7.7.4",
+      "@babel/preset-react": "^7.7.4",
+      "babel-loader": "^8.0.6",
+      "css-loader": "^3.2.0",
+      "file-loader": "^5.0.2",
+      "less": "^3.10.3",
+      "less-loader": "^5.0.0",
+      "style-loader": "^1.0.0",
+      "stylelint": "^12.0.0",
+      "stylelint-config-standard": "^19.0.0",
+      "stylelint-webpack-plugin": "^1.1.0",
+      "url-loader": "^3.0.0",
+      "webpack": "^4.41.2",
+      "webpack-cli": "^3.3.10"
+    },
+    "dependencies": {
+      "react": "^16.12.0",
+      "react-dom": "^16.12.0"
+    },
+    "stylelint": {
+      "extends": ["stylelint-config-standard"]
+    }
+  }
+#+END_SRC
+** 配置 webpack.config.js
+#+BEGIN_SRC js
+  const stylelint = require('stylelint-webpack-plugin');
+  const stylelint_switch = false; //用作开关
+
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      plugins: [
+	  ...(stylelint_switch ? new stylelint({
+	      files: [
+		  '**/*.css',
+		  '**/*.less',
+		  '**/*.html',
+		  '**/*.scss'
+	      ]
+	  }) : [])
+      ],
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  use: {
+		      loader: 'babel-loader',
+		      options: {
+			  presets: ['@babel/preset-react']
+		      }
+		  }
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader'
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.less$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      'less-loader'
+		  ]
+	      }
+	  ]
+      }
+  };
+#+END_SRC
+
+* 兼容旧版本的 css （IE 为例）
+** 安装包
+#+BEGIN_SRC shell
+  yarn add postcss-loader autoprefixer -D
+#+END_SRC
+** 配置 package.json
+#+BEGIN_SRC js
+  {
+    "name": "my-webpack",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "devDependencies": {
+      "@babel/core": "^7.7.4",
+      "@babel/preset-env": "^7.7.4",
+      "@babel/preset-react": "^7.7.4",
+      "autoprefixer": "^9.7.2",
+      "babel-loader": "^8.0.6",
+      "css-loader": "^3.2.0",
+      "file-loader": "^5.0.2",
+      "less": "^3.10.3",
+      "less-loader": "^5.0.0",
+      "postcss-loader": "^3.0.0",
+      "style-loader": "^1.0.0",
+      "stylelint": "^12.0.0",
+      "stylelint-config-standard": "^19.0.0",
+      "stylelint-webpack-plugin": "^1.1.0",
+      "url-loader": "^3.0.0",
+      "webpack": "^4.41.2",
+      "webpack-cli": "^3.3.10"
+    },
+    "dependencies": {
+      "react": "^16.12.0",
+      "react-dom": "^16.12.0"
+    },
+    "stylelint": {
+      "extends": [
+	"stylelint-config-standard"
+      ]
+    },
+    "browserslist": [
+      "> 0.1%",
+      "last 2 version",
+      "not dead"
+    ]
+  }
+#+END_SRC
+** 配置 webpack.config.js
+#+BEGIN_SRC js
+  const stylelint = require('stylelint-webpack-plugin');
+  const stylelint_switch = false; //用作开关
+
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      plugins: [
+	  ...(stylelint_switch ? new stylelint({
+	      files: [
+		  '**/*.css',
+		  '**/*.less',
+		  '**/*.html',
+		  '**/*.scss'
+	      ]
+	  }) : [])
+      ],
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  use: {
+		      loader: 'babel-loader',
+		      options: {
+			  presets: ['@babel/preset-react']
+		      }
+		  }
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      {
+			  loader : 'postcss-loader',
+			  options : {
+			      plugins: [
+				  require('autoprefixer')
+			      ]
+			  }
+		      }
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.less$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      'less-loader'
+		  ]
+	      }
+	  ]
+      }
+  };
+#+END_SRC
+
+* js 代码检查工具
+** 安装包
+#+BEGIN_SRC shell
+  yarn add eslint eslint-loader eslint-plugin-react -D
+  yarn add eslint-formatter-html-extended -D //用于输出错误提示文件
+#+END_SRC
+** 配置 eslint
+#+BEGIN_SRC shell
+  node ./node_modules/eslint/bin/eslint.js --init
+  > To check syntax and find problems
+  > JavaScript modules (import/export)
+  > React
+  Does your project use TypeScript? (y/N) n
+  >(*) Browser
+  > JavaScript
+  ? Would you like to install them now with npm? (Y/n) n
+#+END_SRC
+配置之后生成 .eslintrc.js 文件（源代码仅供参考）
+#+BEGIN_SRC js
+  module.exports = {
+      "env": {
+	  "browser": true,
+	  "es6": true
+      },
+      "extends": [
+	  "eslint:recommended",
+	  "plugin:react/recommended"
+      ],
+      "globals": {
+	  "Atomics": "readonly",
+	  "SharedArrayBuffer": "readonly"
+      },
+      "parserOptions": {
+	  "ecmaFeatures": {
+	      "jsx": true
+	  },
+	  "ecmaVersion": 2018,
+	  "sourceType": "module"
+      },
+      "plugins": [
+	  "react"
+      ],
+      "rules": {
+      }
+  };
+#+END_SRC
+** 配置 webpack.config.js
+包含到处到文件中
+#+BEGIN_SRC js
+  const stylelint = require('stylelint-webpack-plugin');
+  const stylelint_switch = false; //用作开关
+  const eslint_switch = true; //开关
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      plugins: [
+	  ...(stylelint_switch ? new stylelint({
+	      files: [
+		  '**/*.css',
+		  '**/*.less',
+		  '**/*.html',
+		  '**/*.scss'
+	      ]
+	  }) : [])
+      ],
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  exclude: /node_modules/,
+		  use: [
+		      {
+			  loader: 'babel-loader',
+			  options: {
+			      presets: ['@babel/preset-react']
+			  }
+		      },
+		      ...(eslint_switch ? [{
+			  loader: 'eslint-loader',
+			  options: {
+			      outputReport : {
+				  filePath: 'eslint_report.html',
+				  formatter: require('eslint-formatter-html-extended')
+			      }
+			  }
+		      }] : [])
+		  ]
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      {
+			  loader: 'postcss-loader',
+			  options: {
+			      plugins: [
+				  require('autoprefixer')
+			      ]
+			  }
+		      }
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.less$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      'less-loader'
+		  ]
+	      }
+	  ]
+      }
+  };
+#+END_SRC
+
+** 局部禁用的例子（仅供参考，根据提示操作）
+#+BEGIN_SRC js
+  /* eslint-disable no-unused-vars */
+  const a = 0; //之后不适用
+  /* eslint-enable no-unused-vars */
+  /* eslint-disable no-undef */
+  this.src = require('./assets/images/i1.jpg');
+  /* eslint-enable no-undef */
+#+END_SRC
+* devServer
+用于开发，上线就无效了，打包过程中 eslint 如果有错会影响热更新，可能会失效
+** 安装包
+#+BEGIN_SRC shell
+  yarn add webpack-dev-server -D
+#+END_SRC
+** 配置 webpack.config.js
+#+BEGIN_SRC js
+  const path = require('path');
+  const stylelint = require('stylelint-webpack-plugin');
+  const stylelint_switch = false; //用作开关
+  const eslint_switch = true; //开关
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      devServer: {
+	  port: 8091,
+	  compress: true, //推荐压缩,
+	  open: true,
+	  hot: true,
+	  hotOnly: true,
+	  contentBase: path.resolve(__dirname, './dist')
+      },
+      plugins: [
+	  ...(stylelint_switch ? new stylelint({
+	      files: [
+		  '**/*.css',
+		  '**/*.less',
+		  '**/*.html',
+		  '**/*.scss'
+	      ]
+	  }) : [])
+      ],
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  exclude: /node_modules/,
+		  use: [
+		      {
+			  loader: 'babel-loader',
+			  options: {
+			      presets: ['@babel/preset-react']
+			  }
+		      },
+		      ...(eslint_switch ? [{
+			  loader: 'eslint-loader',
+			  options: {
+			      outputReport: {
+				  filePath: 'eslint_report.html',
+				  formatter: require('eslint-formatter-html-extended')
+			      }
+			  }
+		      }] : [])
+		  ]
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      {
+			  loader: 'postcss-loader',
+			  options: {
+			      plugins: [
+				  require('autoprefixer')
+			      ]
+			  }
+		      }
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.less$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      'less-loader'
+		  ]
+	      }
+	  ]
+      }
+  };
+#+END_SRC
+* 给 html 自动注入 js，自动清理打包文件夹
+** 安装包
+#+BEGIN_SRC shell
+yarn add clean-webpack-plugin html-webpack-plugin -D
+#+END_SRC
+** 配置 webpack.config.js
+html 中可以去掉引入 js 文件的代码，打包成功够会自动注入的
+#+BEGIN_SRC js
+  const path = require('path');
+  const stylelint = require('stylelint-webpack-plugin');
+  const stylelint_switch = false; //用作开关
+  const eslint_switch = true; //开关
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      devServer: {
+	  port: 8091,
+	  compress: true, //推荐压缩,
+	  open: true,
+	  hot: true,
+	  hotOnly: true,
+	  contentBase: path.resolve(__dirname, './dist')
+      },
+      plugins: [
+	  ...(stylelint_switch ? new stylelint({
+	      files: [
+		  '**/*.css',
+		  '**/*.less',
+		  '**/*.html',
+		  '**/*.scss'
+	      ]
+	  }) : []),
+	  new (require('html-webpack-plugin'))({
+	      template: path.resolve(__dirname, './public/index.html')
+	  }),
+	  new (require('clean-webpack-plugin'))()
+      ],
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  exclude: /node_modules/,
+		  use: [
+		      {
+			  loader: 'babel-loader',
+			  options: {
+			      presets: ['@babel/preset-react']
+			  }
+		      },
+		      ...(eslint_switch ? [{
+			  loader: 'eslint-loader',
+			  options: {
+			      outputReport: {
+				  filePath: 'eslint_report.html',
+				  formatter: require('eslint-formatter-html-extended')
+			      }
+			  }
+		      }] : [])
+		  ]
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      {
+			  loader: 'postcss-loader',
+			  options: {
+			      plugins: [
+				  require('autoprefixer')
+			      ]
+			  }
+		      }
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.less$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      'less-loader'
+		  ]
+	      }
+	  ]
+      }
+  };
+#+END_SRC
+* 多配置
+用于生产、线上和测试等不同环境
+** 安装包
+用于合并
+#+BEGIN_SRC shell
+  yarn add webpack-merge -D
+#+END_SRC
+** 在 package.json 中配置命令
+#+BEGIN_SRC js
+  {
+    "name": "my-webpack",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+      "dev": "npx webpack --config ./config/webpack.dev.js",
+      "serve": "npx webpack-dev-server --config ./config/webpack.serve.js",
+      "build": "npx webpack --config ./config/webpack.prod.js"
+    },
+    "devDependencies": {
+      "@babel/core": "^7.7.4",
+      "@babel/preset-env": "^7.7.4",
+      "@babel/preset-react": "^7.7.4",
+      "autoprefixer": "^9.7.2",
+      "babel-loader": "^8.0.6",
+      "clean-webpack-plugin": "^3.0.0",
+      "css-loader": "^3.2.0",
+      "eslint": "^6.7.1",
+      "eslint-formatter-html-extended": "^1.0.2",
+      "eslint-loader": "^3.0.2",
+      "eslint-plugin-react": "^7.17.0",
+      "file-loader": "^5.0.2",
+      "html-webpack-plugin": "^3.2.0",
+      "less": "^3.10.3",
+      "less-loader": "^5.0.0",
+      "postcss-loader": "^3.0.0",
+      "style-loader": "^1.0.0",
+      "stylelint": "^12.0.0",
+      "stylelint-config-standard": "^19.0.0",
+      "stylelint-webpack-plugin": "^1.1.0",
+      "url-loader": "^3.0.0",
+      "webpack": "^4.41.2",
+      "webpack-cli": "^3.3.10",
+      "webpack-dev-server": "^3.9.0",
+      "webpack-merge": "^4.2.2"
+    },
+    "dependencies": {
+      "react": "^16.12.0",
+      "react-dom": "^16.12.0"
+    },
+    "stylelint": {
+      "extends": [
+	"stylelint-config-standard"
+      ]
+    },
+    "browserslist": [
+      "> 0.1%",
+      "last 2 version",
+      "not dead"
+    ]
+  }
+#+END_SRC
+** 配置 webpack 配置文件
+创建 config 目录
+*** 公共部分
+#+BEGIN_SRC js
+  const path = require('path');
+  const HtmlWebpackPlugin = require('html-webpack-plugin');
+  const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+  module.exports = {
+      entry: path.resolve(__filename, '../../src/index'),
+      output: {
+	  filename: 'bundle.js'
+      },
+      plugins: [
+	  new HtmlWebpackPlugin({
+	      template: path.resolve(__dirname, '../public/index.html')
+	  }),
+	  new CleanWebpackPlugin()
+      ],
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  exclude: /node_modules/,
+		  use: [
+		      {
+			  loader: 'babel-loader',
+			  options: {
+			      presets: ['@babel/preset-react']
+			  }
+		      },
+		  ]
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      {
+			  loader: 'postcss-loader',
+			  options: {
+			      plugins: [
+				  require('autoprefixer')
+			      ]
+			  }
+		      }
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.less$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      'less-loader'
+		  ]
+	      }
+	  ]
+      }
+  };
+#+END_SRC
+*** 开发环境
+#+BEGIN_SRC js
+  const stylelint = require('stylelint-webpack-plugin');
+  const stylelint_switch = false; //用作开关
+  const eslint_switch = true; //开关
+
+  const base = require('./webpack.base');
+  const merge = require('webpack-merge');
+
+  if (eslint_switch) {
+      base.module.rules.forEach(it => {
+	  if (it.test.toString().match(/\.js/)) {
+	      it.use.push(
+		  {
+		      loader: 'eslint-loader',
+		      options: {
+			  outputReport: {
+			      filePath: 'eslint_report.html',
+			      formatter: require('eslint-formatter-html-extended')
+			  }
+		      }
+		  }
+	      )
+	  }
+      });
+  }
+
+  module.exports = merge(base, {
+      mode: 'development',
+      devtool: 'source-map',
+      plugins: [
+	  ...(stylelint_switch ? [new stylelint({
+	      files: [
+		  '**/*.css',
+		  '**/*.less',
+		  '**/*.html',
+		  '**/*.scss'
+	      ]
+	  })] : []),
+      ]
+  });
+#+END_SRC
+*** 开发环境（使用服务器 devServer）
+#+BEGIN_SRC js
+  const path = require('path');
+  const dev = require('./webpack.dev');
+  const merge = require('webpack-merge');
+  module.exports = merge(dev, {
+      devServer: {
+	  port: 8091,
+	  compress: true, //推荐压缩,
+	  open: true,
+	  hot: true,
+	  hotOnly: true,
+	  contentBase: path.resolve(__dirname, './dist')
+      },
+  });
+#+END_SRC
+*** 线上环境
+#+BEGIN_SRC js
+  const base = require('./webpack.base');
+  const merge = require('webpack-merge');
+  module.exports = merge(base, {
+      mode: 'production'
+  });
+#+END_SRC
+
+* 说明
+出问题时，一切以最后配置为准（测试可用的），对应版本号需要特别注意，可能需要改动
+** 整体配置
+*** package.json
+#+BEGIN_SRC js
+  {
+    "name": "my-webpack",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+      "dev": "npx webpack --config ./config/webpack.dev.js",
+      "serve": "npx webpack-dev-server --config ./config/webpack.serve.js",
+      "build": "npx webpack --config ./config/webpack.prod.js"
+    },
+    "devDependencies": {
+      "@babel/core": "^7.7.4",
+      "@babel/preset-env": "^7.7.4",
+      "@babel/preset-react": "^7.7.4",
+      "autoprefixer": "^9.7.2",
+      "babel-loader": "^8.0.6",
+      "clean-webpack-plugin": "^3.0.0",
+      "css-loader": "^3.2.0",
+      "eslint": "^6.7.1",
+      "eslint-formatter-html-extended": "^1.0.2",
+      "eslint-loader": "^3.0.2",
+      "eslint-plugin-react": "^7.17.0",
+      "file-loader": "^5.0.2",
+      "html-webpack-plugin": "^3.2.0",
+      "less": "^3.10.3",
+      "less-loader": "^5.0.0",
+      "postcss-loader": "^3.0.0",
+      "style-loader": "^1.0.0",
+      "stylelint": "^12.0.0",
+      "stylelint-config-standard": "^19.0.0",
+      "stylelint-webpack-plugin": "^1.1.0",
+      "url-loader": "^3.0.0",
+      "webpack": "^4.41.2",
+      "webpack-cli": "^3.3.10",
+      "webpack-dev-server": "^3.9.0",
+      "webpack-merge": "^4.2.2"
+    },
+    "dependencies": {
+      "react": "^16.12.0",
+      "react-dom": "^16.12.0"
+    },
+    "stylelint": {
+      "extends": [
+	"stylelint-config-standard"
+      ]
+    },
+    "browserslist": [
+      "> 0.1%",
+      "last 2 version",
+      "not dead"
+    ]
+  }
+#+END_SRC
+*** webpack.config.js
+#+BEGIN_SRC js
+  const path = require('path');
+  const stylelint = require('stylelint-webpack-plugin');
+  const stylelint_switch = false; //用作开关
+  const eslint_switch = true; //开关
+  module.exports = {
+      mode: 'development',
+      entry: './src/index',
+      output: {
+	  filename: 'bundle.js'
+      },
+      devtool: 'source-map',
+      devServer: {
+	  port: 8091,
+	  compress: true, //推荐压缩,
+	  open: true,
+	  hot: true,
+	  hotOnly: true,
+	  contentBase: path.resolve(__dirname, './dist')
+      },
+      plugins: [
+	  ...(stylelint_switch ? [new stylelint({
+	      files: [
+		  '**/*.css',
+		  '**/*.less',
+		  '**/*.html',
+		  '**/*.scss'
+	      ]
+	  })] : []),
+	  new (require('html-webpack-plugin'))({
+	      template: path.resolve(__dirname, './public/index.html')
+	  }),
+	  new (require('clean-webpack-plugin'))()
+      ],
+      module: {
+	  rules: [
+	      {
+		  test: /.jsx?/i,
+		  exclude: /node_modules/,
+		  use: [
+		      {
+			  loader: 'babel-loader',
+			  options: {
+			      presets: ['@babel/preset-react']
+			  }
+		      },
+		      ...(eslint_switch ? [{
+			  loader: 'eslint-loader',
+			  options: {
+			      outputReport: {
+				  filePath: 'eslint_report.html',
+				  formatter: require('eslint-formatter-html-extended')
+			      }
+			  }
+		      }] : [])
+		  ]
+	      },
+	      {
+		  test: /\.css$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      {
+			  loader: 'postcss-loader',
+			  options: {
+			      plugins: [
+				  require('autoprefixer')
+			      ]
+			  }
+		      }
+		  ]
+	      },
+	      {
+		  test: /\.(jpg|png|gif)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'images/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.(eot|svg|ttf|woff|woff2)$/i,
+		  use: {
+		      loader: 'url-loader',
+		      options: {
+			  outputPath: 'fonts/',
+			  limit: 8 * 1024,
+		      }
+		  }
+	      },
+	      {
+		  test: /\.less$/i,
+		  use: [
+		      'style-loader',
+		      'css-loader',
+		      'less-loader'
+		  ]
+	      }
+	  ]
+      }
+  };
+#+END_SRC
+*** .eslintrc.js
+#+BEGIN_SRC js
+  module.exports = {
+      "env": {
+	  "browser": true,
+	  "es6": true
+      },
+      "extends": [
+	  "eslint:recommended",
+	  "plugin:react/recommended"
+      ],
+      "globals": {
+	  "Atomics": "readonly",
+	  "SharedArrayBuffer": "readonly"
+      },
+      "parserOptions": {
+	  "ecmaFeatures": {
+	      "jsx": true
+	  },
+	  "ecmaVersion": 2018,
+	  "sourceType": "module"
+      },
+      "plugins": [
+	  "react"
+      ],
+      "rules": {
+      }
+  };
+#+END_SRC

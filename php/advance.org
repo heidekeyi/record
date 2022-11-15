@@ -1,0 +1,544 @@
+* 文件目录操作的一些函数
+  - Windows系统文件目录权限相关的基本都是有问题的，不考虑
+  - mkdir 0777 创建目录
+  - is_dir 
+  - is_file 
+  - file_exist file/dir
+  - chmod
+  - fileperms 获取权限
+  - rename
+  - opendir
+  - readdir
+  - closedir
+    #+BEGIN_SRC php
+      //遍历整个文件夹
+      function traverse($pathname)
+      {
+	  if (!file_exists($pathname)) {
+	      return false;
+	  }
+	  $find_all = function ($str) use (&$find_all) {
+	      echo '<ul>';
+	      if (is_dir($str)) {
+		  $resource = opendir($str);
+		  while ($data = readdir($resource)) {
+		      if ($data !== '.' && $data != '..') {
+			  echo "<li>{$str}</li>";
+			  $pathname = $str . DIRECTORY_SEPARATOR . $data;
+			  $find_all($pathname);
+		      }
+		  }
+		  closedir($resource);
+	      }
+	      echo '</ul>';
+	  };
+	  if(is_file($pathname)){
+	      echo "<ul><li>$pathname</li></ul>";
+	  }
+	  else{
+	      $find_all($pathname);
+	  }
+
+      }
+
+      traverse('C:\sbcl');
+    #+END_SRC
+  - fopen
+  - fclose
+  - fread 万能，可以读取二进制
+#+BEGIN_SRC php
+  //字符集
+  //数据库 utf8
+  //网页 utf-8    
+  //rb wb ab
+  $pathname = './ma.jpg';
+  $resource = fopen($pathname, 'rb');
+  //header('Content-Type:text/html;charset=utf-8');
+  header('Content-Type:image/jpeg');
+  echo fread($resource, filesize($pathname));
+  fclose($resource);
+#+END_SRC
++ iconv 转换字符集
++ fgets 一行一行读数据
+#+BEGIN_SRC php
+  //rb wb ab
+  $pathname = './2traverse.php';
+  $resource = fopen($pathname, 'rb');
+  //header('Content-Type:text/html;charset=utf-8');
+  //推荐使用读入一行
+  while($data = fgets($resource)){
+      var_dump($data);
+  }
+  fclose($resource);
+#+END_SRC
++ file 返回数组，一行一个索引
+#+BEGIN_SRC php
+  //可以读取远程文件，搞爬虫
+  //去掉换行和空白行
+  $pathname = './2traverse.php';
+  var_dump(file($pathname,FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES));
+#+END_SRC
++ file_get_contents 返回一个字符串
+#+BEGIN_SRC php
+  //可以读取远程文件
+  $pathname = './2traverse.php';
+  var_dump(file_get_contents($pathname,FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES));
+#+END_SRC
++ fwrite
++ copy
++ unlink 直接删除文件（./..)
+* http
+#+ATTR_HTML: :border 1 :rules all :frame border
+|--------+--------------+----------+-------------------------------------------------|
+| 状态码 | 说明         | 代表例子 | 例子具体解释                                    |
+|--------+--------------+----------+-------------------------------------------------|
+|    1xx | 一些指示信息 |          |                                                 |
+|--------+--------------+----------+-------------------------------------------------|
+|    2xx | 成功         |          |                                                 |
+|--------+--------------+----------+-------------------------------------------------|
+|        |              |      200 | 请求成功                                        |
+|--------+--------------+----------+-------------------------------------------------|
+|    3xx | 重定向       |          |                                                 |
+|--------+--------------+----------+-------------------------------------------------|
+|        |              |      301 | 永久重定向（服务器）                            |
+|--------+--------------+----------+-------------------------------------------------|
+|        |              |      302 | 临时重定向（客户端）                            |
+|--------+--------------+----------+-------------------------------------------------|
+|        |              |      304 | not modify，没有修改，缓存                      |
+|--------+--------------+----------+-------------------------------------------------|
+|    4xx | 客户端错误   |          |                                                 |
+|--------+--------------+----------+-------------------------------------------------|
+|        |              |      403 | forbidde 服务器收到请求，但拒绝服务（禁止访问） |
+|--------+--------------+----------+-------------------------------------------------|
+|        |              |      404 | 资源不存在                                      |
+|--------+--------------+----------+-------------------------------------------------|
+|        |              |      408 | 请求超时                                        |
+|--------+--------------+----------+-------------------------------------------------|
+|    5xx | 服务器端错误 |          |                                                 |
+|--------+--------------+----------+-------------------------------------------------|
+** 代码示例
++ 302 举例
+#+BEGIN_SRC php
+  //告诉浏览器重定向，转到location指定的地址
+  //302
+  header('location:https:www.baidu.com');
+#+END_SRC
++ 刷新跳转
+#+BEGIN_SRC php
+  //等待3秒刷新并跳转
+  //header('refresh:3,url=./2traverse.php');
+#+END_SRC
+* 下载文件
+** 文件路径映射
+#+BEGIN_SRC php
+  function get_file_map()
+  {
+      $keys = [
+	  './1status.php' => 'php源文件',
+	  './ma.jpg' => '图片文件'
+      ];
+      $file_map = [];
+      foreach ($keys as $k => $v) {
+	  $file_map[md5($k)] = [
+	      'pathname' => $k,
+	      'filename' => $v
+	  ];
+      }
+      return $file_map;
+  }
+#+END_SRC
+** 下载页面
+#+BEGIN_SRC php
+  // 获取文件路径对应的加密字符串用以寻找文件
+  $file_map = get_file_map();
+  foreach ($file_map as $key => $value) {
+      $filename = $value['filename'];
+      echo "<p><a href='./1status.php?name={$key}'>{$filename}</a></p>";
+  }
+#+END_SRC
+** 处理获取文件的请求
+#+BEGIN_SRC php
+  if (!isset($_GET['name'])) {
+      exit('sorry!!');
+  }
+  $file_map = get_file_map();
+  $name = $_GET['name'];
+  $data = $file_map[$name];
+  $resource = fopen($data['pathname'], 'rb');
+  if(!$resource){
+      exit('read deny');
+  }
+  // 文件保存提示框
+  header('Content-Type:application/octet-stream');
+  // 设置保存的文件名
+  header("Content-Disposition: attachment; filename={$filename}");
+  $filename = $data['filename'].strrchr($data['pathname'],'.');
+  while ($file_data = fread($resource, 4 * 1024)){
+      echo $file_data;
+  }
+  fclose($resource);
+#+END_SRC
+* 上传图片
+需要使用开启 gd2 模块（去掉 php.ini 中对应模块的注释）
+** page
++ token 值得注意
++ 编码格式
++ 方式必须是 post
+*** 单个文件
+#+BEGIN_SRC html
+  <form action="./exe.php"
+	enctype="multipart/form-data"
+	method="post">
+      <p><input type="file" name="file"/></p>
+      <p>
+	  <input type="text"
+		 class="hidden"
+		 name="token"
+		 value="upload">
+	  <input type="submit" value="提交"/>
+      </p>
+  </form>
+#+END_SRC
+*** 多个文件
+#+BEGIN_SRC html
+  <form action="./exe.php"
+	enctype="multipart/form-data"
+	method="post">
+      <p><input type="file" name="file[]"/></p>
+      <p><input type="file" name="file[]"/></p>
+      <p><input type="file" name="file[]"/></p>
+      <p>
+	  <input type="text"
+		 class="hidden"
+		 name="token"
+		 value="upload">
+	  <input type="submit" value="提交"/>
+      </p>
+  </form>
+#+END_SRC
+** server
+保存缩略图（缩略因子简单的使用0.5）
+#+BEGIN_SRC php
+  //文件太大请求会被截断
+  //请求体数据为空
+  !isset($_POST['token']) && exit('forbidden');
+  $token = $_POST['token'];
+  $token !== 'upload' && exit('token is invalid');
+
+  //转换多个文件时数据格式，单文件格式的数组
+  function transform_files($name)
+  {
+      $res = [];
+      if (isset($_FILES[$name])) {
+	  $files = $_FILES[$name];
+	  if (is_array($files)) {
+	      foreach ($files as $key => $item) {
+		  $len = count($item);
+		  for ($i = 0; $i < $len; ++$i) {
+		      $tmp = isset($res[$i]) ? $res[$i] : [];
+		      $tmp[$key] = $item[$i];
+		      $res[$i] = $tmp;
+		  }
+	      }
+
+	  } else {
+	      array_push($data, $files);
+	  }
+      }
+      return $res;
+  }
+
+  $files = transform_files('file');
+  //过滤出错的文件
+  $status_check = array_filter($files, function ($item) {
+      return $item['error'] === 0;
+  });
+  //过滤类型不对的文件
+  $img_filter = function ($item) {
+      $types = ['image/png', 'image/gif', 'image/jpeg'];
+      return in_array($item['type'], $types);
+  };
+  $type_check = array_filter($status_check, $img_filter);
+
+  //对图片进行缩小处理
+  function save_img_file($files)
+  {
+      foreach ($files as $item) {
+	  $ext = pathinfo($item['name'], PATHINFO_EXTENSION);
+	  $fn_from = 'imagecreatefrom' . $ext;
+	  if (function_exists($fn_from)) {
+  //            根据图形使用相应创建画布的方法
+	      $img_src = $fn_from($item['tmp_name']);
+	      $factor = 0.5; //缩放因子
+	      $w_src = imagesx($img_src);
+	      $h_src = imagesy($img_src);
+	      $w_dec = $w_src * $factor;
+	      $h_dec = $h_src * $factor;
+	      $img_dec = imagecreatetruecolor($w_dec, $h_dec);
+  //            缩放函数
+	      imagecopyresampled(
+		  $img_dec,
+		  $img_src,
+		  0, 0, 0, 0,
+		  $w_dec, $h_dec,
+		  $w_src, $h_src
+	      );
+  //            保存文件到对应目录
+	      $fn_to = 'image' . $ext;
+	      $dir = './upload/';
+	      !file_exists($dir) && mkdir($dir);
+	      $pathname = $dir . uniqid('img_') . '.' . $ext;
+	      if (function_exists($fn_to)) {
+  //                显示单个图片文件
+  //                header('content-type:image/'.$ext);
+  //                $fn_to($img_dec);
+		  $fn_to($img_dec, $pathname);
+	      }
+	      imagedestroy($img_dec);
+	      imagedestroy($img_src);
+	  }
+
+      }
+      return $files;
+  }
+
+  $data = save_img_file($type_check);
+
+  $bin_file = array_filter($status_check, function ($item) use (&$img_filter) {
+      return !$img_filter($item);
+  });
+
+
+  function save_bin_file($files)
+  {
+      foreach ($files as $item) {
+	  $ext = pathinfo($item['name'], PATHINFO_EXTENSION);
+	  $dir = './upload/';
+	  !file_exists($dir) && mkdir($dir);
+	  $pathname = $dir . uniqid() . '.' . $ext;
+	  move_uploaded_file($item['tmp_name'], $pathname);
+      }
+  }
+
+  save_bin_file($bin_file);
+#+END_SRC
+* 简单的验证码
+1. 获取随机字符串
+2. 创建画布
+3. 将字符串写入画布
+4. 画上一些点和线增大识别难度
+#+BEGIN_SRC php
+  //php.ini
+  //post_max_size 总大小
+  //upload_tmp_dir 临时目录
+  //upload_max_filesize 单文件最大字节数
+  //max_file_uploads 最大上传数量
+  //sleep 可以延时执行（休眠）
+
+  function rand_str($num = 4)
+  {
+  //    合并数组
+      $arr = array_merge(
+	  range('a', 'z'),
+	  range('0', '9'),
+	  range('A', 'Z')
+      );
+  //    打乱
+      shuffle($arr);
+      shuffle($arr);
+
+      $data = array_rand($arr, $num);
+      $data = array_map(function ($val) use (&$arr) {
+	  return $arr[$val];
+      }, $data);
+      return join('', $data);
+  }
+
+
+  function rand_color()
+  {
+      return [
+	  mt_rand(0, 255),
+	  mt_rand(0, 255),
+	  mt_rand(0, 255)
+      ];
+  }
+
+  function create_rand_color(&$image){
+      return imagecolorallocate($image, ...rand_color());
+  }
+  //120 * 60 的画布
+  $w = 120;
+  $h = 60;
+  $image = imagecreatetruecolor($w, $h);
+  //设置画布背景色
+  imagefill($image, 0, 0, create_rand_color($image));
+  //在画布中写入字符串，左下角为起始坐标
+  //imagestring 只能写入英文，不好用
+  imagettftext(
+      $image,
+      20,
+      0,
+      30, 36,
+      create_rand_color($image),
+      'C:\wamp64\www\WenQuanDengKuanWeiMiHei-1.ttf',//字体文件绝对地址
+      rand_str()
+  );
+
+  //接着在上面画矩形
+  imagerectangle($image, 20, 10, $w - 20, $h- 10, create_rand_color($image));
+  //在画上点加大识别难度
+  for($i = 0; $i < 220; ++$i){
+      imagesetpixel(
+	  $image,
+	  mt_rand(0, $w),
+	  mt_rand(0, $h),
+	  create_rand_color($image)
+      );
+  }
+  header('content-type:image/png');
+  echo imagepng($image);
+  imagedestroy($image);
+#+END_SRC
+* 水印效果
+#+BEGIN_SRC php
+  //    png 和 gif 是无损
+  //    jpg 和 jpeg 可以设置输出图像质量，默认75
+  //    $resource = imagecreatefrombmp();
+  //    $resource = imagecreatefromgif();
+  //    $resource = imagecreatefromjpeg();
+  $w = 200;
+  $h = 150;
+  $image = imagecreatetruecolor($w, $h);
+  //设置画布背景色
+  imagefill(
+      $image,
+      0, 0,
+      imagecolorallocate($image, 200, 0, 0)
+  );
+  imagerectangle(
+      $image,
+      33, 33,
+      $w-30, 60,
+      imagecolorallocate($image, 0, 0, 200)
+  );
+  //在画布中写入字符串，左下角为起始坐标，80的透明度（可以看见矩形）
+  //imagestring 只能写入英文，不好用
+  $fc = imagecolorallocatealpha($image, 0, 200, 0, 80);
+  imagettftext(
+      $image,
+      80,
+      0,
+      50, 100,
+      $fc,
+      'C:\wamp64\www\WenQuanDengKuanWeiMiHei-1.ttf',//字体文件绝对地址
+      "透"
+  );
+  header('content-type:image/png');
+  echo imagepng($image);
+  imagedestroy($image);
+#+END_SRC
+* cookie
+基础知识
+#+ATTR_HTML: :border 1 :frame border :rules all
+|------------------+----------|
+| 例子             | 含义     |
+|------------------+----------|
+| test.cn          | 域名主体 |
+|------------------+----------|
+| www.test.cn      | 一级域名 |
+|------------------+----------|
+| news.test.cn     | 二级域名 |
+|------------------+----------|
+| img.www.test.cn  | 三级域名 |
+|------------------+----------|
+| img.news.test.cn | 三级域名 |
+|------------------+----------|
+** 设置
+setcookie 参数含义
+#+ATTR_HTML: :border 1 :frame border :rules all
+|-----------+----------------------+--------------+----------------------------------|
+| 参数      | 含义                 | 例子         | 含义                             |
+|-----------+----------------------+--------------+----------------------------------|
+| $name     | key                  |              |                                  |
+|-----------+----------------------+--------------+----------------------------------|
+| $value    | value                |              |                                  |
+|-----------+----------------------+--------------+----------------------------------|
+| $expire   |                      | time() + 5   | 5秒后失效                        |
+|           |                      | 会话（默认） | 关闭浏览器失效                   |
+|-----------+----------------------+--------------+----------------------------------|
+| $path     | cookie 有效路径      | /            | 全都有效                         |
+|           |                      | /xx/         | 只有 xx 及其子路径有效           |
+|-----------+----------------------+--------------+----------------------------------|
+| $domin    | cookie 有效域名      | 默认         | 当前子域名有效（精确匹配前缀）   |
+|           |                      | www.test.cn  | 当前子域名及其对应的三级域名有效 |
+|           |                      | test.cn      | 全部子域名都有效                 |
+|-----------+----------------------+--------------+----------------------------------|
+| $secure   | 是否只能使用安全协议 | true         | 只能使用https                    |
+|-----------+----------------------+--------------+----------------------------------|
+| $httponly | 允许JS等访问         | true         | 不允许JS等访问                   |
+|-----------+----------------------+--------------+----------------------------------|
+#+BEGIN_SRC php
+  // 基本使用
+  $sec = 3600;
+  $time = time() + $sec;
+  $im = time();
+  setcookie('public', '/public/', $time, '/public/');
+  setcookie('fruit', '/fruit/', $time, '/fruit/');
+  setcookie('all', 'domain', $time);
+#+END_SRC
+
+* session
+** 特点
++ 数据存在服务器(敏感数据)
++ 基于cookie，没有cookie就没有session（存索引）
++ 每个页面都需要开启，有且只能开启一次
++ 默认不存在（不能直接使用）
+** 使用
+有且一个请求只能使用一次
+#+BEGIN_SRC php
+  // 启用session
+  session_start();
+  // 读写数据
+  if(empty($_SESSION)){
+  //    添加数据
+      $_SESSION['name'] = 'ok';
+      $_SESSION['password'] = 'sorry';
+      $_SESSION['test'] = 'all';
+  }else{
+  //    读取数据
+      var_dump($_SESSION);
+      if(isset($_SESSION['name'])){
+	  unset($_SESSION['name']);
+	  var_dump($_SESSION);
+      }
+  }
+  //清空数据
+  $_SESSION = [];
+  //删除文件
+  session_destroy();
+
+#+END_SRC
+** 配置（php.ini文件）
++ 临时文件保存路径：session.save_path
++ 有效时间（默认是会话，就是浏览器关闭失效）：session.cookie_lifetime
++ 其他设置可以参考cookie
+*** 垃圾清理
++ 周期（默认24分钟）：session.gc_maxlifetime
++ 数量：session.gc_probability
++ 总数：session.gc_divisor
++ 特性
+  1. 固定时间执行清理循环
+  2. 垃圾的数量超总数，执行清理时才会清理（同清理循环）
+  3. 会消耗系统资源，不要太频繁清理
+
+* 判断文件真实类型
+#+BEGIN_SRC php
+  $pathname = './aa.png';
+  $info = finfo_open(FILEINFO_MIME_TYPE);
+  //获取文件真实的类型（扩展名可能是假的）
+  $info = finfo_file($info, $pathname);
+  //判断是否是指定类型
+  in_array($info, ['image/png', 'image/gif']);
+  finfo_close($info);
+#+END_SRC

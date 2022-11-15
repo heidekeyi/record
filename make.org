@@ -1,0 +1,374 @@
+#+STARTUP: content
+
+* 说明
+  - #开头表示注释
+  - @取消回显
+  - 格式
+    #+begin_src makefile
+      # target: [dependency1] [dependency2] ...
+      # tab command1
+      # tab command2
+      # ...
+    #+end_src
+  - 默认执行第一个target, 其它的在命令行中使用
+    #+begin_src makefile
+      # defaut target
+      # c:/Users/12131/Desktop/code $ make 
+      # gcc -o a.o -c a.c
+      # gcc -c b.c -o b.o
+      # gcc -o cli a.o b.o
+      # c:/Users/12131/Desktop/code $ ls
+      # a.c  a.o  b.c  b.h  b.o  cli.exe  glz  make.org  makefile
+      # c:/Users/12131/Desktop/code $ ./cli.exe
+      # a+b=110
+      # a1b=-90
+      # specify target
+      # c:/Users/12131/Desktop/code $ make clean
+      # del *.o *.exe
+    #+end_src
+* 最基本的用法
+  基本和命令行一样
+  #+begin_src makefile
+    all:
+	    gcc a.c b.c
+  #+end_src
+* 使用依赖
+  #+begin_src makefile
+    # all 依赖a.o和b.o(例子中a.o和b.o也是target)
+    # 依赖项(a.o和b.o)不存在,会分别执行target(a.o和b.o), 生成a.o和b.o
+    # 生成cli文件(windows: .exe, linux: .out)
+    all: a.o b.o
+	    gcc -o cli a.o b.o
+
+    # 编译a.c,生成a.o
+    a.o:
+	    gcc -o a.o -c a.c
+
+    # 同a.c效果
+    b.o:
+	    gcc -c b.c -o b.o
+
+    # 清理文件
+    # linux 下用 rm
+    # windows 下用 del
+    clean:
+	    del *.o *.exe
+  #+end_src
+* 使用变量
+  变量推荐大写
+** 简单应用  
+   #+begin_src makefile
+     # $(CC) = gcc, 修改g++很方便
+     # $(...)类似替换效果($(FLAGS 就是 -Wall -std=c11))
+     # -Wall 开启所有警告
+     # -std=c11 使用c11标准
+     # -g 生成调试文件(一般linux下使有,可能还需要其它操作)
+
+     CC=gcc
+     FLAGS=-Wall -std=c11
+
+     all: a.o b.o
+	     $(CC)p -o cli a.o b.o $(FLAGS)
+
+     a.o:
+	     $(CC) -o a.o -c a.c $(FLAGS)
+
+     b.o:
+	     $(CC) -c b.c -o b.o $(FLAGS)
+
+     clean:
+	     del *.o *.exe
+  #+end_src
+** 进一步替换
+   #+begin_src makefile
+     CC=gcc
+     FLAGS=-Wall -std=c11
+
+     # 多文件单行
+     # SRCS= a.c b.c
+     # 多文件多行
+     SRCS=a.c\
+	     b.c
+
+     OBJS=$(SRCS:.c=.o)
+
+     all: $(OBJS)
+	     $(CC) -o cli $(OBJS) $(FLAGS)
+
+     a.o:
+	     $(CC) -o a.o -c a.c $(FLAGS)
+
+     b.o:
+	     $(CC) -c b.c -o b.o $(FLAGS)
+
+     clean:
+	     del *.o *.exe
+   #+end_src
+** 使用关联
+   其本只要输入*.c文件,比校方便了
+   #+begin_src makefile
+     # $@ .c.o: 代表中的.o文件(目标输出)
+     # $< .c.o: 代表中的.c文件(类似重定向输入)(第一个依赖)
+     # $^ 所有依赖
+     CC=gcc
+     FLAGS=-Wall -std=c11
+
+     SRCS=a.c b.c
+     OBJS=$(SRCS:.c=.o)
+     EXEC=cli
+     # 关联.c和.o
+     .suffixes:.c .o
+
+     # $(OBJS) 在这就是 a.o b.o
+     # 根据关联(.c.o:)逐个处理依赖
+     all: $(OBJS)
+	     $(CC) -o $(EXEC) $(OBJS) $(FLAGS)
+
+     # 关联项处理方式
+     .c.o:
+	     $(CC) -o $@ -c $< $(FLAGS)
+
+     clean:
+	     del *.o *.exe
+   #+end_src
+* 优化
+** 方便切换cpp文件
+   #+begin_src makefile
+     # 修改EXT=c为EXT=cpp
+     EXT=c
+     SRCS=a.c b.c
+
+     CC=gcc
+     FLAGS=-Wall -std=c11
+
+     OBJS=$(SRCS:.$(EXT)=.o)
+     EXEC=cli
+
+
+     .suffixes:.$(EXT) .o
+
+     all: $(OBJS)
+	     $(CC) -o $(EXEC) $(OBJS) $(FLAGS)
+
+     .$(EXT).o:
+	     $(CC) -o $(@) -c $< $(FLAGS)
+
+     clean:
+	     del *.o *.exe
+   #+end_src
+** 不用输入文件后缀
+   #+begin_src makefile
+     # 一个或多个文伯名
+     NAMES=a b
+
+     EXT=c
+     # 添加后缀$(EXT)
+     SRCS=$(NAMES:%=%.$(EXT))
+
+     OBJS=$(SRCS:.$(EXT)=.o)
+     EXEC=cli
+
+     CC=gcc
+     FLAGS=-Wall -std=c11
+
+     .suffixes:.$(EXT) .o
+
+     all: $(OBJS)
+	     $(CC) -o $(EXEC) $(OBJS) $(FLAGS)
+
+     .$(EXT).o:
+	     $(CC) -o $@ -c $< $(FLAGS)
+
+     clean:
+	     del *.o *.exe
+   #+end_src
+** 自动查找指定后缀文件
+   #+begin_src makefile
+     # 扩展名
+     EXT=c
+     # 多个使用路径空格分开,多行请使用\
+     # *.$(EXT) 当前目录下的指定文件
+     DIRS=*.$(EXT)
+     # 查找符合的文件
+     PATHS=$(wildcard $(DIRS))
+     # 支掉目录(添加路径才能看到效果)
+     SRCS=$(notdir $(PATHS))
+
+     OBJS=$(SRCS:.$(EXT)=.o)
+     EXEC=cli
+
+     CC=gcc
+     FLAGS=-Wall -std=c11
+
+     .suffixes:.$(EXT) .o
+
+     all: $(OBJS)
+	     $(CC) -o $(EXEC) $(OBJS) $(FLAGS)
+
+     .$(EXT).o:
+	     $(CC) -o $@ -c $< $(FLAGS)
+
+     clean:
+	     del *.o *.exe
+   #+end_src
+* 多应用
+** 最初想法  
+   #+begin_src makefile
+     # c:/Users/12131/Desktop/code/mul $ make clean
+     # del *.o *.exe
+     # c:/Users/12131/Desktop/code/mul $ make
+     # gcc -o a a.c
+     # gcc -o b b.c
+     # c:/Users/12131/Desktop/code/mul $ ./a.exe 
+     # a.c:main
+     # c:/Users/12131/Desktop/code/mul $ ./b.exe 
+     # b.c:main
+
+     # a.c b.c中都有main函数
+     all:
+	     gcc -o a a.c
+	     gcc -o b b.c
+
+     clean:
+	     del *.o *.exe
+   #+end_src
+** 变量
+   简音替换,一切为了方便修改(最好只改一处)
+   #+begin_src makefile
+     # c:/Users/12131/Desktop/code/mul $ make clean
+     # del *.o *.exe
+     # c:/Users/12131/Desktop/code/mul $ make
+     # gcc -o a.o -c a.c
+     # gcc -o cli a.o
+     # gcc -o b.o -c b.c
+     # gcc -o srv b.o
+     # c:/Users/12131/Desktop/code/mul $ ./cli.exe 
+     # a.c:main
+     # c:/Users/12131/Desktop/code/mul $ ./srv.exe 
+     # b.c:main
+
+
+     CLI=cli
+     SRV=srv
+     CC=gcc
+     EXEC= $(CLI) $(SRV)
+
+     all: $(EXEC) 
+
+
+     $(CLI): a.o
+	     $(CC) -o $(CLI) a.o
+
+     $(SRV): b.o
+	     $(CC) -o $(SRV) b.o
+
+     a.o:
+	     $(CC) -o a.o -c a.c
+
+     b.o:
+	     $(CC) -o b.o -c b.c
+
+     clean:
+	     del *.o *.exe
+   #+end_src
+** 模版
+   关联用法和前面的一样,结合了前面优化的想法
+   #+begin_src makefile
+     # c:/Users/12131/Desktop/code/mul $ make clean
+     # del *.o *.exe
+     # c:/Users/12131/Desktop/code/mul $ make
+     # gcc -o a.o -c a.c -Wall -std=c11
+     # gcc -o cli a.o -Wall -std=c11
+     # gcc -o b.o -c b.c -Wall -std=c11
+     # gcc -o srv b.o -Wall -std=c11
+     # c:/Users/12131/Desktop/code/mul $ ./cli.exe 
+     # a.c:main
+     # c:/Users/12131/Desktop/code/mul $ ./srv.exe 
+     # b.c:main
+
+
+     # 多应用
+     # 还需要指定义对应的tartet
+     # 音行多文件用空格分隔,多行用\分隔
+     SRV=srv
+     CLI=cli
+
+     EXEC=$(CLI) $(SRV)
+
+     # 文件名,不需扩展名(下面有指定)
+     NAMESSRV=b
+     NAMESCLI=a
+
+
+     # 相关扩展文件名
+     EXT=c
+
+     # 添加扩展文件名
+     SRCSSRV=$(NAMESSRV:%=%.$(EXT))
+     SRCSCLI=$(NAMESCLI:%=%.$(EXT))
+
+     # 替换扩展文件名(.c->.o)
+     OBJSSRV=$(SRCSSRV:.$(EXT)=.o)
+     OBJSCLI=$(SRCSCLI:.$(EXT)=.o)
+
+
+     CC=gcc
+     FLAGS=-Wall -std=c11
+
+     .suffixes:.$(EXT) .o
+
+
+
+     # 和写多个一样的效果
+     all: $(EXEC)
+
+     # 创建cli应用
+     $(CLI): $(OBJSCLI)
+	     $(CC) -o $(CLI) $(OBJSCLI) $(FLAGS)
+
+     # 创建srv应用
+     $(SRV): $(OBJSSRV)
+	     $(CC) -o $(SRV) $(OBJSSRV) $(FLAGS)
+
+     .$(EXT).o:
+	     $(CC) -o $@ -c $< $(FLAGS)
+
+     clean:
+	     del *.o *.exe
+
+   #+end_src
+* 多目录
+** 分离头文件
+   -I 添加查找目录
+   #+begin_src makefile
+     # 一个或多个文伯名
+     # .h 在./include目录中
+     NAMES=\
+     app\
+     fengzj_string\
+     test_fengzj_string
+
+
+
+     EXT=c
+     # 添加后缀$(EXT)
+     SRCS=$(NAMES:%=%.$(EXT))
+
+     OBJS=$(SRCS:.$(EXT)=.o)
+     EXEC=cli
+
+     CC=gcc
+     FLAGS=-Wall -std=c11
+
+     .suffixes:.$(EXT) .o
+
+     all: $(OBJS)
+	     $(CC) -o $(EXEC) $(OBJS) $(FLAGS)
+
+     .$(EXT).o:
+	     $(CC) -I ./include -o $@ -c $< $(FLAGS)
+
+     clean:
+	     del *.o *.exe
+
+   #+end_src

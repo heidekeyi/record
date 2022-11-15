@@ -1,0 +1,223 @@
+#+BEGIN_SRC php
+  <?php
+
+  function toValues($dec, $len = 4)
+  {
+      $values = [];
+      while ($dec > 0) {
+	  $values[] = $dec % 256;
+	  $dec = floor($dec / 256);
+      }
+      $len -= count($values);
+      while (--$len >= 0) {
+	  $values[] = 0;
+      }
+      return $values;
+  }
+
+  function toHex($values)
+  {
+      $res = [];
+      foreach ($values as $v) {
+	  $val = dechex($v) . '';
+	  if ($v < 16) {
+	      $val = '0' . $val;
+	  }
+	  $res[] = $val;
+      }
+      return $res;
+  }
+
+  function search($data)
+  {
+      foreach ($data as $item) {
+	  list($rhp, $mhp, $rmp, $mmp, $exp, $up) = $item[0];
+	  $arr = array_merge(
+	      toHex(toValues($up - $exp)),
+	      toHex(toValues($mhp)),
+	      toHex(toValues($rhp)),
+	      toHex(toValues($mmp)),
+	      toHex(toValues($rmp))
+	  );
+	  echo implode(' ', $arr) . PHP_EOL;
+      }
+  }
+
+  function writeFile($data, $times)
+  {
+      $str_items = implode("\n", initItems($data, $times));
+      $str_file = <<<"RRR"
+  <?xml version="1.0" encoding="utf-8"?>
+  <CheatTable CheatEngineTableVersion="29">
+    <CheatEntries>
+    {$str_items}
+    </CheatEntries>
+    <UserdefinedSymbols/>
+  </CheatTable>
+
+  RRR;
+
+      file_put_contents('./game.xml', $str_file);
+  }
+
+  function initItems($data, $times)
+  {
+      $res = [];
+      $cnt = 0;
+      $byte = 4;
+      foreach ($data as $item) {
+	  ++$cnt;
+	  $addr = $item[1];
+	  if ($addr) {
+	      $addr = hexdec('0x' . $addr);
+	      for ($i = -30; $i < 0; ++$i) {
+		  $res[] = fillItem(count($res) + 1,
+		      $cnt . '--' . ($i + 30) . '--job', $addr + $i * $byte, $byte);
+	      }
+	  } else {
+	      break;
+	  }
+      }
+      $cnt = 0;
+      foreach ($data as $item) {
+	  ++$cnt;
+	  $addr = $item[1];
+	  if ($addr) {
+	      $addr = hexdec('0x' . $addr);
+	      $res[] = fillItem(count($res) + 1,
+		  $cnt . '--' . '--exp', $addr, $byte);
+	  } else {
+	      break;
+	  }
+      }
+      $cnt = 0;
+      foreach ($data as $item) {
+	  ++$cnt;
+	  list(, $addr, $skills) = $item;
+	  if ($addr) {
+	      $addr = hexdec('0x' . $addr);
+	      for ($i = 0; $i < $times; ++$i) {
+		  $sk = $skills[$i];
+		  $res[] = fillItem(count($res) + 1,
+		      $cnt . '--skill--' . $sk,
+		      ($sk - 30) * $byte + $addr,
+		      $byte
+		  );
+	      }
+	  } else {
+	      break;
+	  }
+      }
+      foreach ($data as $item) {
+	  $addr = $item[1];
+	  if ($addr) {
+	      $addr = hexdec('0x' . $addr);
+	      $res[] = fillItem(count($res) + 1,
+		  'skill--1',
+		  (12 - 30) * $byte + $addr,
+		  $byte
+	      );
+	  } else {
+	      break;
+	  }
+      }
+      foreach ($data as $item) {
+	  $addr = $item[1];
+	  if ($addr) {
+	      $addr = hexdec('0x' . $addr);
+	      $res[] = fillItem(count($res) + 1,
+		  'skill--3',
+		  (24 - 30) * $byte + $addr,
+		  $byte
+	      );
+	  } else {
+	      break;
+	  }
+      }
+      foreach ($data as $item) {
+	  $addr = $item[1];
+	  if ($addr) {
+	      $addr = hexdec('0x' . $addr);
+	      $res[] = fillItem(count($res) + 1,
+		  'skill--*(max=6)',
+		  (8 - 30) * $byte + $addr,
+		  $byte
+	      );
+	  } else {
+	      break;
+	  }
+      }
+      return $res;
+  }
+
+  function fillItem($id, $desc, $addr, $bytes)
+  {
+      $bytes = $bytes === 1 ? 'Byte' : $bytes . ' Bytes';
+      $addr = '0x' . strtoupper(dechex($addr));
+      return <<<"AAA"
+  <CheatEntry>
+	<ID>{$id}</ID>
+	<Description>"{$desc}"</Description>
+	<VariableType>{$bytes}</VariableType>
+	<Address>{$addr}</Address>
+      </CheatEntry>
+  AAA;
+
+  }
+
+  //修改AngelSLG.exe文件调整经验
+  //0x68580行 c7 45 e8 xx xx表示基本攻击经验(倒数第6个)
+  //0x685a0行 xx 00 00 00 xx表示基本击杀经验(第一个)
+  $times = 20 / 10 - 1;
+  $data = [
+      //        $rhp, $mhp, $rmp, $mmp, $exp, $up
+      [
+	  [876, 876, 189, 189, 12, 160],
+  //        [2073, 4354, 611, 731, 297, 450],
+	  '114458B4',//1
+  //        [25, 27, 28, 17, 18]
+	  [27, 28, 17, 25, 18]
+      ],
+      [
+	  [725, 864, 201, 201, 12, 160],
+  //        [4377, 4508, 697, 697, 15, 460],
+	  '11446ACC',//2
+	  [27, 28, 17, 25, 18]
+      ],
+      [
+	  [421, 849, 216, 216, 10, 160],
+  //        [4270, 4404, 681, 681, 324, 450],
+	  '114470D4',//3
+	  [27, 28, 17, 25, 18]
+      ],
+  //    [
+  //        [1038, 1038, 207, 207, 0, 180],
+  //        '103359D4'//4
+  //    ],
+  //    [
+  //        [1002, 1002, 243, 243, 0, 180],
+  //        '103353CC'//5
+  //    ]
+  ];
+
+  function showDiffAddress($data)
+  {
+      $addr = [];
+      foreach ($data as $item) {
+	  $ad = $item[1];
+	  if ($ad) {
+	      $addr[] = hexdec('0x' . $ad);
+	  } else {
+	      break;
+	  }
+      }
+      $end = count($addr) - 1;
+      for ($beg = 0; $beg < $end; ++$beg) {
+	  echo $addr[$end] - $addr[$beg] . PHP_EOL;
+      }
+  }
+
+  search($data);
+  writeFile($data, $times);
+  //showDiffAddress($data);
+#+END_SRC

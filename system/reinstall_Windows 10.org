@@ -1,0 +1,87 @@
+
+#+startup: content
+
+* 说明
+  使用的工具大部分在U盘中
+
+* system install
+  1. system version 1909
+  2. 用UltraISO制作启动盘(HDD or HDD+方式)
+  3. 启动按delete,选择U盘启动
+  4. 一步步安装
+     一般关闭各种通知
+  5. microsoft account
+     name: 1213...m pwd: 1211...M pin: pa...50
+  6. 等待安装完成
+
+* 更新系统
+  1. 关闭还原保护(没必要)
+  2. 单击任务栏右边,显示设置窗口
+  3. 选择更新功能更新(比校久,可以休息一波)
+
+* 系统设置
+  基本都在设置窗口中设置(快速进入: 桌面右键->个性化)
+** 个性化
+*** 主题
+    1. 桌面右键->个性化->主题
+    2. 选择已有或者在线下一个主题  
+**** 我的电脑图标
+     1. 主题->桌面图标设置(右上角)
+     2. 在新窗口中勾选我的电脑并确认
+**** 静音
+     1. 单击声音
+     2. 在新窗中选无声方案
+*** 任务栏
+    1. 开启在桌面模式下自动隐藏任务栏,其它都关闭
+    2. 任务栏在屏幕上的位置选择->靠右
+**** 关闭开机启动项
+     右击任务栏->任务管理器->启动,全部关闭
+** 应用
+*** 默认应用
+    应用和功能->默认程序,选择分类设置默认程序
+** 账户
+*** 取消密码登陆
+    账户->改用本地账户记登陆(新窗口中不要输入密码)
+*** 同步
+    全部关闭
+** 更新和安全
+   windows安全中心->打开windows安全中心->病毒和威胁防护,全部关闭并忽视通知(多确认一次)
+
+* 清理磁盘
+  旧系统文件占用空间太大,没有意义
+  C盘右击->属性->磁盘清理->清理系统文件->勾选旧系统并确认
+  
+* 安装软件
+** firefox
+   1. login
+      user: 12....m pwd: 12...M
+   2. qq
+      serial: 12....2 pwd: Q...M email: pa...50
+** keymap
+   交换caps lock和left control
+** winrar
+   安装替换key
+** emacs
+   选一个mirror下载,git clone配置,安装字体
+** panda
+   user: 12...m | (135...) pwd: 121...55
+** github
+   user: 12...m pwd: 12...M
+** 卡巴
+   运行cmd, 右键可以暂停保护
+** Qt
+   user: 12...m pwd: 12...M
+** php
+   1. 为C:\wamp64\bin\apache\apache2.4.41\conf\extra\httpd-vhosts.conf注释AllowOverride All防止重写不能访问
+   2. 为C:\Windows\System32\drivers\etc\hosts添加127.0.0.1 log.cn
+** navicat
+   1. 卸载掉早期版本，卸载干净，然后安装最新版navicat
+   2. 安装完成后将破解补丁复制到安装目录下,运行破解补丁
+   3. patch(点击右上角patch)
+   4. 然后选择版本和语言(product,language),一般默认即可
+   5. 运行navicat，弹出注册界面，如果没有弹出注册界面，手动在菜单打开：帮助->注册
+   6. 点击注册机的generate按钮(右边中间,serial keygen右侧)
+   7. 点击navicat注册界面的激活按钮，提示手动激活(已自动录入xxx)
+   8. 点击手动激活，然后将得到的RequestCode复制到注册机(request code大框中,一般自动录入了)
+   9. 点击注册机左下方的Generate按钮，生成ActivationCode
+   10. 复制粘贴到navicat的激活码框，完成激活(一般自动录入了)

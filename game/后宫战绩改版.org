@@ -1,0 +1,388 @@
+* index
+#+BEGIN_SRC js
+  const config = require('./config');
+  const origin = {
+      ...config.init_config,
+      find_values: [
+	  '27 27 8 0 13 15 15 11 9',
+	  '40 40 20 0 20 20 40 20 15',
+	  '48 48 25 0 25 26 39 26 20',
+	  '65 65 38 0 40 38 40 35 30'
+      ],
+      role_number: 43,
+      // show_type: 'add',
+      show_type: 'show',
+      wap_type: 'pos',
+      role_names: [
+	  '艾克',
+	  '索菲亚'
+      ],
+      address: +('0x' + '03D0FE1A'),
+      filter: {
+	  lt: 12,
+	  gt: 35
+      }
+  };
+
+
+  const {
+      addNumber,
+      addAddress,
+      showMemoryAddress,
+  } = require('./role');
+
+
+  const {find_values, find_properties} = origin;
+  const {initWap, initRole, clearWap} = require('./cheat');
+  showMemoryAddress(find_properties, find_values);
+  const role_data = addAddress(addNumber(origin))
+      .filter((_, ix) => ix < origin.filter.lt || ix > origin.filter.gt);
+  // const str = clearWap(role_data);
+  // const str = initWap(role_data, origin.wap_type);
+  const str = initRole(role_data, origin.show_type);
+  config.output(str);
+
+  // 攻击、迎击追击技能 88 6
+#+END_SRC
+
+* config
+#+BEGIN_SRC js
+  const initBase = function () {
+      return {
+	  per_role: {
+	      name: '每一个角色的地址偏移值',
+	      value: 0x03d10e93 - 0x03d10e4b
+	  },
+	  offset: {
+	      name: '血量和等级经验位置的偏差值',
+	      value: -10
+	  },
+	  status: {
+	      name: '状态',
+	      value: 40
+	  },
+	  hp: {
+	      max: {
+		  name: '最大血量',
+		  value: 10
+	      },
+	      remain: {
+		  name: '剩余血量',
+		  value: 11
+	      }
+	  },
+	  move: {
+	      name: '移动',
+	      value: 21
+	  },
+	  exp: {
+	      name: '经验',
+	      value: 1
+	  },
+	  level: {
+	      name: '等级',
+	      value: 0
+	  },
+	  wap: {
+	      first: {
+		  name: "第一武器类型",
+		  value: 22,
+	      },
+	      number: {
+		  name: "第一武器数量",
+		  value: 23
+	      },
+	      second: {
+		  name: "第二武器类型",
+		  value: 24,
+	      }
+	  },
+	  property: {
+	      str: {
+		  name: '力量',
+		  value: 12
+	      },
+	      mag: {
+		  name: '魔力',
+		  value: 18
+	      },
+	      spd: {
+		  name: '速度',
+		  value: 14
+	      },
+	      skill: {
+		  name: '技术',
+		  value: 13
+	      },
+	      luck: {
+		  name: '幸运',
+		  value: 17
+	      },
+	      def: {
+		  name: '守备',
+		  value: 15
+	      },
+	      res: {
+		  name: '魔防',
+		  value: 16
+	      },
+	      phy: {
+		  name: '体格',
+		  value: 0
+	      }
+	  },
+	  trick: {
+	      trick1: {
+		  name: '特技1',
+		  value: 50
+	      },
+	      trick2: {
+		  name: '特技2',
+		  value: 51
+	      }
+	  }
+      };
+  };
+  const properties = [
+      'str', 'mag', 'skill', 'spd',
+      'luck', 'def', 'res'
+  ];
+
+  const output = function (str) {
+      const fs = require('fs');
+      fs.writeFile(module.exports.pathname, str, function (err) {
+	  const msg = err ? 'error: ' + err : '写入成功';
+	  console.log(msg);
+      });
+  };
+
+  module.exports = {
+      pathname: './g.CT',
+      output,
+      initBase,
+      show_type: {
+	  add: [
+	      {
+		  type: 'property',
+		  list: ['trick1', 'trick2', 'level', 'move', 'max'],
+	      },
+	      {
+		  type: 'role',
+		  list: properties,
+	      },
+	  ],
+	  show: [
+	      {
+		  type: 'property',
+		  list: ['remain', 'status', 'number', 'exp'],
+	      },
+	      {
+		  type: 'role',
+		  list: properties,
+	      },
+	  ],
+      },
+      init_config: {
+	  role_wap_number: 5,
+	  role_properties: [
+	      'exp', 'level', 'status', 'move',
+	      'wap', 'hp', 'property', 'trick'
+	  ],
+	  find_properties: ['max', 'remain', ...properties],
+      }
+  };
+#+END_SRC
+* role
+#+BEGIN_SRC js
+  const config = require('./config');
+  const addNumber = function (origin) {
+      const {role_names, role_number} = origin;
+      for (let i = 1; i <= role_number; ++i) {
+	  if (i > role_names.length) {
+	      role_names.push(i.toString());
+	  }
+      }
+      return origin;
+  };
+
+
+  const showMemoryAddress = function (find_properties, find_values) {
+      const {hp, property, offset} = config.initBase();
+      const data = {...property, ...hp};
+      const position = find_properties.map(key => data[key].value + offset.value);
+      find_values.map(item => item.split(' '))
+	  .map(item => item.map(it => (+it).toString(16)))
+	  .map(item => item.map((it, index) => item[position.findIndex(ix => index === ix)]))
+	  .map(item => item.join(' '))
+	  .forEach(it => console.log(it));
+  };
+
+  const setAddress = function (obj, address) {
+      if (obj.hasOwnProperty('value')) {
+	  const addr = obj.value + address;
+	  obj.addr_dec = addr;
+	  obj.addr_hex = (+addr).toString(16);
+      } else if (obj instanceof Object) {
+	  Object.keys(obj).forEach(it => setAddress(obj[it], address))
+      }
+  };
+
+  const addAddress = function (origin) {
+      const {role_names, address, role_properties} = origin;
+      return role_names.map((name, ix) => {
+	  const data = config.initBase();
+	  const per = data.per_role.value;
+	  const addr = address + ix * per + data.offset.value;
+	  role_properties.forEach(it => setAddress(data[it], addr));
+	  return {
+	      name: `${ix + 1}---${name}`,
+	      data
+	  };
+      });
+  };
+
+  module.exports = {
+      addNumber,
+      showMemoryAddress,
+      addAddress
+  };
+#+END_SRC
+* cheat
+#+BEGIN_SRC js
+  const config = require('./config');
+  const joinCheat = function (data = []) {
+      return `<?xml version="1.0" encoding="utf-8"?>
+  <CheatTable CheatEngineTableVersion="29">
+    <CheatEntries>
+  ${data.join('\n')}
+    </CheatEntries>
+    <UserdefinedSymbols/>
+  </CheatTable>`;
+  };
+
+  const joinItem = function (id, addr, desc) {
+      return `    <CheatEntry>
+	<ID>${id}</ID>
+	<Description>${desc}</Description>
+	<VariableType>Byte</VariableType>
+	<Address>${addr}</Address>
+      </CheatEntry>`;
+  };
+  const arrayMerge = function (list = []) {
+      return [].concat(...list);
+  };
+  const wapType = {
+      getPositions: function () {
+	  const pos = [];
+	  const number = config.init_config.role_wap_number;
+	  for (let i = 0; i < number; ++i) {
+	      pos.push(i);
+	  }
+	  return pos;
+      },
+      init: function (roles) {
+	  const pos = wapType.getPositions();
+	  return roles.map(item => {
+	      const wap = item.data.wap;
+	      const first = wap.first.addr_dec;
+	      const second = wap.second.addr_dec;
+	      const offset = second - first;
+	      return pos.map(ix => {
+		  return {
+		      name: `${item.name}--wap--${ix + 1}`,
+		      value: (first + ix * offset).toString(16)
+		  };
+	      });
+	  });
+      },
+      role: function (roles) {
+	  return arrayMerge(roles);
+      },
+      pos: function (roles) {
+	  const list = wapType.getPositions().map(ix => {
+	      return roles.map(item => item[ix]);
+	  });
+	  return arrayMerge(list);
+      }
+  };
+  const initWap = function (roles, type) {
+      const list = wapType[type](wapType.init(roles))
+	  .map((it, ix) => joinItem(ix + 1, it.value, it.name));
+      return joinCheat(list);
+  };
+  const clearWap = function (roles) {
+      const pos = wapType.getPositions();
+      const list = roles.map(item => {
+	  const wap = item.data.wap;
+	  const first = wap.first.addr_dec;
+	  const number = wap.number.addr_dec;
+	  const second = wap.second.addr_dec;
+	  return pos.map(ix => {
+	      const offset = ix * (second - first);
+	      const type = (first + offset).toString(16);
+	      const num = (number + offset).toString(16);
+	      ++ix;
+	      return {
+		  type: {
+		      name: `${item.name}--${ix}--type`,
+		      value: type
+		  },
+		  number: {
+		      name: `${item.name}--${ix}--number`,
+		      value: num
+		  }
+	      }
+	  });
+      });
+      const tmp = arrayMerge(list)
+	  .map(it => [it.type, it.number]);
+      const items = arrayMerge(tmp)
+	  .map((it, ix) => joinItem(ix + 1, it.value, it.name));
+      return joinCheat(items);
+  };
+  const findProperty = function (obj, key) {
+      if (obj.hasOwnProperty(key)) {
+	  return obj[key];
+      } else if (obj instanceof Object) {
+	  const obj_list = Object.values(obj);
+	  for (let i = 0; i < obj_list.length; ++i) {
+	      const res = findProperty(obj_list[i], key);
+	      if (res instanceof Object) {
+		  return res;
+	      }
+	  }
+      }
+  };
+  const showType = {
+      each: function (role, key) {
+	  const tmp = findProperty(role.data, key);
+	  return {
+	      name: `${tmp.name}--${role.name}`,
+	      value: tmp.addr_hex
+	  }
+      },
+      role: function (roles, keys) {
+	  return roles.map(item => keys.map(k => showType.each(item, k)));
+      },
+      property: function (roles, keys) {
+	  return keys.map(k => roles.map(item => showType.each(item, k)));
+      }
+  };
+  const initRole = function (roles, type) {
+      const list = [];
+      const type_set = config.show_type[type];
+      type_set.forEach(item => {
+	  const res = showType[item.type](roles, item.list);
+	  list.push(...arrayMerge(res));
+      });
+      const items = list.map((it, ix) => joinItem(++ix, it.value, it.name));
+      return joinCheat(items);
+  };
+
+
+  module.exports = {
+      initWap,
+      initRole,
+      clearWap
+  };
+#+END_SRC

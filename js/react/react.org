@@ -1,0 +1,795 @@
+* 学习的基础
+  - js/html/css 基础
+  - webpack 基础
+  - node 基础
+
+* 使用环境
+  - webstorm 最新的
+  - windows10 最新的
+  - node 最新的
+
+* 创建项目
+** 下载可用于创建项目包 create-react-app
+#+BEGIN_SRC shell
+  yarn add create-react-app
+#+END_SRC
+** 创建项目
+当前使用的版本（3.2.0）
+#+BEGIN_SRC shell
+  npx create-react-app my-react
+#+END_SRC
+** 启动项目(根据package中的命令操作)
+#+BEGIN_SRC shell
+  cd my-react
+  yarn start
+#+END_SRC
+
+* react 知识点
+知识点测试时都是修改 App.js 文件中的内容
+#+BEGIN_SRC js
+  import React from 'react';
+
+  function App() {
+      return (
+	  ...修改的入口参考位置
+      )
+  }
+  export default App;
+#+END_SRC
+使用 jsx 语法，jsx: javascript xml，变成js需要编译转换
+
+** 只能挂一个标签
+*** 只能一个
+#+BEGIN_SRC html
+  <h1>hello world</h1>
+#+END_SRC
+*** 两个会报错
+#+BEGIN_SRC html
+  <p>hello</p>
+  <p>world</p>
+#+END_SRC
+
+** 单标签必须自闭合(xml很严格)
+#+BEGIN_SRC html
+  <label>
+    <span>name:</span>
+    <input/>
+  </label>
+#+END_SRC
+
+** 使用变量
+*** 字符串直接用
+#+BEGIN_SRC html
+  <input type="text"/>
+#+END_SRC
+*** 使用字面量
+#+BEGIN_SRC html
+  <input type={'text'}/>
+#+END_SRC
+*** 使用变量
+#+BEGIN_SRC html
+  const msg = 'hello world';
+  ......
+  <h1>{msg}</h1>
+#+END_SRC
+** 注释(需要使用变量形式)
+#+BEGIN_SRC html
+  <div>
+    <span>1</span>
+    {/*<span>111</span>*/}
+  </div>
+#+END_SRC
+** 关键字冲突
+jsx 中属性关键字和js中关键字冲突（class、for），使用其他的词代替
+#+BEGIN_SRC html
+  <div>
+    <label htmlFor={'hd'}>name:</label>
+    <input className={'name'} id={'hd'}/>
+  </div>
+#+END_SRC
+
+** 表达式
+*** 字面量
+#+BEGIN_SRC html
+  <p>{123}</p>
+#+END_SRC
+*** 求值表达式
+#+BEGIN_SRC html
+  <div>
+    <p>1 + 1 = {1 + 1}</p>
+    <p>1 > 2 is {(1 > 2).toString()}</p>
+    <p>(5&gt;2)&amp;&amp;(5&lt;8) is {((5 > 2) && (5 < 8)).toString()}</p>
+  </div>
+#+END_SRC
+
+** 样式style
+以对象形式来使用，属性的写法使用小驼峰（去掉连接符号）
+#+BEGIN_SRC html
+  <div style={{backgroundColor:'#f00'}}>11</div>
+#+END_SRC
+
+** 循环
+key保持不变
+#+BEGIN_SRC html
+  ['张三', '李四', '王五', '马六']
+      .map((it, ix) => ({name: it, id: ix}))
+      .filter(it=>it.id > 0)
+      .map(it=>(
+	  <div key={it.id}>{it.name}</div>
+      ))
+
+#+END_SRC
+
+** 条件渲染
+#+BEGIN_SRC html
+  <div>
+    {2 >1 && <h1>hello world</h1>}
+    {2 < 1 && <h1>hello world</h1>}
+    {2 < 1 ? <h1>world</h1> : <h1>hello</h1>}
+  </div>
+#+END_SRC
+
+** 组件
+*** 创建组件
+**** 必须名称首字母大写
+**** render 必须存在
+#+BEGIN_SRC js
+  //getter/setter 函数为了直接使用 this.xxx
+  class Person extends React.Component {
+      constructor(props) {
+	  super(props);
+	  this._name = 'master';
+	  this._age = 100;
+      }
+
+      get name() {
+	  return this._name;
+      }
+
+      set name(new_name) {
+	  this._name = new_name;
+      }
+
+      get age() {
+	  return this._age;
+      }
+
+      set age(new_age) {
+	  this._age = new_age;
+      }
+
+      render() {
+	  return (
+	    <div>
+		<h2>name: {this.name}</h2>
+		<h2>age: {this.age}</h2>
+	    </div>
+	  );
+      }
+  }
+#+END_SRC
+
+*** 使用组件
+直接当成一个标签使用
+#+BEGIN_SRC html
+  <Person/>
+#+END_SRC
+
+*** 组件嵌套
+直接使用Teacher组件，Teacher组件中使用了Student组件
+#+BEGIN_SRC js
+  class Student extends React.Component {
+      render() {
+	  return (
+	      <span>学生</span>
+	  );
+      }
+  }
+
+  class Teacher extends React.Component {
+      render() {
+	  return (
+	      <div>
+		  <h1>teacher</h1>
+		  {
+		      [1, 2, 3, 4, 5]
+			  .map(it=>({name:it, id:'s' + it}))
+			  .map(it=>(
+			      <div key={it.id}>
+				  <Student/>
+				  {it.name}
+			      </div>
+			  ))
+		  }
+	      </div>
+	  );
+      }
+  }
+#+END_SRC
+
+*** 组件传值
+**** 简单使用
+#+BEGIN_SRC js
+  class Person extends React.Component {
+      constructor(props) {
+	  super(props);
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <h1>name: {this.props.name}</h1>
+		  <h1>age: {this.props.age}</h1>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+  <Person name={'Mrs Li'} age={25}/>
+#+END_SRC
+
+**** 嵌套传参
+#+BEGIN_SRC js
+  //组件
+  class Item extends React.Component {
+      constructor(props) {
+	  super(props);
+      }
+
+      render() {
+	  return (
+	      <p>{this.props.desc}: {this.props.text}</p>
+	  );
+      }
+  }
+
+  class StudentList extends React.Component {
+      constructor(props) {
+	  super(props);
+      }
+
+      render() {
+	  return (
+	      this.props.list.map(item => (
+		  <ul key={item.id}>
+		      <li>class: {item.class}</li>
+		      <li>
+			  <ul>
+			      <li>
+				  <span>members: </span>
+				  {
+				      item.members.map(it => (
+					  <span key={it.id}> {it.name} </span>
+				      ))
+				  }
+			      </li>
+			  </ul>
+		      </li>
+		  </ul>
+	      ))
+	  );
+      }
+  }
+
+  class Teacher extends React.Component {
+      constructor(props) {
+	  super(props);
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <Item text={this.props.name} desc={'name'}/>
+		  <Item text={this.props.age} desc={'age'}/>
+		  <Item text={this.props.job} desc={'job'}/>
+		  <p>students-list</p>
+		  <StudentList list={this.props.students}/>
+	      </div>
+	  )
+      }
+  }
+
+  ......（数据）
+
+  const data = {
+      name: 'Mrs Li',
+      age: 55,
+      job: 'teacher',
+      students: [
+	  {
+	      class: '031',
+	      members: ['zhou', 'fru', 'mike']
+	  },
+	  {
+	      class: '037',
+	      members: ['张三', '李四', '王五']
+	  },
+	  {
+	      class: '007',
+	      members: ['Bob', 'Alex']
+	  }
+      ]
+  };
+  data.students.forEach((item, index) => {
+      item.id = 's' + index;
+      item.members = item.members.map((it, ix) => (
+	  {id: 't' + ix, name: it}
+      ));
+  });
+
+  ......(使用)
+
+  <Teacher name={data.name}
+	   age={data.age}
+	   job={data.job}
+	   students={data.students}/>
+#+END_SRC
+
+** 事件
+*** this 丢失
+*** 事件名称使用小驼峰
+#+BEGIN_SRC js
+  class Event extends React.Component {
+      click() {
+	  console.log('clicking', window.Date.now());
+      }
+
+      render() {
+	  return (
+	      <h1 style={{textAlign: 'center'}}
+		  onClick={this.click.bind(this)}>点击</h1>
+	  );
+      }
+  }
+
+  ......
+
+  <Event/>
+#+END_SRC
+
+** 手动触发渲染更新
+*** 强制更新
+很可能会影响效率，不推荐使用
+#+BEGIN_SRC js
+  class Count extends React.Component {
+      constructor() {
+	  super();
+	  this.val = 0;
+      }
+
+      click() {
+	  ++this.val;
+	  console.log('click', this.val);
+	  this.forceUpdate();
+      }
+
+      render() {
+	  return (
+	      <div style={{textAlign: 'center'}}>
+		  <p>
+		      <span>click times: {this.val}</span>
+		  </p>
+		  <p>
+		      <input onClick={this.click.bind(this)}
+			     type='button'
+			     value='点击'/>
+		  </p>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+  <Count/>
+#+END_SRC
+*** state 的方式
+#+BEGIN_SRC js
+  class Count extends React.Component {
+      constructor() {
+	  super();
+	  this.state = {
+	      val: 0
+	  };
+      }
+
+      click() {
+	  this.setState({
+	      val: this.val + 1
+	  });
+      }
+
+      get val() {
+	  return this.state.val;
+      }
+
+      render() {
+	  console.log('rendering', window.Date.now());
+	  return (
+	      <div style={{textAlign: 'center'}}>
+		  <p>
+		      <span>click times: {this.val}</span>
+		  </p>
+		  <p>
+		      <input onClick={this.click.bind(this)}
+			     type='button'
+			     value='点击'/>
+		  </p>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+  <Count/>
+#+END_SRC
+*** 父组件传递给子组件的参数会同步更新
+子组件不能修改父组件参数，参数是复杂对象则可以改其属性
+#+BEGIN_SRC js
+  class Child extends React.Component {
+      constructor(props) {
+	  super(props);
+      }
+
+      render() {
+	  return (
+	      <p>
+		  子组件: {this.props.value}
+	      </p>
+	  );
+      }
+  }
+
+  class Parent extends React.Component {
+      constructor() {
+	  super();
+	  this.state = {
+	      value: 0
+	  };
+      }
+
+      get value() {
+	  return this.state.value;
+      }
+
+      click() {
+	  this.setState({
+	      value: this.value + 1
+	  });
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <p>
+		      父组件: {this.value}
+		  </p>
+		  <Child value={this.value}/>
+		  <p>
+		      <input onClick={this.click.bind(this)}
+			     value={'点击'}
+			     type={'button'}/>
+		  </p>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+  <Parent/>
+#+END_SRC
+
+** children 
+*** 使用儿子的形式，最里面的一层是标签的内容，是个字符串
+*** 组件也是类似的，就是替换了一个标签
+*** 儿子没有则为空，多个则是一个数组（树节点）
+*** 元素中的属性生成对应的参数
+#+BEGIN_SRC js
+  const a =
+      <h1>
+	  <p style={{background: '#f86'}}>
+	      <span>color</span>
+	  </p>
+      </h1>;
+  const b = a.props.children;
+  const c = b.props.children;
+  const d = b.props.style;
+
+  ......
+
+  {c}
+  {b}
+  {a}
+  <p>background: {d.background}</p>
+#+END_SRC
+
+** 子组件根据父组件参数发请求获取参数
+*** 很容易出现 update 循环，update 之后获取数据继续 update
+处理方法：在 shouldComponentUpdate 中控制更新
+#+BEGIN_SRC js
+  class Child extends React.Component {
+      constructor(props) {
+	  super(props);
+	  this.state = {
+	      time: -1
+	  };
+	  this.request();
+      }
+
+      shouldComponentUpdate(nextProps, nextState, nextContext) {
+	  console.log(nextProps, nextState)
+	  return nextProps.val !== this.props.val ||
+	      this.state.time !== nextState.time;
+      }
+
+      componentDidUpdate(prevProps, prevState, snapshot) {
+	  this.request();
+      }
+
+      request() {
+	  setTimeout(() => {
+	      this.setState({
+		  time: this.props.val
+	      });
+	  }, 500);
+      }
+
+      render() {
+	  console.log('rendering');
+	  return (
+	      <div>
+		  <p>click times: {this.props.val}</p>
+		  <p>time: {this.state.time}</p>
+	      </div>
+	  );
+      }
+  }
+
+  class Parent extends React.Component {
+      constructor(props) {
+	  super(props);
+	  this.state = {
+	      val: 0
+	  };
+	  console.log('constructor')
+      }
+
+      componentDidCatch(error, errorInfo) {
+	  console.log('catch')
+      }
+
+      componentDidMount() {
+	  console.log('mount');
+      }
+
+      componentDidUpdate(prevProps, prevState, snapshot) {
+	  console.log('update');
+      }
+
+      componentWillUnmount() {
+	  console.log('unmount');
+      }
+
+      shouldComponentUpdate(nextProps, nextState, nextContext) {
+	  console.log('should update');
+	  // console.log(nextProps, nextState, nextContext)
+	  return true;
+      }
+
+      click() {
+	  this.setState({
+	      val: this.state.val + 1
+	  });
+      }
+
+      render() {
+	  console.log('render');
+	  return (
+	      <div>
+		  <Child val={this.state.val}/>
+		  <p>
+		      <input type={'button'}
+			     onClick={this.click.bind(this)}
+			     value={'click'}/>
+		  </p>
+	      </div>
+
+	  );
+      }
+  }
+#+END_SRC
+*** 在父组件中获取数据传入子组件则没有 update 循环（看情况选择）
+
+** 子组件向父组件传参
+使用调用函数的方式传递参数
+#+BEGIN_SRC js
+  class Child extends React.Component {
+      constructor(props) {
+	  super(props);
+	  this.cnt = 0;
+      }
+
+      clickHandler() {
+	  this.props.message('msg--' + ++this.cnt);
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <input value={'click'}
+			 onClick={this.clickHandler.bind(this)}
+			 type={'button'}/>
+	      </div>
+	  );
+      }
+  }
+
+  class Parent extends React.Component {
+      constructor() {
+	  super();
+	  this.state = {
+	      msg: 'waiting click'
+	  }
+      }
+
+      message(msg) {
+	  this.setState({
+	      msg
+	  });
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <p>message: {this.state.msg}</p>
+		  <Child message={this.message.bind(this)}/>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+  <Parent/>
+#+END_SRC
+
+** 引用（可操作组件）
+ref 值重复会覆盖，最有一个有效
+*** 简单引用
+组件也同样适用
+#+BEGIN_SRC js
+  class Reference extends React.Component {
+      componentDidMount() {
+	  console.log(this.refs.test.id);
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <input ref={'test'} id={123}/>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+  <Reference/>
+#+END_SRC
+*** 父组件使用子组件的数据
+#+BEGIN_SRC js
+  class Child extends React.Component {
+      constructor(props) {
+	  super(props);
+	  this.val = 'child' + this.props.id;
+      }
+      render() {
+	  return (
+	      <div>
+		  <p>{this.val}</p>
+	      </div>
+	  );
+      }
+  }
+
+  class Parent extends React.Component {
+      componentDidMount() {
+	  console.log(this.refs.first_child.val);
+	  console.log(this.refs.second_child.props.id);
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <Child ref='first_child' id={1}/>
+		  <Child ref='second_child' id={2}/>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+  <Parent/>
+#+END_SRC
+*** 子组件使用父组件的数据
+就是个普通的参数传递
+#+BEGIN_SRC js
+  class Child extends React.Component {
+      render() {
+	  return (
+	      <div>
+		  <p>{this.props.parent.val}</p>
+	      </div>
+	  );
+      }
+  }
+
+  class Parent extends React.Component {
+      constructor() {
+	  super();
+	  this.val = 'parent';
+      }
+      render() {
+	  return (
+	      <div>
+		  <Child parent={this}/>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+
+  <Parent/>
+#+END_SRC
+
+** 受控表单元素
+*** input，select 作为输入，绑定了 value
+*** 原始用法使用 defalutValue 来替代 value 
+*** 受控的表单元素需要绑定 change 事件
+#+BEGIN_SRC js
+  class Form extends React.Component {
+      constructor() {
+	  super();
+	  this.state = {
+	      val: ''
+	  };
+      }
+
+      handlerChange(event) {
+	  this.setState({
+	      val : event.target.value
+	  });
+      }
+
+      render() {
+	  return (
+	      <div>
+		  <p>
+		      <input type={'text'}
+			     onChange={this.handlerChange.bind(this)}
+			     value={this.state.val}
+			     placeholder={'请输入名称'}/>
+		  </p>
+		  <p>
+		      <input defaultValue={'默认值'}/>
+		  </p>
+		  <p>
+		      <input type={'password'}
+			     placeholder={'请输入密码'}/>
+		  </p>
+	      </div>
+	  );
+      }
+  }
+
+  ......
+
+  <Form/>
+#+END_SRC

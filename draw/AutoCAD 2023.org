@@ -1,0 +1,24 @@
+* selection
+** a simple selection
+*** pickadd
+- 0
+  一次选一个,这前的自动移除,按住shift可以选多个
+- 2
+  一次选一个,添加到选择集,
+** the selection window
+单击,向右,单击,全部在选则区域则选中
+** the crossing window
+单击,向左,单击,碰到选则区域则选中
+** the "window lasso" selection
+向右开始拖动,自由拖动,全部在选则区域则选中
+** the "crossing lasso" selection
+向左开始拖动,自由拖动,碰到选则区域则选中
+** remove
++ pickadd:0
+  - 框选即选中,按住shift则为选中和取消切换
+  - 按住shift单击则为选中和取消切换
++ pickadd:2
+  - 框选即选中,按住shift则取消
+  - 按住shift单击则取消
++ esc
+  全部取消
